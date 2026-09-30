@@ -1,0 +1,134 @@
+{
+  "checked_date": "2026-09-30",
+  "asset_records": [
+    {
+      "filename": "magnus-night.jpg",
+      "local_path": "/tmp/alpha-concept-assets/magnus-night.jpg",
+      "image_url": "https://alphabuildershq.com/wp-content/uploads/2026/06/MAGNUS-NIGHT-scaled.jpg",
+      "source_page": "https://alphabuildershq.com/2026/06/23/magnus-una-nueva-referencia-para-la-inversion-en-quito/",
+      "width": 2560,
+      "height": 1440,
+      "bytes": 644348,
+      "description": "Magnus nighttime full-building architectural render with Quito city context. Preferred homepage hero.",
+      "license": "Official copyrighted client asset; no open reuse license found. Alpha terms require prior written consent for reuse. Private proposal reference only; not cleared for public publication."
+    },
+    {
+      "filename": "pixel-exterior.jpg",
+      "local_path": "/tmp/alpha-concept-assets/pixel-exterior.jpg",
+      "image_url": "https://pixel.com.ec/wp-content/uploads/2025/11/PIXEL_EDIFICIO.jpg",
+      "source_page": "https://pixel.com.ec/",
+      "width": 648,
+      "height": 1024,
+      "bytes": 523016,
+      "description": "Pixel street-level building exterior architectural render. Arrival / project card.",
+      "license": "Official copyrighted client asset; no open reuse license found. Alpha terms require prior written consent for reuse. Private proposal reference only; not cleared for public publication."
+    },
+    {
+      "filename": "sparta-exterior.jpg",
+      "local_path": "/tmp/alpha-concept-assets/sparta-exterior.jpg",
+      "image_url": "https://alphabuildershq.com/wp-content/uploads/2024/06/edifCajaDeLuz.jpg",
+      "source_page": "https://alphabuildershq.com/proyecto-sparta/",
+      "width": 357,
+      "height": 600,
+      "bytes": 55358,
+      "description": "Sparta building exterior architectural render. Project card; modest source resolution.",
+      "license": "Official copyrighted client asset; no open reuse license found. Alpha terms require prior written consent for reuse. Private proposal reference only; not cleared for public publication."
+    },
+    {
+      "filename": "pixel-lobby.jpg",
+      "local_path": "/tmp/alpha-concept-assets/pixel-lobby.jpg",
+      "image_url": "https://pixel.com.ec/wp-content/uploads/2025/08/PixelColors1-1.jpg",
+      "source_page": "https://pixel.com.ec/",
+      "width": 1920,
+      "height": 841,
+      "bytes": 395657,
+      "description": "Pixel Colors lobby/lounge. Recommended walkthrough interior 1.",
+      "license": "Official copyrighted client asset; no open reuse license found. Alpha terms require prior written consent for reuse. Private proposal reference only; not cleared for public publication."
+    },
+    {
+      "filename": "pixel-living.jpg",
+      "local_path": "/tmp/alpha-concept-assets/pixel-living.jpg",
+      "image_url": "https://pixel.com.ec/wp-content/uploads/2025/08/depar2.jpg",
+      "source_page": "https://pixel.com.ec/",
+      "width": 1920,
+      "height": 841,
+      "bytes": 372822,
+      "description": "Pixel apartment living, dining and kitchen. Recommended walkthrough interior 2.",
+      "license": "Official copyrighted client asset; no open reuse license found. Alpha terms require prior written consent for reuse. Private proposal reference only; not cleared for public publication."
+    },
+    {
+      "filename": "pixel-apartment.jpg",
+      "local_path": "/tmp/alpha-concept-assets/pixel-apartment.jpg",
+      "image_url": "https://pixel.com.ec/wp-content/uploads/2025/08/depar1.jpg",
+      "source_page": "https://pixel.com.ec/",
+      "width": 1920,
+      "height": 841,
+      "bytes": 316349,
+      "description": "Pixel apartment bedroom. Recommended walkthrough interior 3.",
+      "license": "Official copyrighted client asset; no open reuse license found. Alpha terms require prior written consent for reuse. Private proposal reference only; not cleared for public publication."
+    },
+    {
+      "filename": "pixel-pool-water.jpg",
+      "local_path": "/tmp/alpha-concept-assets/pixel-pool-water.jpg",
+      "image_url": "https://pixel.com.ec/wp-content/uploads/2025/11/Piscina920x841-2.jpg",
+      "source_page": "https://pixel.com.ec/",
+      "width": 1920,
+      "height": 841,
+      "bytes": 418438,
+      "description": "Pixel Pool, elevated view of water and lounge. Alternate if pool is needed; not part of revised 3-interior selection.",
+      "license": "Official copyrighted client asset; no open reuse license found. Alpha terms require prior written consent for reuse. Private proposal reference only; not cleared for public publication."
+    },
+    {
+      "filename": "pixel-map.png",
+      "local_path": "/tmp/alpha-concept-assets/pixel-map.png",
+      "image_url": "https://pixel.com.ec/wp-content/uploads/2025/11/PixelDirCroquis.png",
+      "source_page": "https://pixel.com.ec/",
+      "width": 725,
+      "height": 725,
+      "bytes": 63533,
+      "description": "Official schematic location map, transparent PNG. Pixel at Av. 5 de Junio and Av. Rodrigo de Chávez.",
+      "license": "Official copyrighted client asset; no open reuse license found. Alpha terms require prior written consent for reuse. Private proposal reference only; not cleared for public publication."
+    },
+    {
+      "filename": "alpha-logo-white.png",
+      "local_path": "/tmp/alpha-concept-assets/alpha-logo-white.png",
+      "image_url": "https://alphabuildershq.com/wp-content/uploads/2023/06/cropped-cropped-cropped-Alpha-slogan_blanco-transparente.png",
+      "source_page": "https://alphabuildershq.com/",
+      "width": 600,
+      "height": 180,
+      "bytes": 13519,
+      "description": "White Alpha Builders logo with Cazadores de Inversiones slogan, transparent PNG.",
+      "license": "Official copyrighted client asset; no open reuse license found. Alpha terms require prior written consent for reuse. Private proposal reference only; not cleared for public publication."
+    },
+    {
+      "filename": "alpha-logo-compact-white.png",
+      "local_path": "/tmp/alpha-concept-assets/alpha-logo-compact-white.png",
+      "image_url": "https://pixel.com.ec/wp-content/uploads/2025/12/logoABCadadores.png",
+      "source_page": "https://pixel.com.ec/",
+      "width": 429,
+      "height": 93,
+      "bytes": 6925,
+      "description": "Compact white Alpha Builders logo with slogan, transparent PNG.",
+      "license": "Official copyrighted client asset; no open reuse license found. Alpha terms require prior written consent for reuse. Private proposal reference only; not cleared for public publication."
+    },
+    {
+      "filename": "pixel-logo.png",
+      "local_path": "/tmp/alpha-concept-assets/pixel-logo.png",
+      "image_url": "https://pixel.com.ec/wp-content/uploads/2025/06/Logo-PIXEL-1.png",
+      "source_page": "https://pixel.com.ec/",
+      "width": 410,
+      "height": 190,
+      "bytes": 39807,
+      "description": "Official Pixel logo, transparent PNG.",
+      "license": "Official copyrighted client asset; no open reuse license found. Alpha terms require prior written consent for reuse. Private proposal reference only; not cleared for public publication."
+    }
+  ],
+  "rights_source": "https://alphabuildershq.com/terminos-y-condiciones/",
+  "pixel_location": {
+    "address": "Av. 5 de Junio y Rodrigo de Chávez, esquina. Quito, Ecuador.",
+    "maps_link": "https://maps.app.goo.gl/JJozcsbpJE2bbfue7",
+    "official_embed": "https://www.google.com/maps/d/embed?mid=1VjN-Q7U8coKi73J9l2J3v8PmMoxj5rk&hl=es&ehbc=2E312F"
+  },
+  "tour_notes": "Recommended revised selection: exterior -> lobby -> optional abstract elevator transition -> living space -> bedroom. No separate hall/elevator render or exact floor/physical circulation sequence verified; do not invent these. All selected architecture images are official architectural renders, not evidence of completed construction.",
+  "exclusions": "Other JPGs in directory are research candidates, not recommended selection. magnus-wide.jpg has marketing copy; sparta-wide.jpg is signage; pixel-banner.jpg has foreground promotional people. alpha-logo-black.png is a misleading original working filename and actually contains white artwork; use alpha-logo-compact-white.png."
+}
