@@ -432,6 +432,12 @@ html:has(body.page-proforma){scroll-snap-type:y proximity;scroll-padding-top:72p
   .pf-hero{animation:pfHeroOut linear both;animation-timeline:view();animation-range:exit 0% exit 90%}
  }
 }
+/* Keep the mobile card-to-comparison transition compact and stationary. */
+@media(max-width:760px){
+ .pf-hero{padding-bottom:24px;animation:none}
+ .pf-tiers,.pf-versus{animation:none}
+ .pf-versus{padding-top:28px}
+}
 @keyframes pfScrollIn{from{opacity:0;transform:translateY(80px) scale(.965);filter:blur(6px)}to{opacity:1;transform:none;filter:none}}
 @keyframes pfScrollInSoft{from{opacity:0;transform:translateY(60px) scale(.94);border-radius:24px}to{opacity:1;transform:none;border-radius:0}}
 @keyframes pfHeroOut{to{opacity:.15;transform:scale(.94) translateY(40px);filter:blur(3px)}}
