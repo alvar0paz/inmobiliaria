@@ -33,8 +33,8 @@ def quote_usd(n):
 TYPOLOGIES = {
     'estudio': {'name': ('Estudio', 'Studio'), 'beds': 0, 'm2': (32, 38), 'scene': 'suite'},
     'suite': {'name': ('Suite', 'Suite'), 'beds': 1, 'm2': (46, 56), 'scene': 'suite'},
-    'depa2': {'name': ('Departamento 2D', '2-bed apartment'), 'beds': 2, 'm2': (68, 82), 'scene': 'living'},
-    'depa3': {'name': ('Departamento 3D', '3-bed apartment'), 'beds': 3, 'm2': (96, 112), 'scene': 'living'},
+    'depa2': {'name': ('2 dormitorios', '2-bed apartment'), 'beds': 2, 'm2': (68, 82), 'scene': 'living'},
+    'depa3': {'name': ('3 dormitorios', '3-bed apartment'), 'beds': 3, 'm2': (96, 112), 'scene': 'living'},
 }
 
 # layout: typology per position; front row first, then back row (used by the 2D plan and the 3D model)
@@ -213,6 +213,7 @@ def mid_panel(d):
 
 
 def high_panel(d):
+    note = ('La visita usa renders de Pixel en un visor panorámico. La maqueta y el inventario son ilustrativos.', 'The visit uses Pixel renders in a panoramic viewer. The model and inventory are illustrative.') if len(d['projects']) == 1 else ('La visita usa renders de Pixel en un visor panorámico. Los interiores de los otros proyectos se muestran con esas mismas imágenes de referencia. La maqueta y los datos son ilustrativos.', 'The visit uses Pixel renders in a panoramic viewer. Other projects use those same reference interiors. The model and data are illustrative.')
     return f'''<section class="pf-panel" id="demo-alto" data-panel="alto" role="tabpanel" aria-labelledby="tab-alto">{panel_head('alto', '03', ('ALTO', 'HIGH'), ('Recorre el proyecto<br>antes de que exista.', 'Walk through the project<br>before it exists.'), ('Una maqueta 3D con los proyectos de la red. Gira, acércate, aísla un piso y elige un departamento disponible. Desde ahí entras a la visita virtual del departamento y de las áreas comunes.', 'A 3D model of the projects in the network. Rotate, zoom in, isolate a floor and pick an available apartment. From there you step into the virtual visit of the apartment and the shared spaces.'), [('Dirección de arte propia', 'Own art direction'), ('Portada propia por proyecto', 'Own cover per project'), ('Narrativa con scroll', 'Scroll-driven narrative'), ('2 rondas + pulido', '2 rounds + polish')])}
 <div class="pf-high js-only">
 <div class="pf-viewer-toolbar"><div class="pf-seg" id="projects3d" role="group" aria-label="Proyectos"></div><button class="pf-chip" id="overview3d">{t('Vista de la red','Network view')}</button></div>
@@ -224,7 +225,7 @@ def high_panel(d):
 <div class="pf-stage pf-tour" id="tourStage"><canvas id="tour3d" tabindex="0" aria-label="Visita virtual" aria-describedby="tour-help"></canvas><div class="pf-tour-hotspots" id="tourHotspots"></div><div class="pf-tour-fade" id="tourFade"></div><p class="pf-viewer-status" id="tour-status" role="status" hidden></p><button class="pf-chip pf-tour-retry" id="tour-retry" hidden>{t('Reintentar imagen','Retry image')}</button></div>
 <div class="pf-tour-info"><div class="pf-tour-caption"><small id="tour-kicker"></small><h3 id="tour-title"></h3><p id="tour-desc"></p></div><a class="text-link" href="https://pixel.com.ec/tour360/deparNuevo/" target="_blank" rel="noopener">{t('Abrir el tour 360 de Pixel','Open the Pixel 360 tour')}</a></div>
 <p class="pf-viewer-help" id="tour-help">{t('Arrastra para mirar. Pellizca o usa + y − para acercar. Puedes cambiar de espacio con los botones superiores.','Drag to look around. Pinch or use + and − to zoom. Switch spaces using the buttons above.')}</p></div>
-<p class="detail-note">{t('La visita usa renders de Pixel en un visor panorámico. Los interiores de los otros proyectos se muestran con esas mismas imágenes de referencia. La maqueta y los datos son ilustrativos.','The visit uses Pixel renders in a panoramic viewer. Other projects use those same reference interiors. The model and data are illustrative.')}</p></div>
+<p class="detail-note">{t(*note)}</p></div>
 <div class="pf-fallback"><p>{t('Sin JavaScript, cada proyecto conserva su tabla de disponibilidad y sus enlaces a los tours 360: la maqueta y la visita son una mejora progresiva.','Without JavaScript, every project keeps its availability table and links to its 360 tours: the model and the visit are a progressive enhancement.')}</p></div></section>'''
 
 
@@ -289,7 +290,7 @@ def quote():
 
 
 def launch():
-    return f'''<div class="pf-launch" id="launch" hidden><div class="pf-launch-glow" aria-hidden="true"></div><div class="pf-launch-inner"><img src="/assets/alpha-logo-white.webp" alt="Alpha Builders" width="200" height="60"><p class="pf-launch-kicker">{t('PROFORMA · RED WEB DE 16 SITIOS','QUOTE · 16-SITE WEB NETWORK')}</p><div class="pf-launch-bar" aria-hidden="true"><i></i></div><div class="pf-launch-actions"><button class="button" id="launch-open">{t('Abrir la proforma','Open the quote')}<span aria-hidden="true">♪</span></button><small class="pf-launch-note">{t('Con sonido · puedes silenciarlo en cualquier momento','With sound · you can mute it at any time')}</small></div></div></div><button class="pf-sound js-only" id="sound-toggle" aria-pressed="true" aria-label="Sonido / Sound"><span class="pf-eq" aria-hidden="true"><i></i><i></i><i></i><i></i></span>{t('Sonido','Sound')}</button>'''
+    return f'''<div class="pf-launch" id="launch" hidden><div class="pf-launch-glow" aria-hidden="true"></div><div class="pf-launch-inner"><img src="/assets/alpha-logo-white.webp" alt="Alpha Builders" width="200" height="60"><p class="pf-launch-kicker">{t('PROFORMA · RED WEB DE 16 SITIOS','QUOTE · 16-SITE WEB NETWORK')}</p><div class="pf-launch-bar" aria-hidden="true"><i></i></div><div class="pf-launch-actions"><button class="button" id="launch-open">{t('Abrir la proforma','Open the quote')}<span aria-hidden="true">♪</span></button><small class="pf-launch-note">{t('Sonido opcional, apagado al inicio','Optional sound, off by default')}</small></div></div></div><button class="pf-sound js-only" id="sound-toggle" aria-pressed="false" aria-label="Sonido / Sound"><span class="pf-eq" aria-hidden="true"><i></i><i></i><i></i><i></i></span>{t('Sonido','Sound')}</button>'''
 
 
 def dots():

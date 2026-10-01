@@ -3,6 +3,7 @@
    Runs after app.js, so `state`, `render`, `$` and `$$` are available. */
 (()=>{
 'use strict';
+const projectMode=!!$('#project-explorer');
 const D=JSON.parse($('#demo-data').textContent);
 const en=()=>state.lang==='en', L=(es,e)=>en()?e:es, tr=a=>a[en()?1:0];
 const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -43,11 +44,9 @@ const Sound=(()=>{
   const play=()=>{if(!alive)return;const t=ctx.currentTime;chords[i%4].forEach((f,j)=>{[-5,5].forEach(dt=>{const o=ctx.createOscillator(),g=ctx.createGain();o.type=j?'sine':'triangle';o.frequency.value=f;o.detune.value=dt;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.09,t+3);g.gain.linearRampToValueAtTime(.09,t+7);g.gain.linearRampToValueAtTime(0,t+10.5);o.connect(g).connect(lp);o.start(t);o.stop(t+10.6)})});i++};
   play();const timer=setInterval(play,8000);pad={stop(){alive=false;clearInterval(timer);out.gain.cancelScheduledValues(ctx.currentTime);out.gain.setTargetAtTime(0,ctx.currentTime,.5);setTimeout(()=>out.disconnect(),2500)}}}
  function set(v){enabled=v;if(btn){btn.setAttribute('aria-pressed',v);btn.classList.toggle('on',v)}if(v){ensure();ctx&&ctx.resume();startPad()}else if(pad){pad.stop();pad=null}try{localStorage.setItem('pf-sound',v?'1':'0')}catch(e){}}
- let muted=false;try{muted=localStorage.getItem('pf-sound')==='0'}catch(e){}
- if(btn){btn.setAttribute('aria-pressed',!muted);btn.classList.toggle('on',!muted);btn.addEventListener('click',e=>{e.stopPropagation();const want=btn.getAttribute('aria-pressed')!=='true';set(want);if(want)chime()})}
- // Browsers only allow audio after a user gesture: sound is on by default and starts with the first one.
- const unlock=e=>{removeEventListener('pointerdown',unlock,true);removeEventListener('keydown',unlock,true);if(muted||enabled||e.target.closest('#sound-toggle,#launch'))return;set(true);chime()};
- addEventListener('pointerdown',unlock,true);addEventListener('keydown',unlock,true);
+ const muted=true;
+ if(btn){btn.setAttribute('aria-pressed','false');btn.classList.remove('on');btn.addEventListener('click',e=>{e.stopPropagation();const want=!enabled;set(want);if(want)chime()})}
+ // Audio starts only when the visitor explicitly enables the sound button.
  return {set,chime,whoosh,tick,get on(){return enabled},get muted(){return muted}};
 })();
 
@@ -82,12 +81,12 @@ function selectTier(k,opts={}){
   $$('[data-tab]').forEach(b=>{const s=b.dataset.tab===k;b.setAttribute('aria-selected',s);b.tabIndex=s?0:-1});
   $$('[data-panel]').forEach(p=>p.hidden=p.dataset.panel!==k);
   $$('[data-tier-card]').forEach(c=>c.classList.toggle('is-active',c.dataset.tierCard===k));
-  if(!opts.fromStyle&&state.style!==TIER_STYLE[k]){state.style=TIER_STYLE[k];render()}
+  if(!opts.fromStyle&&state.style!==TIER_STYLE[k]&&(!projectMode||k==='alto')){state.style=TIER_STYLE[k];render()}
  };
  if(changed&&opts.animate)withTransition(apply);else apply();
  if(changed&&opts.animate)Sound.whoosh();
  ({basico:Basic,medio:Mid,alto:High})[k].show();
- if(opts.hash)history.replaceState(null,'',location.pathname+location.search+'#demo-'+k);
+ if(opts.hash)history.replaceState(null,'',location.pathname+location.search+(projectMode?'#experience':'#demo-'+k));
  if(opts.scroll)$('#demo').scrollIntoView({behavior:reduce?'auto':'smooth'});
 }
 
@@ -198,8 +197,8 @@ const Mid=(()=>{
   $('#plan-title').textContent=`${p.name} · ${L('piso','floor')} ${floor}`}
  function card(){const c=$('#unit2d');if(!unit){c.innerHTML=`<p class="pf-unit-empty">${L('Toca una unidad en la planta para ver su ficha.','Tap a unit on the plan to see its details.')}</p>`;return}
   const u=unit,ty=D.typologies[u.type];
-  c.innerHTML=`<span class="pf-level">${p.name.toUpperCase()} · ${L('PISO','FLOOR')} ${u.floor}</span><h4>${L('Unidad','Unit')} ${u.id} · ${tyName(u.type)}</h4><dl><dt>${L('Dorm.','Beds')}</dt><dd>${ty.beds||'—'}</dd><dt>m²</dt><dd>${u.m2}</dd><dt>${L('Precio','Price')}</dt><dd>${priceLabel(p,u)}</dd><dt>${L('Estado','Status')}</dt><dd><span class="pf-status"><i style="background:${COLOR[u.status]}"></i>${usName(u.status)}</span></dd></dl><div class="pf-actions">${u.status==='disponible'&&p.sellable?`<button class="button" data-wa>${L('Cotizar por WhatsApp','Quote on WhatsApp')}</button>`:''}<button class="button ghost" data-to3d>${L('Ver en 3D','View in 3D')}</button></div><p class="detail-note" data-wa-preview></p>`;
-  const wa=c.querySelector('[data-wa]');if(wa)wa.onclick=()=>{c.querySelector('[data-wa-preview]').textContent=L(`Se abriría WhatsApp de la sala de ventas con: “Hola, me interesa la unidad ${u.id} (${tyName(u.type)}) de ${p.name}. La vi en ${p.domain}.”`,`The sales office WhatsApp would open with: “Hi, I’m interested in unit ${u.id} (${tyName(u.type)}) at ${p.name}. I saw it on ${p.domain}.”`);log(`GA4 · whatsapp_click · proyecto=${p.slug} · unidad=${u.id}`)};
+  c.innerHTML=`<span class="pf-level">${p.name.toUpperCase()} · ${L('PISO','FLOOR')} ${u.floor}</span><h4>${L('Unidad','Unit')} ${u.id} · ${tyName(u.type)}</h4><dl><dt>${L('Dorm.','Beds')}</dt><dd>${ty.beds||'—'}</dd><dt>m²</dt><dd>${u.m2}</dd><dt>${L('Precio','Price')}</dt><dd>${priceLabel(p,u)}</dd><dt>${L('Estado','Status')}</dt><dd><span class="pf-status"><i style="background:${COLOR[u.status]}"></i>${usName(u.status)}</span></dd></dl><div class="pf-actions">${u.status==='disponible'&&p.sellable?`<button class="button" data-wa>${projectMode?L('Consultar esta tipología','Enquire about this type'):L('Cotizar por WhatsApp','Quote on WhatsApp')}</button>`:''}<button class="button ghost" data-to3d>${projectMode&&state.style==='editorial'?L('Ver en Inmersivo','View in Immersive'):L('Ver en 3D','View in 3D')}</button></div><p class="detail-note" data-wa-preview></p>`;
+  const wa=c.querySelector('[data-wa]');if(wa)wa.onclick=()=>{if(projectMode){document.dispatchEvent(new CustomEvent('pixel:interest',{detail:u.type}));$('#contact').scrollIntoView({behavior:'instant'});return}c.querySelector('[data-wa-preview]').textContent=L(`Se abriría WhatsApp de la sala de ventas con: “Hola, me interesa la unidad ${u.id} (${tyName(u.type)}) de ${p.name}. La vi en ${p.domain}.”`,`The sales office WhatsApp would open with: “Hi, I’m interested in unit ${u.id} (${tyName(u.type)}) at ${p.name}. I saw it on ${p.domain}.”`);log(`GA4 · whatsapp_click · proyecto=${p.slug} · unidad=${u.id}`)};
   c.querySelector('[data-to3d]').onclick=()=>{selectTier('alto',{animate:false,hash:true});High.focusUnit(p.slug,u.id);$('#stage3d').scrollIntoView({behavior:'instant',block:'center'})}}
  function draw(){if(floor==null)floor=bestFloor(p);sky();filters();elev();plan();card();$('.pf-mid [data-legend]').innerHTML=legend(p.units)}
  function focusUnit(slug,id){p=P[slug];unit=p.units.find(u=>u.id===id)||null;if(unit)floor=unit.floor;draw()}
@@ -258,7 +257,7 @@ const High=(()=>{
   const grid=new THREE.GridHelper(320,80,'#263026','#1b221c');grid.position.y=.02;scene.add(grid);
   context();D.projects.forEach(build);
   D.projects.forEach(p=>{
-   const el=document.createElement('div');el.className='pf-3d-label';el.innerHTML='<button type="button"></button>';el.firstChild.onclick=()=>focusProject(p.slug);$('#labels3d').append(el);
+   const el=document.createElement('div');el.className='pf-3d-label';el.hidden=true;el.innerHTML='<button type="button"></button>';el.firstChild.onclick=()=>focusProject(p.slug);$('#labels3d').append(el);
    labels.push({el,pos:new THREE.Vector3(SPOT[p.slug][0],B[p.slug].H+4,SPOT[p.slug][1]),p});
   });
   $('#projects3d').innerHTML=D.projects.map(p=>`<button class="pf-chip" data-p3="${p.slug}" aria-pressed="false">${p.name}</button>`).join('');
@@ -397,7 +396,7 @@ const High=(()=>{
  }
  on('change',()=>{if(!renderer)return;labelText();reconcile();if(sel)select(sel);else{apply();ui()}});
  on('lang',()=>{if(!renderer)return;labelText();if(sel)select(sel);else ui();loop()});
- return {show(){if(init()){resize();loop()}Tour.show()},focusUnit};
+ return {show(){if(init()){if(projectMode&&!focus)focusProject(D.projects[0].slug);resize();loop()}Tour.show()},focusUnit};
 })();
 
 /* ---------- Virtual visit: renders wrapped on a panoramic arc ---------- */
@@ -500,7 +499,7 @@ const Tour=(()=>{
 
 /* ---------- Quote calculator ---------- */
 const quoteMoney=n=>'USD '+n.toLocaleString(en()?'en-US':'es-EC',{minimumFractionDigits:2,maximumFractionDigits:2});
-const quoteVat=Number($('#proforma').dataset.vat);
+const quoteVat=Number($('#proforma')?.dataset.vat||0);
 const cents=n=>Math.round((n+Number.EPSILON)*100)/100;
 function calcQuote(){Object.keys(TIER_STYLE).forEach(k=>{const v=key=>{const i=$(`[data-price="${k}:${key}"]`),n=parseFloat(i&&i.value);return isNaN(n)?null:n};
   const set=(key,n)=>{const c=$(`[data-calc="${k}:${key}"]`);if(c)c.textContent=n==null?'—':quoteMoney(n)};
@@ -513,12 +512,13 @@ $$('[data-price]').forEach(i=>i.addEventListener('input',calcQuote));
 const pb=$('#print-quote');if(pb)pb.onclick=()=>window.print();
 
 /* ---------- Wiring ---------- */
-$$('[data-tab]').forEach((b,i,all)=>{b.onclick=()=>selectTier(b.dataset.tab,{animate:true,hash:true});b.onkeydown=e=>{const d=e.key==='ArrowRight'?1:e.key==='ArrowLeft'?-1:0;if(!d)return;e.preventDefault();const n=all[(i+d+all.length)%all.length];n.focus();n.click()}});
+$$('[data-tab]').forEach((b,i,all)=>{b.onclick=()=>selectTier(b.dataset.tab,{animate:true,hash:true});b.onkeydown=e=>{const d=e.key==='ArrowRight'?1:e.key==='ArrowLeft'?-1:0;if(!d)return;e.preventDefault();const visible=all.filter(x=>x.getClientRects().length);const index=visible.indexOf(b);const n=visible[(index+d+visible.length)%visible.length];n.focus();n.click()}});
 $$('[data-tier]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();selectTier(a.dataset.tier,{animate:true,hash:true,scroll:true})}));
-$$('[data-style]').forEach(b=>b.addEventListener('click',()=>{const k=STYLE_TIER[b.dataset.style];if(k&&k!==tier)selectTier(k,{fromStyle:true,animate:true})}));
+let lastStyle=state.style;
+document.addEventListener('site:render',()=>{if(state.style===lastStyle)return;lastStyle=state.style;const k=STYLE_TIER[state.style];if(k&&k!==tier)selectTier(k,{fromStyle:true,animate:false})});
 let lastLang=state.lang;
 new MutationObserver(()=>{if(state.lang!==lastLang){lastLang=state.lang;fire('lang');calcQuote()}}).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
-const fromHash=(location.hash.match(/^#demo-(basico|medio|alto)$/)||[])[1];
+const fromHash=projectMode?null:(location.hash.match(/^#demo-(basico|medio|alto)$/)||[])[1];
 selectTier(fromHash||STYLE_TIER[state.style]||'basico',{fromStyle:!fromHash});
 calcQuote();
 })();
