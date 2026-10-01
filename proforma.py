@@ -168,6 +168,11 @@ def check(v):
     return t(*v) if isinstance(v, tuple) else escape(v)
 
 
+def comparison_cell(label, content, cls=''):
+    # One value stays shared by the desktop table, mobile layout and quote calculator.
+    return f'<td role="cell" class="{cls}"><span class="pf-mobile-label" aria-hidden="true">{t(*label)}</span><div class="pf-cell-value">{content}</div></td>'
+
+
 def hero():
     cards = ''
     for key, style, n, level, name, desc, points in TIERS:
@@ -179,8 +184,8 @@ def hero():
 
 
 def versus():
-    rows = ''.join(f'<tr><th scope="row">{t(*label)}</th><td class="pf-now">{t(*now)}</td><td>{check(b)}</td><td>{check(m)}</td><td>{check(h)}</td></tr>' for label, now, b, m, h in VERSUS)
-    return f'''<section class="section pf-versus pf-reveal" id="comparativa"><div class="section-header"><div><div class="eyebrow">{t('DE DÓNDE PARTIMOS','WHERE WE START')}</div>{t('El sitio actual frente a la red nueva.','The current website versus the new network.','h2')}</div><a class="text-link" href="https://alphabuildershq.com/" target="_blank" rel="noopener">{t('Ver alphabuildershq.com','View alphabuildershq.com')}</a></div><div class="pf-scroll"><table class="pf-table pf-compare"><thead><tr><th scope="col"><span class="sr-only">{t('Aspecto','Aspect')}</span></th><th scope="col">{t('Sitio actual','Current site')}</th><th scope="col">{t('Básico','Basic')}</th><th scope="col">{t('Medio','Mid')}</th><th scope="col">{t('Alto','High')}</th></tr></thead><tbody>{rows}</tbody></table></div><p class="detail-note">{t('Sitio actual revisado el 30 de septiembre de 2026: la portada muestra nombres de proyectos sin precios, estado ni disponibilidad, y no se ve un enlace de WhatsApp.','Current website reviewed on 30 September 2026: the homepage lists project names without prices, status or availability, and no WhatsApp link is visible.')}</p></section>'''
+    rows = ''.join(f'<tr role="row"><th scope="row" role="rowheader">{t(*label)}</th>' + comparison_cell(('Sitio actual', 'Current site'), t(*now), 'pf-now') + ''.join(comparison_cell(tier[3], check(value)) for tier, value in zip(TIERS, (b, m, h))) + '</tr>' for label, now, b, m, h in VERSUS)
+    return f'''<section class="section pf-versus pf-reveal" id="comparativa"><div class="section-header"><div><div class="eyebrow">{t('DE DÓNDE PARTIMOS','WHERE WE START')}</div>{t('El sitio actual frente a la red nueva.','The current website versus the new network.','h2')}</div><a class="text-link" href="https://alphabuildershq.com/" target="_blank" rel="noopener">{t('Ver alphabuildershq.com','View alphabuildershq.com')}</a></div><div class="pf-scroll"><table role="table" class="pf-table pf-compare"><thead role="rowgroup"><tr role="row"><th scope="col" role="columnheader"><span class="sr-only">{t('Aspecto','Aspect')}</span></th><th scope="col" role="columnheader">{t('Sitio actual','Current site')}</th><th scope="col" role="columnheader">{t('Básico','Basic')}</th><th scope="col" role="columnheader">{t('Medio','Mid')}</th><th scope="col" role="columnheader">{t('Alto','High')}</th></tr></thead><tbody role="rowgroup">{rows}</tbody></table></div><p class="detail-note">{t('Sitio actual revisado el 30 de septiembre de 2026: la portada muestra nombres de proyectos sin precios, estado ni disponibilidad, y no se ve un enlace de WhatsApp.','Current website reviewed on 30 September 2026: the homepage lists project names without prices, status or availability, and no WhatsApp link is visible.')}</p></section>'''
 
 
 def panel_head(key, n, level, title, copy, chips):
@@ -234,19 +239,20 @@ def high_panel(d):
 
 def quote():
     head_cells = ''.join(f'<th scope="col">{t(*level)}<small>{t(*name)}</small></th>' for _, _, _, level, name, *_ in TIERS)
-    level_rows = ''.join(f'<tr><th scope="row">{t(*label)}</th>' + ''.join(f'<td>{t(*v)}</td>' for v in vals) + '</tr>' for label, *vals in LEVELS)
+    level_rows = ''.join(f'<tr role="row"><th scope="row" role="rowheader">{t(*label)}</th>' + ''.join(comparison_cell(tier[3], t(*value)) for tier, value in zip(TIERS, vals)) + '</tr>' for label, *vals in LEVELS)
     price_rows = ''
     for key, label, kind in PRICE_ROWS:
         if key == 'new_site':
-            price_rows += f'<tr class="pf-divider"><th colspan="4">{t("Servicios adicionales y recurrentes · USD sin IVA", "Additional and recurring services · USD excluding VAT")}</th></tr>'
+            price_rows += f'<tr class="pf-divider" role="row"><th colspan="4" role="rowheader">{t("Servicios adicionales y recurrentes · USD sin IVA", "Additional and recurring services · USD excluding VAT")}</th></tr>'
         cells = ''
-        for tier, *_ in TIERS:
+        for tier, _, _, level, *_ in TIERS:
             if kind == 'input':
                 v = PRICING[tier][key]
-                cells += f'<td><label class="pf-money"><span>USD</span><input type="number" min="0" step="0.01" inputmode="decimal" data-price="{tier}:{key}" value="{v}" aria-label="{escape(label[0])} · {tier}"></label><span class="pf-print-value" data-print="{tier}:{key}">{quote_usd(v)}</span></td>'
+                value = f'<label class="pf-money"><span>USD</span><input type="number" min="0" step="0.01" inputmode="decimal" data-price="{tier}:{key}" value="{v}" aria-label="{escape(label[0])} · {tier}"></label><span class="pf-print-value" data-print="{tier}:{key}">{quote_usd(v)}</span>'
+                cells += comparison_cell(level, value)
             else:
-                cells += f'<td class="pf-calc" data-calc="{tier}:{key}">{quote_usd(quote_values(tier)[key])}</td>'
-        price_rows += f'<tr class="pf-row-{kind}"><th scope="row">{t(*label)}</th>{cells}</tr>'
+                cells += comparison_cell(level, f'<span data-calc="{tier}:{key}">{quote_usd(quote_values(tier)[key])}</span>', 'pf-calc')
+        price_rows += f'<tr class="pf-row-{kind}" role="row"><th scope="row" role="rowheader">{t(*label)}</th>{cells}</tr>'
     contacts = '''<div class="pf-contacts"><address><strong>Alvaro Paz</strong><span>RUC 1717417982001</span><a href="tel:+593986674760">+593 98 667 4760</a><a href="mailto:alvaroipazr@gmail.com">alvaroipazr@gmail.com</a></address><address><strong>Martín Vélez Falconí</strong><span>RUC 1724556681001</span><a href="tel:+593983466900">+593 98 346 6900</a><a href="mailto:martinvelezf@hotmail.com">martinvelezf@hotmail.com</a></address></div>'''
     terms = [
         (('La misma base para los 16 sitios', 'The same foundation for all 16 sites'), [
@@ -284,7 +290,7 @@ def quote():
     timeline = ''.join(f'<li><b>{d}</b>{t(*label)}</li>' for d, label in [('12–14 oct', ('Plan técnico', 'Technical plan')), ('15–28 oct', ('Wireframes y gestor', 'Wireframes and manager')), ('22 oct–5 nov', ('Diseño y piloto 2D/3D', 'Design and 2D/3D pilot')), ('6–24 nov', ('Sitios e integraciones', 'Sites and integrations')), ('25 nov–1 dic', ('Pruebas y aceptación', 'Testing and acceptance')), ('2 dic', ('Lanzamiento conjunto', 'Joint launch')), ('8 dic', ('Aceptación final', 'Final acceptance'))])
     return f'''<section class="section pf-quote pf-reveal" id="proforma" data-vat="{VAT}"><div class="section-header"><div><div class="eyebrow">PF-AB-2026-001 · {t('REVISIÓN 3 · 1 OCTUBRE 2026','REVISION 3 · 1 OCTOBER 2026')}</div>{t('Proforma del<br>ecosistema web.','Web ecosystem<br>quotation.','h2')}</div><button class="text-link js-only" id="print-quote">{t('Imprimir o guardar PDF','Print or save as PDF')}</button></div>
 <p class="pf-quote-intro">{t('Para Alpha Builders, atención de Juan José Vargas Flores. Un sitio de marca y 15 sitios de proyecto. Elige un nivel: Básico, Medio con 2D o Alto con 2D, 3D y visitas virtuales.','For Alpha Builders, attention Juan José Vargas Flores. One brand site and 15 project sites. Choose a tier: Basic, Mid with 2D or High with 2D, 3D and virtual visits.')}</p>
-{contacts}<div class="pf-scroll"><table class="pf-table pf-levels"><caption class="sr-only">{t('Alcance y precio de los tres niveles','Scope and price of the three tiers')}</caption><thead><tr><th scope="col">{t('Alcance e inversión','Scope and investment')}</th>{head_cells}</tr></thead><tbody>{level_rows}</tbody><tbody class="pf-prices"><tr class="pf-divider"><th colspan="4">{t('Implementación · USD con IVA incluido · se contrata un solo nivel','Implementation · USD including VAT · choose one tier')}</th></tr>{price_rows}</tbody></table></div>
+{contacts}<div class="pf-scroll"><table role="table" class="pf-table pf-levels"><caption class="sr-only">{t('Alcance y precio de los tres niveles','Scope and price of the three tiers')}</caption><thead role="rowgroup"><tr role="row"><th scope="col" role="columnheader">{t('Alcance e inversión','Scope and investment')}</th>{head_cells}</tr></thead><tbody role="rowgroup">{level_rows}</tbody><tbody class="pf-prices" role="rowgroup"><tr class="pf-divider" role="row"><th colspan="4" role="rowheader">{t('Implementación · USD con IVA incluido · se contrata un solo nivel','Implementation · USD including VAT · choose one tier')}</th></tr>{price_rows}</tbody></table></div>
 <p class="detail-note">{t('Los importes de implementación incluyen IVA; el desglose de base e impuesto es informativo y no se suma de nuevo. El precio por sitio ya está incluido en el lote de 15. Cada total cubre las experiencias de su nivel. Los adicionales y recurrentes se contratan por separado y no se suman a ese total.','Implementation amounts include VAT; the net and tax breakdown is informational and is not added again. The per-site price is already included in the batch of 15. Each total covers the experiences of its tier. Additional and recurring services are contracted separately and are not included in that total.')}</p>
 <p class="detail-note js-only" id="quote-edit-note">{t('Puedes ajustar los importes para simular una alternativa. Al recargar se restauran los valores de esta oferta.','You can adjust amounts to simulate an alternative. Reloading restores this offer’s values.')}</p>
 <div class="pf-same"><div><b>{t('Calendario de referencia 2026','Reference schedule 2026')}</b><p>{t('Sujeto a confirmar equipo y activos al inicio. Las condiciones de entrega se detallan a continuación.','Subject to confirmed staffing and assets at kickoff. Delivery terms are detailed below.')}</p></div><ol class="pf-timeline">{timeline}</ol></div>
@@ -306,7 +312,7 @@ def proforma():
     d = data()
     tabs = ''.join(f'<button role="tab" id="tab-{key}" aria-controls="demo-{key}" data-tab="{key}" data-style-link="{style}"><b>{n}</b>{t(*level)}<small>{t(*name)}</small></button>' for key, style, n, level, name, *_ in TIERS)
     feed = json.dumps(d, ensure_ascii=False, separators=(',', ':'))
-    out = head('proforma') + f'''<main id="main" class="pf">{hero()}{versus()}<section class="pf-demo" id="demo"><div class="pf-tabs js-only" role="tablist" aria-label="Niveles">{tabs}</div><p class="pf-sample"><b>{t('DATOS DE EJEMPLO','SAMPLE DATA')}</b> {t('Unidades, precios, estados y fechas son ilustrativos. En producción salen del gestor central aprobado por Comercial y Legal.','Units, prices, statuses and dates are illustrative. In production they come from the central manager, approved by Sales and Legal.')}</p>{basic_panel(d)}{mid_panel(d)}{high_panel(d)}</section>{quote()}<section class="proposal-team-link"><div><span class="overline">{t('EL EQUIPO DE ESTA PROPUESTA','THE TEAM BEHIND THIS PROPOSAL')}</span>{t('Andean Software Lab','Andean Software Lab','h2')}<p>Martín Vélez Falconí · Alvaro Paz</p></div>{a('Conocer al equipo','Meet the team','/nosotros/','button')}</section></main>''' + footer(True) + f'<script type="application/json" id="demo-data">{feed}</script><noscript><div class="noscript">La proforma, las tablas de disponibilidad y los precios están disponibles sin JavaScript. Activa JavaScript para usar las demos interactivas.</div></noscript></body></html>'
+    out = head('proforma') + f'''<main id="main" class="pf">{hero()}{versus()}<section class="pf-demo" id="demo"><div class="pf-tabs js-only" role="tablist" aria-label="Niveles">{tabs}</div><p class="pf-sample"><b>{t('DATOS DE EJEMPLO','SAMPLE DATA')}</b> {t('Unidades, precios, estados y fechas son ilustrativos. En producción salen del gestor central aprobado por Comercial y Legal.','Units, prices, statuses and dates are illustrative. In production they come from the central manager, approved by Sales and Legal.')}</p>{basic_panel(d)}{mid_panel(d)}{high_panel(d)}</section>{quote()}</main>''' + footer(True) + f'<script type="application/json" id="demo-data">{feed}</script><noscript><div class="noscript">La proforma, las tablas de disponibilidad y los precios están disponibles sin JavaScript. Activa JavaScript para usar las demos interactivas.</div></noscript></body></html>'
     (ROOT / 'proforma').mkdir(exist_ok=True)
     (ROOT / 'proforma' / 'index.html').write_text(out)
     (ROOT / 'proforma' / 'proyectos-demo.json').write_text(json.dumps(d, ensure_ascii=False, indent=1))

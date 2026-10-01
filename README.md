@@ -22,7 +22,7 @@ python3 -m http.server 4173 --bind 127.0.0.1 --directory dist
 
 Open <http://127.0.0.1:4173>. Serve the site from the domain root, since links and asset paths start with `/`.
 
-Example: <http://127.0.0.1:4173/nosotros/?style=immersive&lang=es>.
+Example: <http://127.0.0.1:4173/propuesta/?lang=es>.
 
 ## Editing
 
@@ -54,7 +54,7 @@ After building, run `python3 tests/site-structure.test.py` to check route target
 The quote page uses illustrative units, prices, statuses and dates (labelled as sample data). The commercial quote is separate from demo inventory: `PRICING` in `proforma.py` holds the Basic / Mid / High offers at USD 36,000 / 42,000 / 48,000 before the provisional 15% VAT calculation. Values are rendered in HTML and can be adjusted temporarily during a presentation; reloading restores the published offer. The quote includes contacts, payment milestones, warranty, recurring costs and scope conditions. Its virtual visit wraps existing Pixel renders on a panoramic viewer; it is not 360 photography. The sound is synthesised in the browser and stays off until the visitor explicitly enables it.
 
 
-This is a presentation prototype with five pages, not the full production platform. The arrival uses architectural images and transitions. The interactive building, furnished room and lighting are illustrative, not verified architectural plans, real circulation, accurate views or a solar study. EL SECTOR uses a locally rendered, interactive 3D diorama with a static fallback and a link to Google Maps. Pixel, Metro, Coral and the two avenue names come from Pixel’s original location diagram; surrounding massing, landscaping and distances are illustrative. The map dialog also preserves the original published image. There is no CMS or backend, and production prices, availability and project status require approved data.
+This is a presentation prototype with six pages, not the full production platform. The arrival uses architectural images and transitions. The interactive building, furnished room and lighting are illustrative, not verified architectural plans, real circulation, accurate views or a solar study. EL SECTOR uses a locally rendered, interactive 3D diorama with a static fallback and a link to Google Maps. Pixel, Metro, Coral and the two avenue names come from Pixel’s original location diagram; surrounding massing, landscaping and distances are illustrative. The map dialog also preserves the original published image. There is no CMS or backend, and production prices, availability and project status require approved data.
 
 Architecture, logos and reference images remain the property of their respective rights holders. They are included for private proposal review; see `asset-manifest.json`. The profile portraits come from the LinkedIn profiles supplied for the About us page.
 
@@ -70,7 +70,7 @@ Viewer backing buffers follow screen density up to 3×. Clamp wrapping and linea
 
 ## Navigation and proposal previews
 
-Start stakeholder reviews at `/propuesta/`: Overview, Compare options, and Investment & team. The Essential / Interactive / Immersive cards open the corresponding buyer preview using the existing `style` query parameter. `/proforma/` retains the full quote and operational demos; `/nosotros/` identifies the proposal team.
+Start stakeholder reviews at `/propuesta/`, a concise overview with one comparison action. `/comparar/` contains the three option cards; the main menu links separately to investment and team at `/proforma/` and `/nosotros/`. Stakeholder URLs strip the preview-only `style` parameter. The Essential / Interactive / Immersive cards open the corresponding buyer preview using the existing `style` query parameter. `/proforma/` retains the full quote and operational demos; `/nosotros/` identifies the proposal team.
 
 Buyer pages use one shared navigation with an advisor action. The project order is consistent across all styles: overview, apartments, optional plans/building exploration, shared spaces, location, contact. Mobile uses a labeled Menu and one bottom advisor action. Buyer pages contain a quiet return-to-proposal link, without proposal tier controls or duplicate section navigation.
 
