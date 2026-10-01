@@ -100,3 +100,7 @@ body:has(.demo-ribbon) .buyer-navigation{top:var(--demo-ribbon-height)}
  body:has(.demo-ribbon) .buyer-navigation:has(.primary-menu.is-open){top:var(--demo-ribbon-height);max-height:calc(100dvh - 64px - var(--demo-ribbon-height))}
 }
 @media print{.demo-ribbon{display:none!important}}
+
+.project-destination-note{display:block;margin-top:10px;font-size:12px;line-height:1.5;color:var(--muted)}
+.advisor-projects a{padding-block:10px}
+.advisor-projects small{display:block;margin-top:6px;font-size:12px;line-height:1.5;color:var(--muted)}

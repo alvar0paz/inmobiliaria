@@ -8,7 +8,7 @@
   document.querySelectorAll('[data-scene-home]').forEach(e=>e.hidden=e.dataset.sceneHome!==featured);
   document.querySelectorAll('[data-featured]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.featured===featured)));
   const description=document.querySelector('#featured-description');description.removeAttribute('data-es');description.removeAttribute('data-en');description.textContent=p.copy[en?1:0];
-  link.textContent=featured==='pixel'?(en?'Enter Pixel':'Entrar a Pixel'):(en?'Discover ':'Conocer ')+p.name;
+  link.textContent=featured==='pixel'?(en?'View proposed Pixel demo':'Ver demo propuesta de Pixel'):(en?'Current website: ':'Sitio actual: ')+p.name+' ↗';
   link.href=featured==='pixel'?`/pixel/?style=${state.style}&lang=${state.lang}`:p.url;
   if(featured==='pixel'){link.removeAttribute('target');link.removeAttribute('rel')}else{link.target='_blank';link.rel='noopener'}
  }
