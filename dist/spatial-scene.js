@@ -33,9 +33,9 @@ window.AlphaSpatial.interior=function(T){
  plant(-5.15,-3.8,1.55);plant(5.2,-4,1.45);plant(-5.2,3.5,.9);
  box(-6.31,2.2,.1,.05,1.8,2.6,wood);box(-6.26,2.2,.1,.05,1.52,2.32,wall);box(-6.21,2.1,.1,.02,.9,1.38,teal);
  cylinder(4.6,1.32,2.2,.055,2.64,bronze);cylinder(4.6,2.67,2.2,.51,.24,glow);
- const backdrop=new T.Group();group.add(backdrop);
+ const backdrop=new T.Group();backdrop.visible=false;group.add(backdrop);
  const skyline=material('#8c9b9f');for(let i=0;i<14;i++){const x=-24+i*3.5,h=2+(i*7%9);box(x,h/2-1.1,-25-(i%3)*3,2.2,h,3,skyline,backdrop);}
  const mountains=material('#677f86');for(let i=0;i<8;i++){const o=new T.Mesh(new T.ConeGeometry(13+(i%3)*5,8+(i%4)*3,5),mountains);o.position.set(-50+i*16,1.5,-61-(i%2)*6);o.rotation.y=i*.7;backdrop.add(o);}
  const lamp=new T.PointLight('#ffc07c',0,23,2);lamp.position.set(4,2.3,1.5);group.add(lamp);
- return {group,setTime(index){const lo=Math.floor(index),hi=Math.min(2,lo+1),mix=index-lo,value=a=>a[lo]+(a[hi]-a[lo])*mix,color=a=>new T.Color(a[lo]).lerp(new T.Color(a[hi]),mix);lamp.intensity=value([0,.25,.9]);glowing.forEach(m=>m.emissiveIntensity=value([.12,.35,1.1]));skyline.color.copy(color(['#8eaaa9','#ae947e','#283c59']));mountains.color.copy(color(['#789997','#8b777a','#25374e']));}};
+ return {group,setInside(value){backdrop.visible=value},setTime(index){const lo=Math.floor(index),hi=Math.min(2,lo+1),mix=index-lo,value=a=>a[lo]+(a[hi]-a[lo])*mix,color=a=>new T.Color(a[lo]).lerp(new T.Color(a[hi]),mix);lamp.intensity=value([0,.25,.9]);glowing.forEach(m=>m.emissiveIntensity=value([.12,.35,1.1]));skyline.color.copy(color(['#8eaaa9','#ae947e','#283c59']));mountains.color.copy(color(['#789997','#8b777a','#25374e']));}};
 };

@@ -316,6 +316,7 @@ const High=(()=>{
  function frame(immediate=false){
   if(!renderer)return;
   if(spatialMode==='interior'){
+   interior.setInside(inside);
    Object.assign(goal,inside?{theta:.12,phi:1.48,r:camera.aspect<1?12:10,tx:0,ty:1.55,tz:-2.6}:{theta:.62,phi:.85,r:fitting(),tx:0,ty:1,tz:0});
    if(immediate)Object.assign(cam,goal);loop();return;
   }
