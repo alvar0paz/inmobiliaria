@@ -60,8 +60,10 @@ Architecture, logos and reference images remain the property of their respective
 
 The sector map loads WebGL as it approaches the viewport and renders only on interaction. Run `node --test tests/sector-map.test.cjs` for projection, landmark selection, language, camera, lazy rendering and WebGL fallback checks. To regenerate its image after editing the geometry, run `python3 scripts/render-sector-map.py`.
 
-## Image quality
+## Render-only imagery
 
-Architectural WebP assets preserve the original pixel dimensions with lossless encoding; do not resize originals or re-encode already compressed derivatives. Magnus uses its full 2560 × 1440 source. Tour textures use clamp wrapping and linear filtering without mipmaps to avoid WebGL 1 downsampling non-power-of-two images. Viewer backing buffers follow screen density up to 3× and refresh on resize.
+All seven architectural and interior images are AI-generated photorealistic conceptual renders, created with the built-in image generation tool. Native PNG outputs are stored in `dist/assets/*-render.png` and used across all three design directions, arrival sequences and tour textures. Team cards use initials, not photographs. Logos and schematic maps are retained. Original references are archived in `reference-assets/`, outside the published directory.
 
-Source limits remain: Pixel’s facade is 648 × 1024, Sparta’s is 357 × 600, and Martín’s portrait is 100 × 100. Higher-resolution originals are needed for crisp enlargement on large/high-density screens; software sharpening cannot recover missing detail.
+Prompts and generation provenance are recorded in `render-prompts.json`. These visualizations are not verified architectural plans; bilingual captions identify them as conceptual AI renders.
+
+Viewer backing buffers follow screen density up to 3×. Clamp wrapping and linear filtering avoid WebGL 1 downsampling; avoid image zoom effects or re-encoding generated files.

@@ -41,15 +41,15 @@ TYPOLOGIES = {
 PROJECTS = [
     {'slug': 'pixel', 'name': 'Pixel', 'domain': 'pixel.com.ec', 'sector': 'La Magdalena', 'address': 'Av. 5 de Junio y Rodrigo de Chávez',
      'floors': 12, 'front': 3, 'layout': ['suite', 'depa2', 'estudio', 'estudio', 'depa3', 'suite'], 'm2_price': 1580,
-     'status': 'construccion', 'progress': 64, 'delivery': '2027-11', 'color': '#e0bd75', 'image': 'pixel-exterior', 'amenities': ['lobby', 'pool'],
+     'status': 'construccion', 'progress': 64, 'delivery': '2027-11', 'color': '#e0bd75', 'image': 'pixel-exterior-render', 'amenities': ['lobby', 'pool'],
      'whatsapp': '+593996775283'},
     {'slug': 'magnus', 'name': 'Magnus', 'domain': 'magnus.alphabuildershq.com', 'sector': 'Quito', 'address': 'Dirección según ficha oficial',
      'floors': 16, 'front': 2, 'layout': ['depa2', 'depa3', 'suite', 'depa2'], 'm2_price': 2050,
-     'status': 'planos', 'progress': 12, 'delivery': '2029-03', 'color': '#b9c6d8', 'image': 'magnus-night', 'amenities': ['lobby', 'rooftop'],
+     'status': 'planos', 'progress': 12, 'delivery': '2029-03', 'color': '#b9c6d8', 'image': 'magnus-night-render', 'amenities': ['lobby', 'rooftop'],
      'whatsapp': '+59325133210'},
     {'slug': 'sparta', 'name': 'Sparta', 'domain': 'sparta.alphabuildershq.com', 'sector': 'Av. Bélgica y Shyris', 'address': 'Av. Bélgica y Shyris',
      'floors': 9, 'front': 3, 'layout': ['suite', 'estudio', 'suite', 'depa2', 'depa2'], 'm2_price': 1820,
-     'status': 'acabados', 'progress': 88, 'delivery': '2027-02', 'color': '#c9a27a', 'image': 'sparta-exterior', 'amenities': ['lobby', 'gym'],
+     'status': 'acabados', 'progress': 88, 'delivery': '2027-02', 'color': '#c9a27a', 'image': 'sparta-exterior-render', 'amenities': ['lobby', 'gym'],
      'whatsapp': '+59325133210'},
 ]
 
@@ -214,7 +214,7 @@ def mid_panel(d):
 
 def high_panel(d):
     from spatial import arrival, toolbar, overlay
-    note = ('La visita usa renders de Pixel en un visor panorámico. La maqueta y el inventario son ilustrativos.', 'The visit uses Pixel renders in a panoramic viewer. The model and inventory are illustrative.') if len(d['projects']) == 1 else ('La visita usa renders de Pixel en un visor panorámico. Los interiores de los otros proyectos se muestran con esas mismas imágenes de referencia. La maqueta y los datos son ilustrativos.', 'The visit uses Pixel renders in a panoramic viewer. Other projects use those same reference interiors. The model and data are illustrative.')
+    note = ('La visita usa renders conceptuales generados con IA inspirados en Pixel en un visor panorámico. La maqueta y el inventario son ilustrativos.', 'The visit uses AI-generated conceptual renders inspired by Pixel in a panoramic viewer. The model and inventory are illustrative.') if len(d['projects']) == 1 else ('La visita usa renders conceptuales generados con IA inspirados en Pixel en un visor panorámico. Los interiores de los otros proyectos se muestran con esas mismas imágenes de referencia. La maqueta y los datos son ilustrativos.', 'The visit uses AI-generated conceptual renders inspired by Pixel in a panoramic viewer. Other projects use those same reference interiors. The model and data are illustrative.')
     return f'''<section class="pf-panel" id="demo-alto" data-panel="alto" role="tabpanel" aria-labelledby="tab-alto">{panel_head('alto', '03', ('ALTO', 'HIGH'), ('Recorre el proyecto<br>antes de que exista.', 'Walk through the project<br>before it exists.'), ('Una maqueta 3D con los proyectos de la red. Gira, acércate, aísla un piso y elige un departamento disponible. Desde ahí entras a la visita virtual del departamento y de las áreas comunes.', 'A 3D model of the projects in the network. Rotate, zoom in, isolate a floor and pick an available apartment. From there you step into the virtual visit of the apartment and the shared spaces.'), [('Dirección de arte propia', 'Own art direction'), ('Portada propia por proyecto', 'Own cover per project'), ('Narrativa con scroll', 'Scroll-driven narrative'), ('2 rondas + pulido', '2 rounds + polish')])}
 <div class="pf-high js-only" data-spatial-mode="model">
 {arrival()}{toolbar()}
