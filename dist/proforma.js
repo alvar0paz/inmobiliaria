@@ -368,13 +368,17 @@ const Tour=(()=>{
 })();
 
 /* ---------- Quote calculator ---------- */
+const quoteMoney=n=>'USD '+n.toLocaleString(en()?'en-US':'es-EC',{minimumFractionDigits:2,maximumFractionDigits:2});
+const quoteVat=Number($('#proforma').dataset.vat);
+const cents=n=>Math.round((n+Number.EPSILON)*100)/100;
 function calcQuote(){Object.keys(TIER_STYLE).forEach(k=>{const v=key=>{const i=$(`[data-price="${k}:${key}"]`),n=parseFloat(i&&i.value);return isNaN(n)?null:n};
-  const set=(key,n)=>{const c=$(`[data-calc="${k}:${key}"]`);if(c)c.textContent=n==null?'—':money(n)};
-  const core=v('core'),site=v('site'),sites=site==null?null:site*15,sub=core==null||sites==null?null:core+sites,tot=sub==null?null:sub*1.15;
-  set('sites',sites);set('subtotal',sub);set('vat',sub==null?null:sub*.15);set('total',tot);set('sign',tot==null?null:tot*.7);set('accept',tot==null?null:tot*.3);
-  const tt=$(`[data-total="${k}"]`);if(tt)tt.innerHTML=tot==null?L('Precio por definir','Price to be confirmed'):`${L('Total con IVA','Total incl. VAT')}<b>${money(tot)}</b>`})}
-$$('[data-price]').forEach(i=>{try{const s=localStorage.getItem('pf-price:'+i.dataset.price);if(s!=null&&i.value==='')i.value=s}catch(e){}
- i.addEventListener('input',()=>{try{localStorage.setItem('pf-price:'+i.dataset.price,i.value)}catch(e){}calcQuote()})});
+  const set=(key,n)=>{const c=$(`[data-calc="${k}:${key}"]`);if(c)c.textContent=n==null?'—':quoteMoney(n)};
+  const core=v('core'),site=v('site'),sites=site==null?null:cents(site*15),sub=core==null||sites==null?null:cents(core+sites),vat=sub==null?null:cents(sub*quoteVat),tot=sub==null?null:cents(sub+vat),sign=tot==null?null:cents(tot*.7);
+  set('sites',sites);set('subtotal',sub);set('vat',vat);set('total',tot);set('sign',sign);set('accept',tot==null?null:cents(tot-sign));
+  set('maintenance_network',v('maintenance')==null?null:cents(v('maintenance')*16));set('hosting_network',v('hosting')==null?null:cents(v('hosting')*16));
+  const tt=$(`[data-total="${k}"]`);if(tt)tt.innerHTML=tot==null?L('Precio por definir','Price to be confirmed'):`${L('Total con IVA','Total incl. VAT')}<b>${quoteMoney(tot)}</b>`});
+  $$('[data-price]').forEach(i=>{const p=$(`[data-print="${i.dataset.price}"]`);if(p)p.textContent=i.value===''?'—':quoteMoney(Number(i.value))})}
+$$('[data-price]').forEach(i=>i.addEventListener('input',calcQuote));
 const pb=$('#print-quote');if(pb)pb.onclick=()=>window.print();
 
 /* ---------- Wiring ---------- */

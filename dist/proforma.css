@@ -247,6 +247,18 @@
 
 /* Quote */
 .pf-quote{border-top:1px solid var(--line)}
+.pf-quote-intro{max-width:850px;font-size:18px;line-height:1.65;color:var(--muted)}
+.pf-contacts{display:grid;grid-template-columns:1fr 1fr;gap:32px;margin:32px 0 42px;padding:24px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.pf-contacts address{display:grid;gap:6px;font-size:16px;font-style:normal;overflow-wrap:anywhere}
+.pf-contacts strong{font-size:18px}.pf-contacts span{color:var(--muted);font-size:14px}
+.pf-contacts a{width:fit-content;text-decoration:underline;text-underline-offset:4px;text-decoration-color:var(--line)}
+.pf-levels thead small{display:block;margin-top:8px;font-size:14px;font-weight:400;text-transform:none;letter-spacing:0;line-height:1.4}
+.pf-terms{display:grid;grid-template-columns:1fr 1fr;gap:32px 48px;margin:40px 0}
+.pf-terms article{border-top:1px solid var(--line);padding-top:24px}
+.pf-terms h3{font:400 28px/1.2 var(--serif);margin-bottom:16px;color:var(--ink)}
+.pf-terms p{font-size:16px;line-height:1.7;color:var(--muted);margin-top:12px}
+.pf-print-value{display:none}.pf-quote .detail-note{font-size:14px;line-height:1.7}
+@media(max-width:760px){.pf-contacts,.pf-terms{grid-template-columns:1fr;gap:24px}.pf-quote-intro{font-size:16px}.pf-terms h3{font-size:25px}}
 .pf-same{display:grid;grid-template-columns:1fr 1.3fr;gap:50px;margin-top:40px;padding-top:30px;border-top:1px solid var(--line)}
 .pf-same b{font-size:12px;letter-spacing:.14em;text-transform:uppercase}
 .pf-same p{color:var(--muted);font-size:14px;margin-top:10px}
@@ -389,3 +401,26 @@ html:has(body.page-proforma){scroll-snap-type:y proximity;scroll-padding-top:72p
 @keyframes pfHeroOut{to{opacity:.15;transform:scale(.94) translateY(40px);filter:blur(3px)}}
 @media(max-width:760px){html:has(body.page-proforma){scroll-padding-top:108px}.pf-hero{min-height:0}}
 @media print{.pf-dots{display:none!important}*{animation:none!important}}
+@media print{
+ @page{size:A4;margin:15mm}
+ html.pf-launching{overflow:visible}
+ .pf-launch,.pf-sound,.pf-hero,.pf-demo,.pf-versus,.footer,.studio-bar,.modal,.dialog,#quote-edit-note{display:none!important}
+ .pf-quote,.pf-reveal{opacity:1!important;transform:none!important;filter:none!important}
+ .pf-quote{padding:0!important;border:0;font-size:10pt}
+ .pf-quote .section-header{margin-bottom:18px;break-after:avoid}
+ .pf-quote h2{font-size:28pt!important;line-height:1.1}
+ .pf-quote .eyebrow{font-size:9pt}
+ .pf-quote-intro{font-size:11pt;line-height:1.45}
+ .pf-contacts{margin:16px 0 22px;padding:12px 0;gap:24px;grid-template-columns:1fr 1fr;break-inside:avoid}
+ .pf-contacts address,.pf-contacts strong{font-size:10pt}.pf-contacts span{font-size:9pt}
+ .pf-scroll{overflow:visible}.pf-levels{min-width:0;width:100%;table-layout:fixed}
+ .pf-levels th,.pf-levels td{font-size:9pt;padding:8px 7px;overflow-wrap:anywhere;color:#111!important;background:white!important}
+ .pf-levels th:first-child{width:37%}.pf-levels thead small{font-size:8pt}
+ .pf-levels tr{break-inside:avoid}.pf-levels thead{display:table-header-group}
+ .pf-money{display:none}.pf-print-value{display:inline;font-variant-numeric:tabular-nums}
+ .pf-row-total{font-weight:700}.pf-divider th{font-weight:700}
+ .pf-same{display:block;margin-top:24px;padding-top:16px;break-inside:avoid}
+ .pf-timeline{margin-top:18px}.pf-timeline li,.pf-timeline b,.pf-same b{font-size:8pt}
+ .pf-terms{display:block;margin:24px 0}.pf-terms article{break-inside:avoid;padding:14px 0}
+ .pf-terms h3{font-size:14pt;margin-bottom:8px}.pf-terms p,.pf-quote .detail-note,.pf-same p{font-size:10pt;line-height:1.45}
+}
