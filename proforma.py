@@ -8,11 +8,12 @@ import random
 from html import escape
 from build import ROOT, t, a, btn, head, footer, proposal
 
-# Commercial offer in USD without VAT. Unit availability elsewhere on the page is sample data.
+# Implementation amounts (core and site) include VAT. Additional and recurring services exclude VAT.
+# Unit availability elsewhere on the page is sample data.
 PRICING = {
-    'basico': {'core': 21000, 'site': 1000, 'new_site': 1200, 'maintenance': 75, 'hosting': 200, 'hourly': 65},
-    'medio': {'core': 24000, 'site': 1200, 'new_site': 1500, 'maintenance': 75, 'hosting': 200, 'hourly': 65},
-    'alto': {'core': 27000, 'site': 1400, 'new_site': 1800, 'maintenance': 75, 'hosting': 200, 'hourly': 65},
+    'basico': {'core': 24990, 'site': 1000, 'new_site': 1200, 'maintenance': 75, 'hosting': 200, 'hourly': 65},
+    'medio': {'core': 28900, 'site': 1200, 'new_site': 1500, 'maintenance': 75, 'hosting': 200, 'hourly': 65},
+    'alto': {'core': 28990, 'site': 1400, 'new_site': 1800, 'maintenance': 75, 'hosting': 200, 'hourly': 65},
 }
 VAT = 0.15
 
@@ -20,10 +21,10 @@ VAT = 0.15
 def quote_values(tier):
     p = PRICING[tier]
     sites = p['site'] * 15
-    subtotal = p['core'] + sites
-    total = round(subtotal * (1 + VAT), 2)
-    return {**p, 'sites': sites, 'subtotal': subtotal, 'vat': round(subtotal * VAT, 2),
-            'total': total, 'sign': round(total * .7, 2), 'accept': round(total * .3, 2),
+    total = round(p['core'] + sites, 2)
+    subtotal = round(total / (1 + VAT), 2)
+    return {**p, 'sites': sites, 'subtotal': subtotal, 'vat': round(total - subtotal, 2),
+            'total': total, 'sign': round(total * .7, 2), 'accept': round(total - round(total * .7, 2), 2),
             'maintenance_network': p['maintenance'] * 16, 'hosting_network': p['hosting'] * 16}
 
 
@@ -105,19 +106,19 @@ def availability_table(p):
 
 
 TIERS = [
-    ('basico', 'essential', '01', ('BÁSICO', 'BASIC'), ('Esencial y funcionando', 'Essential and working'),
-     ('Kit de componentes adaptado a la marca, todas las reglas del brief activas y el bot de WhatsApp respondiendo con los datos oficiales.',
-      'A component kit adapted to the brand, every rule in the brief switched on and the WhatsApp bot answering with official data.'),
+    ('basico', 'essential', '01', ('BÁSICO', 'BASIC'), ('Toda la red, lista para operar', 'The whole network, ready to run'),
+     ('La base completa para operar los 16 sitios: identidad de marca, gestor central, disponibilidad y WhatsApp conectados. Una inversión enfocada en publicar, mantener la información al día y recibir consultas.',
+      'The complete foundation for all 16 sites: brand identity, central content management, availability and connected WhatsApp. An investment focused on publishing, keeping information current and receiving enquiries.'),
      [('Gestor central: un dato, un solo lugar', 'Central manager: one fact, one place'), ('Bot de WhatsApp conectado al feed', 'WhatsApp bot fed by the project feed'),
       ('Precios vencidos y no comercializables, automáticos', 'Expired prices and non-sale rules, automatic')]),
-    ('medio', 'editorial', '02', ('MEDIO', 'MID'), ('Edificios en 2D', 'Buildings in 2D'),
-     ('Diseño a medida en Figma y un selector 2D: cada edificio en fachada y en planta, con cada unidad y su estado.',
-      'Bespoke Figma design and a 2D selector: every building in elevation and plan, showing each unit and its status.'),
+    ('medio', 'editorial', '02', ('MEDIO', 'MID'), ('Diseño propio. Decisiones en 2D.', 'Custom design. Clear choices in 2D.'),
+     ('Todo lo de Básico, con diseño a medida y una presentación editorial que da identidad a cada proyecto. El selector de fachada y planta permite entender la ubicación, superficie y disponibilidad de cada unidad antes de consultar.',
+      'Everything in Basic, with bespoke design and an editorial presentation that gives each project its own identity. The elevation and floor-plan selector helps buyers understand each unit’s location, area and availability before enquiring.'),
      [('Todo lo del nivel básico', 'Everything in Basic'), ('Fachada y planta interactivas por proyecto', 'Interactive elevation and floor plan per project'),
       ('Transiciones y microinteracciones', 'Transitions and micro-interactions')]),
-    ('alto', 'immersive', '03', ('ALTO', 'HIGH'), ('3D y visitas virtuales', '3D and virtual visits'),
-     ('La experiencia más completa: todo el nivel Medio, maqueta 3D con disponibilidad del gestor y visitas virtuales con los activos entregados.',
-      'The most complete experience: everything in Mid, a 3D model with manager-fed availability and virtual visits using supplied assets.'),
+    ('alto', 'immersive', '03', ('ALTO', 'HIGH'), ('La experiencia completa, en 3D', 'The complete experience, in 3D'),
+     ('Todo lo de Medio, con dirección de arte, maquetas 3D y visitas virtuales integradas. Una experiencia para explorar el edificio, elegir una unidad y recorrer sus espacios con los activos entregados, conectada al mismo gestor central.',
+      'Everything in Mid, with art direction, 3D models and integrated virtual visits. An experience for exploring the building, choosing a unit and touring its spaces using supplied assets, connected to the same central content system.'),
      [('Todo lo del nivel medio', 'Everything in Mid'), ('Maqueta 3D de la red de proyectos', '3D model of the project network'),
       ('Visitas virtuales: departamentos y áreas comunes', 'Virtual visits: apartments and shared spaces')]),
 ]
@@ -147,9 +148,9 @@ PRICE_ROWS = [
     ('core', ('Sistema central, sitio de marca y plantilla de proyecto', 'Central system, brand site and project template'), 'input'),
     ('site', ('Precio por sitio de proyecto', 'Price per project site'), 'input'),
     ('sites', ('15 sitios de proyecto, incluida la migración de pixel.com.ec', '15 project sites, including the pixel.com.ec migration'), 'calc'),
-    ('subtotal', ('Total sin IVA', 'Total excluding VAT'), 'calc'),
-    ('vat', ('IVA 15%', 'VAT 15%'), 'calc'),
-    ('total', ('Total con IVA', 'Total including VAT'), 'total'),
+    ('total', ('Inversión total · IVA incluido', 'Total investment · VAT included'), 'total'),
+    ('subtotal', ('Base sin IVA, incluida en el total', 'Net amount included in the total'), 'calc'),
+    ('vat', ('IVA 15%, incluido en el total', 'VAT 15%, included in the total'), 'calc'),
     ('sign', ('Pago a la firma (70%) · jue 8 oct 2026', 'Payment on signing (70%) · Thu 8 Oct 2026'), 'calc'),
     ('accept', ('Pago a la aceptación final (30%) · mar 8 dic 2026', 'Payment on final acceptance (30%) · Tue 8 Dec 2026'), 'calc'),
     ('new_site', ('Sitio nuevo después del lanzamiento · sin IVA', 'New site after launch · excluding VAT'), 'input'),
@@ -174,7 +175,7 @@ def hero():
         cards += (f'<article class="pf-tier pf-reveal" data-tier-card="{key}"><div class="pf-tier-top"><span>{n}</span>{t(*level, "small")}</div>{t(*name, "h3")}{t(*desc, "p")}'
                   f'<ul>{items}</ul><div class="pf-tier-foot"><span class="pf-tier-total" data-total="{key}">{t("Total con IVA", "Total incl. VAT")}<b>{quote_usd(quote_values(key)["total"])}</b></span>'
                   f'<a class="button" href="#demo-{key}" data-tier="{key}">{t("Ver demo", "View demo")}</a></div></article>')
-    return f'''<section class="pf-hero" id="inicio"><div class="pf-hero-copy"><div class="eyebrow">{t('PROFORMA DEMO · RED WEB ALPHA BUILDERS','QUOTE DEMO · ALPHA BUILDERS WEB NETWORK')}</div>{t('Tres niveles.<br>Una misma <em>red.</em>','Three levels.<br>One <em>network.</em>','h1')}<p class="pf-lead">{t('Los tres niveles cubren los 18 requisitos del brief. Medio añade selección en 2D; Alto suma 3D y visitas virtuales. Lanzamiento objetivo: 2 de diciembre de 2026, sujeto a las condiciones de la proforma.','All three tiers cover the 18 brief requirements. Mid adds 2D selection; High adds 3D and virtual visits. Target launch: 2 December 2026, subject to the quote terms.')}</p><dl class="pf-facts"><div><dt>{t('Sitios','Sites')}</dt><dd>16</dd></div><div><dt>{t('Lanzamiento','Launch')}</dt><dd>{t('2 dic 2026','2 Dec 2026')}</dd></div><div><dt>{t('Pago','Payment')}</dt><dd>70 / 30</dd></div></dl></div><div class="pf-tiers">{cards}</div></section>'''
+    return f'''<section class="pf-hero" id="inicio"><div class="pf-hero-copy"><div class="eyebrow">{t('PROFORMA DEMO · RED WEB ALPHA BUILDERS','QUOTE DEMO · ALPHA BUILDERS WEB NETWORK')}</div>{t('Tres niveles.<br>Una misma <em>red.</em>','Three levels.<br>One <em>network.</em>','h1')}<p class="pf-lead">{t('Una inversión para toda la red, con IVA incluido. Los tres niveles cubren los 18 requisitos del brief: Básico organiza la operación; Medio añade diseño a medida y selección en 2D; Alto completa la experiencia con 3D y visitas virtuales. Lanzamiento objetivo: 2 de diciembre de 2026, sujeto a las condiciones de la proforma.','One investment for the entire network, with VAT included. All three tiers cover the 18 brief requirements: Basic brings operations together; Mid adds bespoke design and 2D selection; High completes the experience with 3D and virtual visits. Target launch: 2 December 2026, subject to the quote terms.')}</p><dl class="pf-facts"><div><dt>{t('Sitios','Sites')}</dt><dd>16</dd></div><div><dt>{t('Lanzamiento','Launch')}</dt><dd>{t('2 dic 2026','2 Dec 2026')}</dd></div><div><dt>{t('Pago','Payment')}</dt><dd>70 / 30</dd></div></dl></div><div class="pf-tiers">{cards}</div></section>'''
 
 
 def versus():
@@ -281,10 +282,10 @@ def quote():
     ]
     conditions = ''.join(f'<article><h3>{t(*title)}</h3>' + ''.join(f'<p>{t(*paragraph)}</p>' for paragraph in paragraphs) + '</article>' for title, paragraphs in terms)
     timeline = ''.join(f'<li><b>{d}</b>{t(*label)}</li>' for d, label in [('12–14 oct', ('Plan técnico', 'Technical plan')), ('15–28 oct', ('Wireframes y gestor', 'Wireframes and manager')), ('22 oct–5 nov', ('Diseño y piloto 2D/3D', 'Design and 2D/3D pilot')), ('6–24 nov', ('Sitios e integraciones', 'Sites and integrations')), ('25 nov–1 dic', ('Pruebas y aceptación', 'Testing and acceptance')), ('2 dic', ('Lanzamiento conjunto', 'Joint launch')), ('8 dic', ('Aceptación final', 'Final acceptance'))])
-    return f'''<section class="section pf-quote pf-reveal" id="proforma" data-vat="{VAT}"><div class="section-header"><div><div class="eyebrow">PF-AB-2026-001 · {t('REVISIÓN 2 · 30 SEPTIEMBRE 2026','REVISION 2 · 30 SEPTEMBER 2026')}</div>{t('Proforma del<br>ecosistema web.','Web ecosystem<br>quotation.','h2')}</div><button class="text-link js-only" id="print-quote">{t('Imprimir o guardar PDF','Print or save as PDF')}</button></div>
+    return f'''<section class="section pf-quote pf-reveal" id="proforma" data-vat="{VAT}"><div class="section-header"><div><div class="eyebrow">PF-AB-2026-001 · {t('REVISIÓN 3 · 1 OCTUBRE 2026','REVISION 3 · 1 OCTOBER 2026')}</div>{t('Proforma del<br>ecosistema web.','Web ecosystem<br>quotation.','h2')}</div><button class="text-link js-only" id="print-quote">{t('Imprimir o guardar PDF','Print or save as PDF')}</button></div>
 <p class="pf-quote-intro">{t('Para Alpha Builders, atención de Juan José Vargas Flores. Un sitio de marca y 15 sitios de proyecto. Elige un nivel: Básico, Medio con 2D o Alto con 2D, 3D y visitas virtuales.','For Alpha Builders, attention Juan José Vargas Flores. One brand site and 15 project sites. Choose a tier: Basic, Mid with 2D or High with 2D, 3D and virtual visits.')}</p>
-{contacts}<div class="pf-scroll"><table class="pf-table pf-levels"><caption class="sr-only">{t('Alcance y precio de los tres niveles','Scope and price of the three tiers')}</caption><thead><tr><th scope="col">{t('Alcance e inversión','Scope and investment')}</th>{head_cells}</tr></thead><tbody>{level_rows}</tbody><tbody class="pf-prices"><tr class="pf-divider"><th colspan="4">{t('Implementación · USD · se contrata un solo nivel','Implementation · USD · choose one tier')}</th></tr>{price_rows}</tbody></table></div>
-<p class="detail-note">{t('El precio por sitio es informativo y ya está incluido en el lote de 15. El total de implementación incluye las experiencias de su nivel. Los adicionales y recurrentes se contratan por separado y no se suman a ese total.','The per-site price is informational and already included in the batch of 15. Implementation includes the experiences of the selected tier. Additional and recurring services are contracted separately and are not included in that total.')}</p>
+{contacts}<div class="pf-scroll"><table class="pf-table pf-levels"><caption class="sr-only">{t('Alcance y precio de los tres niveles','Scope and price of the three tiers')}</caption><thead><tr><th scope="col">{t('Alcance e inversión','Scope and investment')}</th>{head_cells}</tr></thead><tbody>{level_rows}</tbody><tbody class="pf-prices"><tr class="pf-divider"><th colspan="4">{t('Implementación · USD con IVA incluido · se contrata un solo nivel','Implementation · USD including VAT · choose one tier')}</th></tr>{price_rows}</tbody></table></div>
+<p class="detail-note">{t('Los importes de implementación incluyen IVA; el desglose de base e impuesto es informativo y no se suma de nuevo. El precio por sitio ya está incluido en el lote de 15. Cada total cubre las experiencias de su nivel. Los adicionales y recurrentes se contratan por separado y no se suman a ese total.','Implementation amounts include VAT; the net and tax breakdown is informational and is not added again. The per-site price is already included in the batch of 15. Each total covers the experiences of its tier. Additional and recurring services are contracted separately and are not included in that total.')}</p>
 <p class="detail-note js-only" id="quote-edit-note">{t('Puedes ajustar los importes para simular una alternativa. Al recargar se restauran los valores de esta oferta.','You can adjust amounts to simulate an alternative. Reloading restores this offer’s values.')}</p>
 <div class="pf-same"><div><b>{t('Calendario de referencia 2026','Reference schedule 2026')}</b><p>{t('Sujeto a confirmar equipo y activos al inicio. Las condiciones de entrega se detallan a continuación.','Subject to confirmed staffing and assets at kickoff. Delivery terms are detailed below.')}</p></div><ol class="pf-timeline">{timeline}</ol></div>
 <div class="pf-terms">{conditions}</div>

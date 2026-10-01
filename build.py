@@ -9,6 +9,7 @@ def btn(es,en,cls='',extra=''): return f'<button class="{cls}" {extra}>{t(es,en)
 def head(page='home'):
  style_version=sha256((ROOT/'styles.css').read_bytes()).hexdigest()[:10]
  extra_head='<link rel="stylesheet" href="/proforma.css"><script src="/vendor/three.min.js" defer></script><script src="/viewer-controls.js" defer></script><link rel="stylesheet" href="/spatial.css"><script src="/spatial-scene.js" defer></script><script src="/proforma.js" defer></script>' if page in ('proforma','project') else ''
+ extra_head=extra_head.replace('/proforma.js', '/proforma.js?v='+sha256((ROOT/'proforma.js').read_bytes()).hexdigest()[:10])
  if page=='project': extra_head+='<link rel="stylesheet" href="/sector-map.css"><script src="/sector-scene.js" defer></script><script src="/sector-map.js" defer></script>'
  title={'home':'Alpha Builders · Concept Studio','project':'Pixel · Alpha Builders · Concept Studio','about':'Andean Software Lab · Equipo de la propuesta','proforma':'Proforma · Tres niveles · Alpha Builders · Concept Studio'}.get(page,'Alpha Builders · Concept Studio')
  description='Andean Software Lab: desarrollo de software, producto e integraciones para la propuesta digital de Alpha Builders, por Martín Vélez Falconí y Alvaro Paz.' if page=='about' else 'Proforma demostrativa en tres niveles: bot de WhatsApp y gestor central, edificios en 2D, y modelos 3D con visitas virtuales.' if page=='proforma' else 'Propuesta conceptual para Alpha Builders: tres direcciones visuales y una experiencia de proyecto.'

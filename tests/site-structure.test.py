@@ -17,7 +17,7 @@ class Page(HTMLParser):
         a=dict(attrs)
         if a.get('id'): self.ids.append(a['id'])
         if a.get('data-direction'): self.directions.append(a['data-direction'])
-        if tag=='script' and a.get('src'): self.scripts.append(a['src'])
+        if tag=='script' and a.get('src'): self.scripts.append(urlsplit(a['src']).path)
         if tag=='script' and a.get('id')=='demo-data': self.in_feed=True
         for key in ('src','href'):
             if key in a: self.references.append(a[key])
