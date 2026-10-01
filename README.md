@@ -53,3 +53,9 @@ The quote page uses illustrative units, prices, statuses and dates (labelled as 
 This is a presentation prototype with four pages, not the full production platform. The optional journey uses architectural images and transitions; it is not a navigable 3D model or a verified representation of circulation inside the building. The map is a reference image with a link to Google Maps. There is no CMS or backend, and production prices, availability and project status require approved data.
 
 Architecture, logos and reference images remain the property of their respective rights holders. They are included for private proposal review; see `asset-manifest.json`. The profile portraits come from the LinkedIn profiles supplied for the About us page.
+
+## Image quality
+
+Architectural WebP assets preserve the original pixel dimensions with lossless encoding; do not resize originals or re-encode already compressed derivatives. Magnus uses its full 2560 × 1440 source. Tour textures use clamp wrapping and linear filtering without mipmaps to avoid WebGL 1 downsampling non-power-of-two images. Viewer backing buffers follow screen density up to 3× and refresh on resize.
+
+Source limits remain: Pixel’s facade is 648 × 1024, Sparta’s is 357 × 600, and Martín’s portrait is 100 × 100. Higher-resolution originals are needed for crisp enlargement on large/high-density screens; software sharpening cannot recover missing detail.
