@@ -12,7 +12,7 @@ from build import ROOT, t, a, btn, head, footer, proposal
 # Unit availability elsewhere on the page is sample data.
 PRICING = {
     'basico': {'core': 24990, 'site': 1000, 'new_site': 1200, 'maintenance': 75, 'hosting': 200, 'hourly': 65},
-    'medio': {'core': 28900, 'site': 1200, 'new_site': 1500, 'maintenance': 75, 'hosting': 200, 'hourly': 65},
+    'medio': {'core': 28990, 'site': 1200, 'new_site': 1500, 'maintenance': 75, 'hosting': 200, 'hourly': 65},
     'alto': {'core': 28990, 'site': 1400, 'new_site': 1800, 'maintenance': 75, 'hosting': 200, 'hourly': 65},
 }
 VAT = 0.15
