@@ -30,6 +30,7 @@ Example: <http://127.0.0.1:4173/nosotros/?style=immersive&lang=es>.
 | `build.py` | Page templates and bilingual content; generates the HTML pages. |
 | `proforma.py` | Quote page template, sample unit data and the `PRICING` values per level. |
 | `dist/proforma.css`, `dist/proforma.js` | Quote page styles, demos, launch screen and Web Audio sound. |
+| `dist/viewer-controls.js` | Shared pointer, pinch, wheel and keyboard controls for the 3D model and virtual visit. |
 | `dist/vendor/three.min.js` | three.js r128 (MIT), served locally so the 3D works offline. |
 | `dist/styles.css` | Shared styles and the three visual directions. |
 | `dist/app.js` | Language and style switching, dialogs and guided journey. |
@@ -39,6 +40,8 @@ Example: <http://127.0.0.1:4173/nosotros/?style=immersive&lang=es>.
 | `.openai/hosting.json` | Existing static hosting configuration. |
 
 The complete `dist/` directory is tracked intentionally. Edit the CSS and JavaScript there directly; edit HTML through `build.py` and regenerate it. Publish `dist/` to a static host that supports directory index pages.
+
+Run the viewer gesture regression checks with `node --test tests/viewer-controls.test.cjs` (Node 18+). In the browser, check network/building selection, floor isolation, availability filters, apartment picking, the 2D/3D links, and tour navigation at desktop and mobile widths. The camera moves only on input; clicking a canvas enables wheel zoom, and Escape releases it. Floor controls appear only after selecting a building. Tour image failures show a retry action.
 
 ## Concept scope
 

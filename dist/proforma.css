@@ -190,60 +190,89 @@
 .pf-unit-empty{color:var(--muted);font-size:14px}
 .pf-status{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600}.pf-status i{width:9px;height:9px;border-radius:50%}
 
-/* Level 3: 3D + virtual visit */
+/* Level 3: model and virtual visit. Keep controls outside the moving scene. */
 .pf-high{display:none}
-.pf-3d{height:min(78svh,720px);min-height:520px;cursor:grab;touch-action:none}
-.pf-3d.dragging{cursor:grabbing}
-.pf-3d canvas,.pf-tour canvas{display:block;width:100%;height:100%}
-.pf-3d-top{position:absolute;top:16px;left:16px;right:16px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;pointer-events:none}
-.pf-3d-top>*{pointer-events:auto}
-.pf-seg{display:flex;gap:6px;flex-wrap:wrap}
-.pf-3d-tools{position:absolute;left:16px;bottom:16px;display:grid;gap:12px;background:#0e120fd9;backdrop-filter:blur(8px);border:1px solid var(--stage-line);padding:14px 16px;font-size:12px;color:var(--stage-muted);width:250px}
-.pf-3d-tools label{display:grid;gap:6px}
-.pf-3d-tools output{color:var(--gold);font-weight:600}
-.pf-3d-tools input[type=range]{accent-color:var(--gold)}
-.pf-3d-tools .pf-switch{display:flex;color:var(--stage-ink)}
-.pf-3d>.pf-legend{position:absolute;right:16px;bottom:16px;margin:0;background:#0e120fd9;padding:10px 14px;border:1px solid var(--stage-line)}
-.pf-3d-hint{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);font-size:11px;color:var(--stage-muted);letter-spacing:.06em;pointer-events:none;white-space:nowrap}
+.pf-high [hidden]{display:none!important}
+.pf-viewer-toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.pf-viewer-toolbar h3{font:400 30px/1.15 var(--serif)}
+.pf-seg,.pf-tour-actions{display:flex;gap:6px;flex-wrap:wrap}
+.pf-high .pf-chip{min-height:44px}
+.pf-high button:disabled{opacity:.35;cursor:not-allowed}
+.pf-high :focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+.pf-model-layout{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:16px;align-items:start}
+.pf-3d{height:620px;min-height:420px;cursor:grab;overflow:hidden}
+.pf-3d.dragging,.pf-tour.dragging{cursor:grabbing}
+.pf-3d canvas,.pf-tour canvas{display:block;width:100%;height:100%;touch-action:none;cursor:inherit}
+.pf-3d canvas:focus-visible,.pf-tour canvas:focus-visible{outline-offset:-3px}
+.pf-camera-tools{position:absolute;bottom:12px;left:12px;right:12px;display:flex;justify-content:center;gap:6px;z-index:3;pointer-events:none}
+.pf-camera-tools button{background:var(--stage);color:var(--stage-ink);border-color:var(--stage-line);pointer-events:auto;min-width:44px}
+.pf-camera-tools button:hover{border-color:var(--gold)}
+.pf-model-sidebar{min-width:0;background:color-mix(in srgb,var(--bg) 95%,var(--ink));border:1px solid var(--line);padding:18px}
+.pf-3d-tools{display:grid;gap:12px;font-size:13px;color:var(--muted)}
+.pf-3d-tools label{display:flex;justify-content:space-between;gap:8px;color:var(--ink)}
+.pf-3d-tools output{color:var(--accent);font-weight:600}
+.pf-floor-filter{display:grid;gap:8px}
+.pf-floor-controls{display:grid;grid-template-columns:44px minmax(0,1fr) 44px;gap:10px;align-items:center}
+.pf-floor-controls input{width:100%;min-width:0;accent-color:var(--accent);height:44px;cursor:pointer}
+.pf-3d-tools .pf-switch{justify-content:flex-start;align-items:center;min-height:34px;gap:10px}
+.pf-3d-tools input[type=checkbox]{width:18px;height:18px;accent-color:var(--accent)}
+.pf-3d-tools select{width:100%;min-width:0;min-height:44px;background:var(--bg);color:var(--ink);border:1px solid var(--line);padding:8px;font:inherit}
+#selection3d-status{font-size:12px;line-height:1.6;min-height:3.2em}
+.pf-model-sidebar .pf-legend{margin:18px 0 0;padding-top:16px;border-top:1px solid var(--line);gap:10px;font-size:11px;flex-wrap:wrap}
+.pf-model-sidebar .pf-unit{position:relative;border:0;border-top:1px solid var(--line);margin-top:18px;padding:22px 0 0;min-height:0}
+.pf-model-sidebar .pf-unit dl{grid-template-columns:1fr 1fr;gap:14px 10px}
+.pf-model-sidebar .pf-unit dd{margin-top:4px}
+.pf-model-sidebar .pf-unit .close{position:absolute;top:8px;right:-8px;width:40px;height:40px;font-size:24px}
+.pf-model-sidebar .pf-unit .pf-level{padding-right:24px;display:block;font-size:10px}
+.pf-model-sidebar .pf-unit .pf-actions{gap:8px}
+.pf-model-sidebar .pf-unit .button{flex:1;padding:10px;white-space:nowrap}
+.pf-viewer-help{font-size:12px;line-height:1.7;color:var(--muted);margin:12px 0 0;max-width:860px}
 .pf-3d-labels{position:absolute;inset:0;pointer-events:none;overflow:hidden}
 .pf-3d-label{position:absolute;transform:translate(-50%,-100%);pointer-events:auto;text-align:center;white-space:nowrap}
-.pf-3d-label button{display:block;background:#0e120fe6;border:1px solid var(--stage-line);color:var(--stage-ink);padding:7px 12px;font-size:12px;transition:border-color .2s}
+.pf-3d-label button{display:block;min-height:44px;background:#0e120fe6;border:1px solid var(--stage-line);color:var(--stage-ink);padding:7px 12px;font-size:12px}
 .pf-3d-label button:hover{border-color:var(--gold)}
 .pf-3d-label button b{font:17px var(--serif);display:block}
 .pf-3d-label button small{color:var(--gold)}
 .pf-3d-label:after{content:'';display:block;width:1px;height:22px;background:linear-gradient(var(--gold),transparent);margin:0 auto}
-.pf-3d-label.amenity button{border-radius:30px;padding:6px 12px 6px 8px;display:flex;align-items:center;gap:7px}
-.pf-3d-label.amenity button:before{content:'';width:18px;height:18px;border-radius:50%;background:var(--gold);box-shadow:0 0 0 5px #d5bc7c33;animation:pfPulse 2s infinite}
-@keyframes pfPulse{50%{box-shadow:0 0 0 9px #d5bc7c00}}
-.pf-3d-tip{position:absolute;pointer-events:none;background:#0e120fee;border:1px solid var(--stage-line);padding:6px 10px;font-size:12px;transform:translate(12px,12px);white-space:nowrap;z-index:3}
-.pf-unit-float{position:absolute;top:70px;right:16px;width:300px;background:#0e120fee;backdrop-filter:blur(10px);border-color:var(--stage-line);color:var(--stage-ink)}
-.pf-unit-float dt{color:var(--stage-muted)}
-.pf-unit-float .close{position:absolute;top:8px;right:8px;color:var(--stage-muted)}
-.pf-unit-float .button.ghost{color:var(--stage-ink);border-color:var(--stage-line)}
-.pf-3d-fallback{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:30px;color:var(--stage-muted)}
-
-.pf-tour{margin-top:16px;height:min(70svh,620px);min-height:420px;cursor:grab;touch-action:none}
-.pf-tour.dragging{cursor:grabbing}
-.pf-tour-fade{position:absolute;inset:0;background:#0b0f0c;opacity:0;pointer-events:none;transition:opacity .45s}
-.pf-tour-fade.on{opacity:1}
-.pf-tour-caption{position:absolute;left:24px;bottom:24px;max-width:430px;pointer-events:none;text-shadow:0 2px 20px #000a}
-.pf-tour-caption small{font-size:11px;letter-spacing:.16em;color:var(--gold);text-transform:uppercase}
-.pf-tour-caption h3{font:400 38px/1.1 var(--serif);margin:6px 0}
-.pf-tour-caption p{font-size:14px;color:#d8dccf}
-.pf-tour:after{content:'';position:absolute;inset:50% 0 0;background:linear-gradient(0deg,#0b0f0ccc,transparent);pointer-events:none}
-.pf-tour>*{z-index:1}
-.pf-tour-nav{position:absolute;top:16px;left:16px;display:flex;flex-direction:column;gap:6px;z-index:2}
-.pf-tour-nav span{font-size:10px;letter-spacing:.16em;color:var(--stage-muted);margin:6px 0 0 2px}
+.pf-3d-tip{position:absolute;pointer-events:none;background:#0e120fee;color:var(--stage-ink);border:1px solid var(--stage-line);padding:6px 10px;font-size:12px;max-width:calc(100% - 16px);z-index:4}
+.pf-3d-fallback{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:30px;color:var(--stage-muted);background:var(--stage);z-index:5}
+.pf-tour-shell{margin-top:48px;padding-top:32px;border-top:1px solid var(--line);scroll-margin-top:160px}
+.pf-tour{height:510px;min-height:360px;cursor:grab;overflow:hidden}
+.pf-tour-fade{position:absolute;inset:0;background:#0b0f0c;opacity:0;pointer-events:none;transition:opacity .15s}
+.pf-tour-fade.on{opacity:.85}
+.pf-tour-nav{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
 .pf-tour-nav button{text-align:left}
+.pf-tour-info{display:flex;justify-content:space-between;align-items:end;gap:24px;margin-top:20px}
+.pf-tour-caption{max-width:660px}
+.pf-tour-caption small{font-size:10px;letter-spacing:.12em;color:var(--accent);text-transform:uppercase}
+.pf-tour-caption h3{font:400 32px/1.15 var(--serif);margin:8px 0}
+.pf-tour-caption p{font-size:14px;color:var(--muted)}
 .pf-tour-hotspots{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:2}
-.pf-hot{position:absolute;transform:translate(-50%,-50%);pointer-events:auto;display:flex;align-items:center;gap:8px;background:none;color:#fff;font-size:13px;text-shadow:0 1px 8px #000}
-.pf-hot i{width:34px;height:34px;border-radius:50%;border:2px solid #fff;display:grid;place-items:center;background:#ffffff26;backdrop-filter:blur(4px);font-style:normal;font-size:14px;animation:pfPulseW 2.2s infinite}
-@keyframes pfPulseW{0%{box-shadow:0 0 0 0 #ffffff80}70%{box-shadow:0 0 0 14px #ffffff00}}
-.pf-hot span{background:#0e120fcc;padding:4px 9px;opacity:0;transform:translateX(-4px);transition:.2s}
+.pf-hot{position:absolute;transform:translate(-22px,-50%);pointer-events:auto;display:flex;align-items:center;gap:8px;background:none;color:#fff;font-size:13px;text-shadow:0 1px 8px #000}
+.pf-hot i{width:44px;height:44px;flex:none;border-radius:50%;border:2px solid #fff;display:grid;place-items:center;background:#0e120f80;backdrop-filter:blur(4px);font-style:normal;font-size:16px}
+.pf-hot span{background:#0e120fcc;padding:4px 9px;opacity:0;transform:translateX(-4px);transition:.2s;pointer-events:none}
 .pf-hot:hover span,.pf-hot:focus-visible span{opacity:1;transform:none}
-.pf-tour-mini{position:absolute;right:16px;top:16px;width:150px;z-index:2;background:#0e120fd9;border:1px solid var(--stage-line);padding:10px}
-.pf-tour-mini svg{display:block;width:100%}
-.pf-tour-real{position:absolute;right:16px;bottom:18px;font-size:12px;color:var(--stage-ink);border-bottom:1px solid currentColor;z-index:2}
+.pf-tour-real{font-size:13px;border-bottom:1px solid currentColor;white-space:nowrap}
+.pf-viewer-status{position:absolute;top:40%;left:8%;right:8%;padding:16px;background:#0e120fee;color:var(--stage-ink);text-align:center;z-index:4;font-size:14px}
+.pf-tour-retry{position:absolute;top:65%;left:50%;transform:translateX(-50%);z-index:4;background:var(--stage);color:var(--stage-ink)}
+@media(max-width:1000px){.pf-model-layout{grid-template-columns:minmax(0,1fr) 270px}.pf-model-sidebar{padding:14px}.pf-3d{height:560px}}
+@media(max-width:760px){
+ .pf-model-layout{grid-template-columns:minmax(0,1fr)}
+ .pf-3d{height:480px;min-height:0}
+ .pf-model-sidebar{padding:18px}
+ .pf-camera-tools{gap:5px;left:8px;right:8px;bottom:8px}
+ .pf-camera-tools .pf-chip{padding:8px 10px;font-size:12px}
+ .pf-viewer-toolbar{gap:10px}
+ .pf-viewer-toolbar .pf-seg{width:100%;display:grid;grid-template-columns:repeat(3,1fr)}
+ .pf-viewer-toolbar .pf-seg .pf-chip{padding:8px 4px;font-size:11px}
+ .pf-tour{height:420px;min-height:0}
+ .pf-tour-nav{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+ .pf-tour-nav .pf-chip{padding:8px 10px;font-size:12px}
+ .pf-tour-info{display:block}
+ .pf-tour-caption h3{font-size:28px}
+ .pf-tour-real{display:inline-block;margin-top:16px;white-space:normal}
+ .pf-tour-shell{scroll-margin-top:190px}
+}
 
 /* Quote */
 .pf-quote{border-top:1px solid var(--line)}
@@ -297,19 +326,6 @@
  .pf-2d{grid-template-columns:1fr}
  .pf-elev svg{max-height:460px}
  .pf-unit dl{grid-template-columns:repeat(2,auto)}
- .pf-3d{height:78svh;min-height:560px}
- .pf-3d-tools{left:10px;right:10px;bottom:10px;width:auto;grid-template-columns:1fr auto;align-items:end;padding:10px 12px}
- .pf-3d>.pf-legend{top:auto;bottom:112px;right:10px;left:10px;justify-content:center;font-size:11px;gap:12px;padding:8px}
- .pf-3d-hint{display:none}
- .pf-3d-top{top:10px;left:10px;right:10px}
- .pf-unit-float{left:10px;right:10px;width:auto;top:auto;bottom:10px;z-index:4}
- .pf-tour{height:70svh;min-height:480px}
- .pf-tour-nav{flex-direction:row;flex-wrap:wrap;right:10px;left:10px;top:10px}
- .pf-tour-nav span{display:none}
- .pf-tour-nav .pf-chip{font-size:11px;padding:6px 10px}
- .pf-tour-mini{display:none}
- .pf-tour-caption{left:16px;right:16px;bottom:48px}.pf-tour-caption h3{font-size:28px}
- .pf-tour-real{left:16px;right:auto;bottom:16px}
  .pf-timeline{grid-template-columns:1fr 1fr}
  .pf-table th,.pf-table td{padding:11px 10px}
 }
@@ -367,14 +383,13 @@ html:not(.js) .pf-sound{display:none!important}
 .pf-out[data-out=status]{grid-column:1 / -1}
 .pf-2d{align-items:start}
 @media(max-width:760px){.pf-sound{right:12px;bottom:12px;padding:10px;font-size:0;gap:0}.pf-sound .pf-eq{height:14px}}
-@media(max-width:760px){.pf-3d-tools{right:58px}}
 
 /* Section-by-section scrolling: gentle snap, scroll-driven entrances and a section index */
 html:has(body.page-proforma){scroll-snap-type:y proximity;scroll-padding-top:72px}
 .pf-hero,.pf-versus,.pf-quote{scroll-snap-align:start}
 .pf-demo{scroll-snap-align:start;scroll-margin-top:0}
 .pf-panel-head{scroll-snap-align:start;scroll-margin-top:96px}
-.pf-basic,.pf-mid .pf-skyline,.pf-3d,.pf-tour{scroll-snap-align:start;scroll-margin-top:100px}
+.pf-basic,.pf-mid .pf-skyline{scroll-snap-align:start;scroll-margin-top:100px}
 .pf-hero{min-height:calc(100svh - 72px);align-content:center}
 .pf-dots{position:fixed;right:22px;top:50%;transform:translateY(-50%);z-index:25}
 .js .pf-dots{display:block}
@@ -391,7 +406,6 @@ html:has(body.page-proforma){scroll-snap-type:y proximity;scroll-padding-top:72p
   .js .pf-reveal{opacity:1;transform:none;transition:border-color .25s,box-shadow .25s,background .25s}
   .js .pf-tier.pf-reveal.is-active{transform:translateY(-6px)}
   .pf-hero-copy,.pf-tiers,.pf-versus,.pf-panel-head,.pf-cms,.pf-outputs,.pf-phone,.pf-skyline,.pf-2d,.pf-quote .section-header,.pf-quote .pf-scroll,.pf-same{animation:pfScrollIn linear both;animation-timeline:view();animation-range:entry 5% cover 28%}
-  .pf-3d,.pf-tour{animation:pfScrollInSoft linear both;animation-timeline:view();animation-range:entry 5% cover 25%}
   .pf-outputs{animation-range:entry 10% cover 32%}.pf-phone{animation-range:entry 15% cover 36%}
   .pf-hero{animation:pfHeroOut linear both;animation-timeline:view();animation-range:exit 0% exit 90%}
  }
@@ -424,3 +438,7 @@ html:has(body.page-proforma){scroll-snap-type:y proximity;scroll-padding-top:72p
  .pf-terms{display:block;margin:24px 0}.pf-terms article{break-inside:avoid;padding:14px 0}
  .pf-terms h3{font-size:14pt;margin-bottom:8px}.pf-terms p,.pf-quote .detail-note,.pf-same p{font-size:10pt;line-height:1.45}
 }
+
+/* Keep interactive viewers steady while scrolling and changing focus. */
+html:has(#demo-alto:not([hidden])){scroll-snap-type:none}
+#demo-alto:not([hidden]){animation:none}
