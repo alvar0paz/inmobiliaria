@@ -91,3 +91,15 @@
 
 /* Portrait facades retain their full composition without landscape enlargement. */
 .immersive-scene[data-scene-home="sparta"] img{object-fit:contain;object-position:right center}
+
+/* A direct, persistent demo entry in every concept and at every screen size. */
+.demo-entry{display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:8px 15px;background:#203b35;color:#fff;border-radius:4px;font-size:14px;font-weight:600;white-space:nowrap}
+.demo-entry:hover{background:#31594e}.demo-primary{white-space:normal}
+.arrival-optional{margin-bottom:20px;border-bottom:1px solid var(--line);padding-bottom:16px}
+.arrival-optional>summary{cursor:pointer;font-size:14px;padding:10px 0;min-height:44px}
+.arrival-optional .spatial-arrival{margin-top:16px}
+.editorial .project-explorer #tab-alto{display:block}
+@media(max-width:760px){.studio-tools{gap:10px}.demo-entry{min-height:34px;padding:6px 10px;font-size:12px}.studio-sign{letter-spacing:0}.studio-sign .studio-square{display:none}.action-row .demo-primary{min-height:48px}.pixel-immersive .action-row{gap:16px}}
+@media(max-width:390px){.studio-sign{font-size:9px}.studio-tools{gap:7px}.studio-menu summary{font-size:11px}.demo-entry{padding:6px 8px}}
+
+#demo-3d{scroll-margin-top:100px}#demo-3d:focus{outline:none}@media(max-width:760px){#demo-3d{scroll-margin-top:130px}}

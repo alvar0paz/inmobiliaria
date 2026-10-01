@@ -67,3 +67,7 @@ All seven architectural and interior images are AI-generated photorealistic conc
 Prompts and generation provenance are recorded in `render-prompts.json`. These visualizations are not verified architectural plans; bilingual captions identify them as conceptual AI renders.
 
 Viewer backing buffers follow screen density up to 3×. Clamp wrapping and linear filtering avoid WebGL 1 downsampling; avoid image zoom effects or re-encoding generated files.
+
+## Direct 3D demo access
+
+The sticky header and all home/Pixel heroes link to `/pixel/?demo=3d#demo-3d`. The viewer selects the High/Immersive experience, opens the building model, and places keyboard focus on its heading. The arrival sequence is optional. The quote hero has the same direct entry; direct quote demo links bypass the launch screen. Desktop and 390px mobile entries were checked in English and Spanish.

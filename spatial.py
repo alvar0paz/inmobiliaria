@@ -10,7 +10,7 @@ def arrival():
 
 
 def toolbar():
-    return f'''<div class="spatial-heading"><div><span class="overline">{t('LA ARQUITECTURA EN TUS MANOS','ARCHITECTURE IN YOUR HANDS')}</span><h3>{t('Descubre lo que hay dentro.','Discover what lies within.')}</h3></div><a class="spatial-quick" href="/pixel/#details">{t('Información rápida','Quick information')}</a></div>
+    return f'''<div class="spatial-heading" id="demo-3d" tabindex="-1"><div><span class="overline">{t('LA ARQUITECTURA EN TUS MANOS','ARCHITECTURE IN YOUR HANDS')}</span><h3>{t('Descubre lo que hay dentro.','Discover what lies within.')}</h3></div><a class="spatial-quick" href="/pixel/#details">{t('Información rápida','Quick information')}</a></div>
 <div class="spatial-controls"><div class="spatial-modes" role="group" aria-label="Experiencia espacial / Spatial experience"><button type="button" class="pf-chip" id="spatial-building" aria-pressed="true">{t('El edificio','The building')}</button><button type="button" class="pf-chip" id="spatial-interior" aria-pressed="false">{t('Un día en casa','A day at home')}</button></div><button type="button" class="pf-chip" id="explode3d" aria-pressed="false">{t('Separar pisos','Separate floors')}</button><div class="spatial-daylight" id="spatial-daylight" role="group" aria-label="Luz conceptual / Concept lighting" hidden>{''.join('<button class="pf-chip" type="button" data-daylight="'+str(i)+'" aria-pressed="'+str(i==1).lower()+'">'+t(es,en)+'</button>' for i,(es,en) in enumerate([('Mañana','Morning'),('Atardecer','Sunset'),('Noche','Night')]))}</div></div>'''
 
 

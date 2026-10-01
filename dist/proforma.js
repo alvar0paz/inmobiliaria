@@ -52,7 +52,7 @@ const Sound=(()=>{
 
 /* ---------- Launch screen ---------- */
 (()=>{const s=$('#launch');if(!s)return;let seen=false;try{seen=sessionStorage.getItem('pf-launch')==='1'}catch(e){}
- if(seen){s.remove();document.documentElement.classList.add('pf-open');return}
+ if(seen||new URLSearchParams(location.search).get('demo')==='3d'){s.remove();document.documentElement.classList.add('pf-open');return}
  document.documentElement.classList.add('pf-launching');
  const open=()=>{try{sessionStorage.setItem('pf-launch','1')}catch(e){}if(!Sound.muted){Sound.set(true);Sound.chime()}s.classList.add('out');document.documentElement.classList.remove('pf-launching');document.documentElement.classList.add('pf-open');setTimeout(()=>s.remove(),reduce?0:1500)};
  $('#launch-open').addEventListener('click',open);
@@ -584,7 +584,26 @@ let lastStyle=state.style;
 document.addEventListener('site:render',()=>{if(state.style===lastStyle)return;lastStyle=state.style;const k=STYLE_TIER[state.style];if(k&&k!==tier)selectTier(k,{fromStyle:true,animate:false})});
 let lastLang=state.lang;
 new MutationObserver(()=>{if(state.lang!==lastLang){lastLang=state.lang;fire('lang');calcQuote()}}).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
+// Explicit demo links select the live model, bypassing the optional arrival story.
+function open3DDemo(){
+ selectTier('alto',{animate:false});
+ const arrival=$('.arrival-optional');if(arrival)arrival.open=false;
+ $('#spatial-building')?.click();
+ const url=new URL(location.href);url.searchParams.set('demo','3d');url.hash='demo-3d';
+ history.replaceState(null,'',url.pathname+url.search+url.hash);
+ requestAnimationFrame(()=>{
+  const heading=$('.spatial-heading'),bar=$('.studio-bar');
+  const top=heading.getBoundingClientRect().top+window.scrollY-(bar?.offsetHeight||0)-16;
+  window.scrollTo({top,behavior:'instant'});
+  heading.focus({preventScroll:true});
+ });
+}
+$$('[data-demo3d]').forEach(link=>link.addEventListener('click',event=>{
+ if(event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;
+ event.preventDefault();open3DDemo();
+}));
 const fromHash=projectMode?null:(location.hash.match(/^#demo-(basico|medio|alto)$/)||[])[1];
 selectTier(fromHash||STYLE_TIER[state.style]||'basico',{fromStyle:!fromHash});
 calcQuote();
+if(new URLSearchParams(location.search).get('demo')==='3d')open3DDemo();
 })();
