@@ -19,28 +19,15 @@
 (()=>{
  let interest=null;
  const labels={estudio:['Estudio','Studio'],suite:['Suite','Suite'],departamento:['Departamento','Apartment'],depa2:['Departamento de 2 dormitorios','Two-bedroom apartment'],depa3:['Departamento de 3 dormitorios','Three-bedroom apartment']};
- function showInterest(){const el=document.querySelector('#home-interest');if(!el||!interest)return;el.hidden=false;el.textContent=(state.lang==='en'?'Your interest: ':'Te interesa: ')+labels[interest][state.lang==='en'?1:0]}
- document.querySelectorAll('[data-home-type]').forEach(a=>a.addEventListener('click',()=>{interest=a.dataset.homeType;showInterest()}));
- document.addEventListener('pixel:interest',e=>{if(labels[e.detail]){interest=e.detail;showInterest()}});
- document.addEventListener('site:render',showInterest);
-})();
-/* Reading and keyboard order follow each direction's visual sequence. */
-(()=>{
- const main=document.querySelector('.discover-page');if(!main)return;
- let previous=null;
- function arrange(){if(previous===state.style)return;previous=state.style;
-  const order=state.style==='essential'?['details','homes','experience','amenities','location','contact']:state.style==='editorial'?['homes','experience','amenities','details','location','contact']:['experience','homes','amenities','details','location','contact'];
-  order.forEach(id=>main.append(document.getElementById(id)));
+ function showInterest(){
+  const el=document.querySelector('#home-interest');if(!el||!interest)return;
+  const en=state.lang==='en',type=labels[interest.type]?.[en?1:0]||interest.type;
+  const detail=interest.id?`${en?'Apartment':'Departamento'} ${interest.id} · ${en?'Floor':'Piso'} ${interest.floor} · ${type} · ${interest.m2} m²`:type;
+  el.hidden=false;el.textContent=(en?'Your selection: ':'Tu selección: ')+detail;
+  const email=document.querySelector('[data-enquiry-email]');
+  if(email){const subject=en?'Enquiry about Pixel':'Consulta sobre Pixel';const body=(en?'Hello, I am interested in ':'Hola, me interesa ')+detail+(interest.id?(en?'. I saw this apartment in the illustrative preview; please confirm actual availability and pricing.':'. Vi este departamento en la muestra ilustrativa; por favor confirmar disponibilidad y precio reales.'):(en?'. Please send me more information.':'. Por favor enviarme más información.'));email.href='mailto:contacto@pixel.com.ec?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body)}
  }
- document.addEventListener('site:render',arrange);arrange();
-})();
-/* Start each visual direction at its opening composition. */
-(()=>{
- if(!document.querySelector('.discovery-home,.discover-page'))return;
- let previous=state.style;
- document.addEventListener('site:render',()=>{
-  if(previous===state.style)return;previous=state.style;
-  history.replaceState(null,'',location.pathname+location.search);
-  window.scrollTo({top:0,behavior:'instant'});
- });
+ document.querySelectorAll('[data-home-type]').forEach(a=>a.addEventListener('click',()=>{interest={type:a.dataset.homeType};showInterest()}));
+ document.addEventListener('pixel:interest',e=>{const value=typeof e.detail==='string'?{type:e.detail}:e.detail;if(labels[value.type]){interest=value;showInterest()}});
+ document.addEventListener('site:render',showInterest);
 })();

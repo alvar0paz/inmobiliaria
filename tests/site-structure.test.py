@@ -38,6 +38,8 @@ class SiteStructure(unittest.TestCase):
                         target=DIST/unquote(u.path.lstrip('/'))
                         if target.is_dir(): target=target/'index.html'
                         self.assertTrue(target.exists(),ref)
+                        if u.fragment and target.suffix=='.html':
+                            self.assertIn(u.fragment,Page(target).ids,ref)
                     elif ref.startswith('#'):
                         self.assertIn(u.fragment,page.ids,ref)
     def test_three_distinct_directions_on_both_buyer_pages(self):

@@ -4,6 +4,9 @@
 (()=>{
 'use strict';
 const projectMode=!!$('#project-explorer');
+let selectedHome=null;
+function rememberHome(p,u){if(!projectMode)return;selectedHome={...u,project:p.slug};document.dispatchEvent(new CustomEvent('pixel:interest',{detail:selectedHome}))}
+document.addEventListener('pixel:interest',event=>{if(!event.detail?.id)selectedHome=null});
 const D=JSON.parse($('#demo-data').textContent);
 const en=()=>state.lang==='en', L=(es,e)=>en()?e:es, tr=a=>a[en()?1:0];
 const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -76,16 +79,17 @@ let tier=null;
 function withTransition(fn){if(document.startViewTransition&&!reduce)document.startViewTransition(fn);else fn()}
 function selectTier(k,opts={}){
  if(!TIER_STYLE[k])k='basico';
- const changed=tier!==k;
+ const changed=tier!==k,homeToRestore=selectedHome;
  const apply=()=>{tier=k;
   $$('[data-tab]').forEach(b=>{const s=b.dataset.tab===k;b.setAttribute('aria-selected',s);b.tabIndex=s?0:-1});
   $$('[data-panel]').forEach(p=>p.hidden=p.dataset.panel!==k);
   $$('[data-tier-card]').forEach(c=>c.classList.toggle('is-active',c.dataset.tierCard===k));
-  if(!opts.fromStyle&&state.style!==TIER_STYLE[k]&&(!projectMode||k==='alto')){state.style=TIER_STYLE[k];render()}
+  if(!projectMode&&!opts.fromStyle&&state.style!==TIER_STYLE[k]){state.style=TIER_STYLE[k];render()}
  };
- if(changed&&opts.animate)withTransition(apply);else apply();
+ if(changed&&opts.animate&&!projectMode)withTransition(apply);else apply();
  if(changed&&opts.animate)Sound.whoosh();
  ({basico:Basic,medio:Mid,alto:High})[k].show();
+ if(projectMode&&homeToRestore&&changed)({medio:Mid,alto:High})[k]?.focusUnit(homeToRestore.project,homeToRestore.id);
  if(opts.hash)history.replaceState(null,'',location.pathname+location.search+(projectMode?'#experience':'#demo-'+k));
  if(opts.scroll)$('#demo').scrollIntoView({behavior:reduce?'auto':'smooth'});
 }
@@ -196,9 +200,10 @@ const Mid=(()=>{
   $$('#plan .unit').forEach(g=>{const go=()=>{unit=us.find(u=>u.id===g.dataset.unit);Sound.tick();$$('#plan .unit').forEach(x=>x.classList.toggle('is-sel',x===g));card()};g.onclick=go;g.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();go()}}});
   $('#plan-title').textContent=`${p.name} · ${L('piso','floor')} ${floor}`}
  function card(){const c=$('#unit2d');if(!unit){c.innerHTML=`<p class="pf-unit-empty">${L('Toca una unidad en la planta para ver su ficha.','Tap a unit on the plan to see its details.')}</p>`;return}
-  const u=unit,ty=D.typologies[u.type];
-  c.innerHTML=`<span class="pf-level">${p.name.toUpperCase()} · ${L('PISO','FLOOR')} ${u.floor}</span><h4>${L('Unidad','Unit')} ${u.id} · ${tyName(u.type)}</h4><dl><dt>${L('Dorm.','Beds')}</dt><dd>${ty.beds||'—'}</dd><dt>m²</dt><dd>${u.m2}</dd><dt>${L('Precio','Price')}</dt><dd>${priceLabel(p,u)}</dd><dt>${L('Estado','Status')}</dt><dd><span class="pf-status"><i style="background:${COLOR[u.status]}"></i>${usName(u.status)}</span></dd></dl><div class="pf-actions">${u.status==='disponible'&&p.sellable?`<button class="button" data-wa>${projectMode?L('Consultar esta tipología','Enquire about this type'):L('Cotizar por WhatsApp','Quote on WhatsApp')}</button>`:''}<button class="button ghost" data-to3d>${projectMode&&state.style==='editorial'?L('Ver en Inmersivo','View in Immersive'):L('Ver en 3D','View in 3D')}</button></div><p class="detail-note" data-wa-preview></p>`;
-  const wa=c.querySelector('[data-wa]');if(wa)wa.onclick=()=>{if(projectMode){document.dispatchEvent(new CustomEvent('pixel:interest',{detail:u.type}));$('#contact').scrollIntoView({behavior:'instant'});return}c.querySelector('[data-wa-preview]').textContent=L(`Se abriría WhatsApp de la sala de ventas con: “Hola, me interesa la unidad ${u.id} (${tyName(u.type)}) de ${p.name}. La vi en ${p.domain}.”`,`The sales office WhatsApp would open with: “Hi, I’m interested in unit ${u.id} (${tyName(u.type)}) at ${p.name}. I saw it on ${p.domain}.”`);log(`GA4 · whatsapp_click · proyecto=${p.slug} · unidad=${u.id}`)};
+  const u=unit,ty=D.typologies[u.type];if(tier==='medio')rememberHome(p,u);
+  c.innerHTML=`<span class="pf-level">${p.name.toUpperCase()} · ${L('PISO','FLOOR')} ${u.floor}</span><h4>${L('Unidad','Unit')} ${u.id} · ${tyName(u.type)}</h4><dl><dt>${L('Dorm.','Beds')}</dt><dd>${ty.beds||'—'}</dd><dt>m²</dt><dd>${u.m2}</dd><dt>${L('Precio','Price')}</dt><dd>${priceLabel(p,u)}</dd><dt>${L('Estado','Status')}</dt><dd><span class="pf-status"><i style="background:${COLOR[u.status]}"></i>${usName(u.status)}</span></dd></dl><div class="pf-actions">${u.status==='disponible'&&p.sellable?`<button class="button" data-wa>${projectMode?L('Consultar este departamento','Enquire about this apartment'):L('Cotizar por WhatsApp','Quote on WhatsApp')}</button>`:''}<button class="button ghost" data-to3d>${L('Explorar en 3D','Explore in 3D')}</button></div><p class="detail-note" data-wa-preview></p>`;
+  const wa=c.querySelector('[data-wa]');if(wa)wa.onclick=()=>{if(projectMode){rememberHome(p,u);$('#contact').scrollIntoView({behavior:'instant'});return}c.querySelector('[data-wa-preview]').textContent=L(`Se abriría WhatsApp de la sala de ventas con: “Hola, me interesa la unidad ${u.id} (${tyName(u.type)}) de ${p.name}. La vi en ${p.domain}.”`,`The sales office WhatsApp would open with: “Hi, I’m interested in unit ${u.id} (${tyName(u.type)}) at ${p.name}. I saw it on ${p.domain}.”`);log(`GA4 · whatsapp_click · proyecto=${p.slug} · unidad=${u.id}`)};
+  c.querySelector('[data-to3d]').hidden=projectMode&&state.style!=='immersive';
   c.querySelector('[data-to3d]').onclick=()=>{selectTier('alto',{animate:false,hash:true});High.focusUnit(p.slug,u.id);$('#stage3d').scrollIntoView({behavior:'instant',block:'center'})}}
  function draw(){if(floor==null)floor=bestFloor(p);sky();filters();elev();plan();card();$('.pf-mid [data-legend]').innerHTML=legend(p.units)}
  function focusUnit(slug,id){p=P[slug];unit=p.units.find(u=>u.id===id)||null;if(unit)floor=unit.floor;draw()}
@@ -408,10 +413,11 @@ const High=(()=>{
  function select(m){
   sel=m;const card=$('#unit3d');
   if(!m){card.hidden=true;apply();ui();return}
-  const {u,p}=m.userData,ty=D.typologies[u.type];
+  const {u,p}=m.userData,ty=D.typologies[u.type];if(tier==='alto')rememberHome(p,u);
   if(focus!==p.slug){focus=p.slug;iso=0;frame()}
-  card.innerHTML=`<button class="close" data-x aria-label="${L('Cerrar unidad','Close unit')}">×</button><span class="pf-level">${p.name.toUpperCase()} · ${L('PISO','FLOOR')} ${u.floor}</span><h4>${L('Unidad','Unit')} ${u.id}</h4><dl><div><dt>${L('Tipo','Type')}</dt><dd>${tyName(u.type)}</dd></div><div><dt>m²</dt><dd>${u.m2}</dd></div><div><dt>${L('Precio','Price')}</dt><dd>${priceLabel(p,u)}</dd></div><div><dt>${L('Estado','Status')}</dt><dd><span class="pf-status"><i style="background:${COLOR[u.status]}"></i>${usName(u.status)}</span></dd></div></dl><div class="pf-actions"><button class="button" data-room>${L('Abrir ambiente 3D','Open 3D room')}</button><button class="button ghost" data-visit>${L('Ver renders','View renders')}</button><button class="button ghost" data-to2d>${L('Ver en 2D','View in 2D')}</button></div>`;
+  card.innerHTML=`<button class="close" data-x aria-label="${L('Cerrar unidad','Close unit')}">×</button><span class="pf-level">${p.name.toUpperCase()} · ${L('PISO','FLOOR')} ${u.floor}</span><h4>${L('Unidad','Unit')} ${u.id}</h4><dl><div><dt>${L('Tipo','Type')}</dt><dd>${tyName(u.type)}</dd></div><div><dt>m²</dt><dd>${u.m2}</dd></div><div><dt>${L('Precio','Price')}</dt><dd>${priceLabel(p,u)}</dd></div><div><dt>${L('Estado','Status')}</dt><dd><span class="pf-status"><i style="background:${COLOR[u.status]}"></i>${usName(u.status)}</span></dd></div></dl><div class="pf-actions">${projectMode?`<button class="button" data-enquire>${L('Consultar este departamento','Enquire about this apartment')}</button>`:''}<button class="button ghost" data-room>${L('Abrir ambiente 3D','Open 3D room')}</button><button class="button ghost" data-visit>${L('Ver renders','View renders')}</button><button class="button ghost" data-to2d>${L('Ver en 2D','View in 2D')}</button></div>`;
   card.hidden=false;card.querySelector('[data-x]').onclick=()=>{select(null);$('#unit3d-select').focus({preventScroll:true})};
+  if(projectMode)card.querySelector('[data-enquire]').onclick=()=>{rememberHome(p,u);$('#contact').scrollIntoView({behavior:'instant'})};
   card.querySelector('[data-visit]').onclick=()=>Tour.open(ty.scene,p.slug);
   card.querySelector('[data-room]').onclick=()=>setMode('interior');
   card.querySelector('[data-to2d]').onclick=()=>{selectTier('medio',{animate:false,hash:true});Mid.focusUnit(p.slug,u.id);$('#demo-medio').scrollIntoView({behavior:'instant',block:'start'})};
@@ -581,18 +587,19 @@ const pb=$('#print-quote');if(pb)pb.onclick=()=>window.print();
 $$('[data-tab]').forEach((b,i,all)=>{b.onclick=()=>selectTier(b.dataset.tab,{animate:true,hash:true});b.onkeydown=e=>{const d=e.key==='ArrowRight'?1:e.key==='ArrowLeft'?-1:0;if(!d)return;e.preventDefault();const visible=all.filter(x=>x.getClientRects().length);const index=visible.indexOf(b);const n=visible[(index+d+visible.length)%visible.length];n.focus();n.click()}});
 $$('[data-tier]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();selectTier(a.dataset.tier,{animate:true,hash:true,scroll:true})}));
 let lastStyle=state.style;
-document.addEventListener('site:render',()=>{if(state.style===lastStyle)return;lastStyle=state.style;const k=STYLE_TIER[state.style];if(k&&k!==tier)selectTier(k,{fromStyle:true,animate:false})});
+document.addEventListener('site:render',()=>{if(state.style===lastStyle)return;lastStyle=state.style;const k=projectMode?'medio':STYLE_TIER[state.style];if(k&&k!==tier)selectTier(k,{fromStyle:true,animate:false})});
 let lastLang=state.lang;
 new MutationObserver(()=>{if(state.lang!==lastLang){lastLang=state.lang;fire('lang');calcQuote()}}).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
 // Explicit demo links select the live model, bypassing the optional arrival story.
 function open3DDemo(){
+ if(projectMode&&state.style!=='immersive'){state.style='immersive';render()}
  selectTier('alto',{animate:false});
  const arrival=$('.arrival-optional');if(arrival)arrival.open=false;
  $('#spatial-building')?.click();
  const url=new URL(location.href);url.searchParams.set('demo','3d');url.hash='demo-3d';
  history.replaceState(null,'',url.pathname+url.search+url.hash);
  requestAnimationFrame(()=>{
-  const heading=$('.spatial-heading'),bar=$('.studio-bar');
+  const heading=$('.spatial-heading'),bar=$('.navigation');
   const top=heading.getBoundingClientRect().top+window.scrollY-(bar?.offsetHeight||0)-16;
   window.scrollTo({top,behavior:'instant'});
   heading.focus({preventScroll:true});
@@ -603,7 +610,7 @@ $$('[data-demo3d]').forEach(link=>link.addEventListener('click',event=>{
  event.preventDefault();open3DDemo();
 }));
 const fromHash=projectMode?null:(location.hash.match(/^#demo-(basico|medio|alto)$/)||[])[1];
-selectTier(fromHash||STYLE_TIER[state.style]||'basico',{fromStyle:!fromHash});
+selectTier(projectMode?'medio':(fromHash||STYLE_TIER[state.style]||'basico'),{fromStyle:!fromHash});
 calcQuote();
 if(new URLSearchParams(location.search).get('demo')==='3d')open3DDemo();
 })();
