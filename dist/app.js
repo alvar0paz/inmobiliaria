@@ -14,4 +14,14 @@ function updateJourneyText(){if(!$('#tour'))return;const s=scenes[journeyIndex],
 function startJourney(){clearTimeout(journeyTimer);clearTimeout(journeyEndTimer);journeyBusy=false;journeyIndex=0;$('#tour-image').src='/assets/'+scenes[0].image+'.png';$('#tour-stage').className='tour-stage open arrival';updateJourneyText();}
 function goScene(next){if(journeyBusy||next===journeyIndex)return;const stage=$('#tour-stage');const elevator=journeyIndex===1&&next===2;const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;journeyBusy=true;stage.classList.remove('arrival');stage.classList.toggle('elevator',elevator);stage.classList.toggle('fading',!elevator);stage.classList.remove('open');journeyTimer=setTimeout(()=>{journeyIndex=next;$('#tour-image').src='/assets/'+scenes[next].image+'.png';stage.classList.toggle('arrival',next===0);updateJourneyText();journeyEndTimer=setTimeout(()=>{stage.classList.remove('fading');stage.classList.add('open');journeyBusy=false;},reduce?0:elevator?450:80);},reduce?0:elevator?900:350);}
 if($('#tour')){$$('[data-scene]').forEach(b=>b.addEventListener('click',()=>goScene(Number(b.dataset.scene))));$('#journey-prev').addEventListener('click',()=>goScene(Math.max(0,journeyIndex-1)));$('#journey-next').addEventListener('click',()=>goScene((journeyIndex+1)%scenes.length));$('#tour-to-details').addEventListener('click',()=>{$('#tour').close();$('#details').scrollIntoView({behavior:'smooth'});history.replaceState(null,'',location.pathname+location.search+'#details')});$('#tour').addEventListener('close',()=>{clearTimeout(journeyTimer);clearTimeout(journeyEndTimer);journeyBusy=false});}
-render();
+// The bare site URL opens the proposal; explicit styles still open buyer previews.
+if(['/','/index.html'].includes(location.pathname)&&!['essential','editorial','immersive'].includes(params.get('style'))){
+ const next=new URL(location.href);
+ next.pathname='/propuesta/';
+ next.searchParams.delete('style');
+ next.searchParams.set('lang',state.lang);
+ next.hash='';
+ location.replace(next.href);
+}else{
+ render();
+}
