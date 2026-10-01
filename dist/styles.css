@@ -17,3 +17,12 @@
 @media(max-width:480px){.studio-tools{gap:10px}.studio-tools .studio-about,.studio-tools .proposal-button{font-size:11px}.studio-sign small{display:none}}
 
 .person-initials{display:grid;place-items:center;width:96px;height:96px;border:1px solid var(--line);border-radius:50%;font:400 32px var(--serif);color:var(--accent);background:var(--bg)}
+
+/* Keep identity beside the portrait at every viewport size. */
+.person-top{display:grid;grid-template-columns:80px minmax(0,1fr);gap:18px;align-items:center;justify-content:normal}
+.person-top .person-photo{width:80px;height:80px}
+.person-heading{min-width:0}
+.person-heading .person-role{margin:0 0 8px;line-height:1.5;overflow-wrap:anywhere}
+.person-heading h2{margin:0;font-size:clamp(24px,2.2vw,34px);line-height:1.15;overflow-wrap:anywhere}
+@media(max-width:1050px){.person-top{grid-template-columns:64px minmax(0,1fr);gap:14px}.person-top .person-photo{width:64px;height:64px}}
+@media(max-width:380px){.person-top{grid-template-columns:56px minmax(0,1fr);gap:12px}.person-top .person-photo{width:56px;height:56px}.person-heading h2{font-size:23px}.person-heading .person-role{font-size:12px}}
