@@ -19,7 +19,7 @@ def head(page='home'):
  hero_head=''
  if page in ('home','project'):
   hero_head='<script>(()=>{const images='+json.dumps(hero_assets)+''';const choice=new URLSearchParams(location.search).get('style');if(location.pathname==='/'&&!Object.hasOwn(images,choice))return;const asset=Object.hasOwn(images,choice)?images[choice]:images.immersive;const link=document.createElement('link');link.rel='preload';link.as='image';link.fetchPriority='high';link.href='/assets/'+asset+'.png';document.head.append(link)})()</script>'''
- title={'home':'Alpha Builders · Concept Studio','project':'Pixel · Alpha Builders · Concept Studio','about':'Andean Software Lab · Nuestro equipo','proforma':'Inversión y alcance · Alpha Builders','comparison':'Comparar opciones · Alpha Builders','proposal':'Propuesta digital · Alpha Builders'}.get(page,'Alpha Builders · Concept Studio')
+ title={'home':'Alpha Builders · Concept Studio','project':'Pixel · Alpha Builders · Concept Studio','about':'Andean Software Lab · Nuestro equipo','proforma':'Inversión y alcance · Alpha Builders','comparison':'Comparar opciones · Alpha Builders','technical':'Cómo funciona · Alpha Builders','proposal':'Propuesta digital · Alpha Builders'}.get(page,'Alpha Builders · Concept Studio')
  description='Andean Software Lab: desarrollo de software, producto e integraciones para la propuesta digital de Alpha Builders, por Martín Vélez Falconí y Alvaro Paz.' if page=='about' else 'Proforma demostrativa en tres niveles: bot de WhatsApp y gestor central, edificios en 2D, y modelos 3D con visitas virtuales.' if page=='proforma' else 'Propuesta conceptual para Alpha Builders: tres direcciones visuales y una experiencia de proyecto.'
  return version_assets(f'''<!doctype html><html lang="es-EC"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><meta name="description" content="{description}"><title>{title}</title>{hero_head}<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23212b22'/%3E%3Cpath d='M6 25L16 6l10 19h-5l-5-10-5 10Z' fill='%23d5bc7c'/%3E%3C/svg%3E"><link rel="stylesheet" href="/styles.css">{('<link rel="stylesheet" href="/directions.css">' if page in ('home','project') else '')}<script>document.documentElement.classList.add('js')</script><script src="/navigation.js" defer></script><script src="/app.js" defer></script>{('<script src="/directions.js" defer></script>' if page in ('home','project') else '')}{extra_head}<link rel="stylesheet" href="/navigation.css"></head><body class="immersive page-{page}"><a class="skip" href="#main">{t('Saltar al contenido','Skip to content')}</a>
  {shell(page)}''')
@@ -28,7 +28,7 @@ def language():
 def shell(page):
  if page in ('home','project'):
   return f'<div class="preview-return">{a("← Volver a la propuesta","← Back to proposal","/comparar/")}</div>'
- links=a('Resumen','Overview','/propuesta/','', 'aria-current="page"' if page=='proposal' else '')+a('Comparar opciones','Compare options','/comparar/','', 'aria-current="page"' if page=='comparison' else '')+a('Inversión y alcance','Investment & scope','/proforma/','', 'aria-current="page"' if page=='proforma' else '')+a('Nuestro equipo','Our team','/nosotros/','', 'aria-current="page"' if page=='about' else '')
+ links=a('Resumen','Overview','/propuesta/','', 'aria-current="page"' if page=='proposal' else '')+a('Comparar opciones','Compare options','/comparar/','', 'aria-current="page"' if page=='comparison' else '')+a('Cómo funciona','How it works','/como-funciona/','', 'aria-current="page"' if page=='technical' else '')+a('Inversión y alcance','Investment & scope','/proforma/','', 'aria-current="page"' if page=='proforma' else '')+a('Nuestro equipo','Our team','/nosotros/','', 'aria-current="page"' if page=='about' else '')
  return menu_shell('<a class="proposal-brand" href="/propuesta/">ALPHA BUILDERS<small>'+t('PROPUESTA DIGITAL','DIGITAL PROPOSAL')+'</small></a>',links,'stakeholder')
 def menu_shell(brand,links,kind='buyer'):
  return f'''<header class="navigation {kind}-navigation">{brand}<button class="menu-toggle js-only" aria-expanded="false" aria-controls="primary-menu">{t('Menú','Menu')} <span aria-hidden="true">☰</span></button><nav id="primary-menu" class="primary-menu" aria-label="Principal / Main">{links}{language()}</nav></header>'''
@@ -81,4 +81,5 @@ def about():
 if __name__=='__main__':
  from proforma import proforma
  from proposal_page import proposal_page
- home();project();about();proforma();proposal_page()
+ from technical_page import technical_page
+ home();project();about();proforma();proposal_page();technical_page()

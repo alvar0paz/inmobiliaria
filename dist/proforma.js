@@ -82,14 +82,14 @@ function selectTier(k,opts={}){
  const changed=tier!==k,homeToRestore=selectedHome;
  const apply=()=>{tier=k;
   $$('[data-tab]').forEach(b=>{const s=b.dataset.tab===k;b.setAttribute('aria-selected',s);b.tabIndex=s?0:-1});
-  $$('[data-panel]').forEach(p=>p.hidden=p.dataset.panel!==k);
+  $$('[data-panel]').forEach(p=>{const visible=projectMode?p.dataset.panel===k:['basico','medio','alto'].indexOf(p.dataset.panel)<=['basico','medio','alto'].indexOf(k);p.hidden=!visible;if(!projectMode&&visible)p.setAttribute('aria-labelledby','tab-'+k)});
   $$('[data-tier-card]').forEach(c=>c.classList.toggle('is-active',c.dataset.tierCard===k));
   $$('[data-select-tier]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.selectTier===k));
   if(!projectMode&&!opts.fromStyle&&state.style!==TIER_STYLE[k]){state.style=TIER_STYLE[k];render()}
  };
  if(changed&&opts.animate&&!projectMode)withTransition(apply);else apply();
  if(changed&&opts.animate)Sound.whoosh();
- ({basico:Basic,medio:Mid,alto:High})[k].show();
+ if(projectMode)({basico:Basic,medio:Mid,alto:High})[k].show();else{Basic.show();if(k!=='basico')Mid.show();if(k==='alto')High.show();}
  if(projectMode&&homeToRestore&&changed)({medio:Mid,alto:High})[k]?.focusUnit(homeToRestore.project,homeToRestore.id);
  if(opts.hash)history.replaceState(null,'',location.pathname+location.search+(projectMode?'#experience':'#demo-'+k));
  if(opts.scroll)$('#demo').scrollIntoView({behavior:reduce?'auto':'smooth'});
@@ -609,8 +609,10 @@ $$('[data-demo3d]').forEach(link=>link.addEventListener('click',event=>{
  if(event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;
  event.preventDefault();open3DDemo();
 }));
-const fromHash=projectMode?null:(location.hash.match(/^#demo-(basico|medio|alto)$/)||[])[1];
+const fromHash=projectMode?null:location.hash==='#api-json'?'basico':(location.hash.match(/^#demo-(basico|medio|alto)$/)||[])[1];
 selectTier(projectMode?'medio':(fromHash||STYLE_TIER[state.style]||'basico'),{fromStyle:!fromHash});
+if(!projectMode&&location.hash==='#api-json')requestAnimationFrame(()=>document.getElementById('api-json').scrollIntoView({block:'start'}));
+window.addEventListener('hashchange',()=>{if(!projectMode&&location.hash==='#api-json'){selectTier('basico');document.getElementById('api-json').scrollIntoView({block:'start'})}});
 calcQuote();
 if(new URLSearchParams(location.search).get('demo')==='3d')open3DDemo();
 })();
