@@ -30,6 +30,8 @@
 .pf-table thead th{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:500}
 .pf-table tbody th{font-weight:500}
 .pf-table caption{text-align:left;font:22px var(--serif);padding-bottom:12px}
+.pf-mobile-label{display:none}
+.pf-cell-value{min-width:0;overflow-wrap:anywhere}
 .pf-compare td,.pf-levels td{min-width:150px}.pf-compare th[scope=row]{min-width:230px}
 .pf-now{color:var(--muted)}
 .pf-yes{color:var(--accent);font-size:18px;font-weight:700}
@@ -39,8 +41,8 @@
 .pf-row-calc td{color:var(--muted)}
 .pf-money{display:flex;align-items:center;gap:6px;border:1px solid var(--line);padding:4px 10px;max-width:170px}
 .pf-money:focus-within{border-color:var(--accent)}
-.pf-money span{font-size:11px;color:var(--muted)}
-.pf-money input{width:100%;border:0;background:none;color:var(--ink);padding:4px 0;font-size:15px;-moz-appearance:textfield}
+.pf-money span{font-size:11px;color:var(--muted);flex:none;white-space:nowrap}
+.pf-money input{width:100%;min-width:0;border:0;background:none;color:var(--ink);padding:4px 0;font-size:16px;-moz-appearance:textfield}
 .pf-money input::-webkit-inner-spin-button{-webkit-appearance:none}
 .pf-money input:focus{outline:none}
 
@@ -330,6 +332,24 @@
  .pf-table th,.pf-table td{padding:11px 10px}
 }
 @media(prefers-reduced-motion:reduce){.js .pf-panel:not([hidden]),.pf-msg,.pf-log li{animation:none}.pf-out.flash{animation:none}}
+/* Keep every comparison and editable price readable without a sideways gesture.
+   Screen-only rules preserve the full table in the printed quote. */
+@media screen and (max-width:980px){
+ .pf-scroll{overflow:visible}
+ .pf-scroll .pf-table,.pf-scroll .pf-table tbody,.pf-scroll .pf-table tr{display:block;width:100%}
+ .pf-scroll .pf-table thead{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+ .pf-scroll .pf-table tbody tr{margin-bottom:24px;border:1px solid var(--line)}
+ .pf-scroll .pf-table tbody th{display:block;min-width:0;padding:16px;background:color-mix(in srgb,var(--bg) 92%,var(--ink));font-size:16px;line-height:1.5}
+ .pf-scroll .pf-table td{display:grid;grid-template-columns:minmax(76px,.4fr) minmax(0,1fr);align-items:start;gap:16px;min-width:0;padding:12px 16px}
+ .pf-scroll .pf-table td:last-child{border-bottom:0}
+ .pf-mobile-label{display:block;color:var(--muted);font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;line-height:1.6;padding-top:2px}
+ .pf-scroll .pf-table .pf-divider{border:0;margin:40px 0 24px}
+ .pf-scroll .pf-table .pf-divider th{padding:0 0 16px;background:none;font:24px/1.3 var(--serif);border-bottom:1px solid var(--ink)}
+ .pf-scroll .pf-table .pf-row-total{border-color:var(--accent)}
+ .pf-scroll .pf-table .pf-row-total th,.pf-scroll .pf-table .pf-row-total td{border-bottom-color:var(--line)}
+ .pf-row-total .pf-cell-value{color:var(--accent);font-variant-numeric:tabular-nums}
+ .pf-money{width:100%;max-width:200px}
+}
 @media print{
  .studio-bar,.pf-demo,.pf-versus,.footer,.pf-tier .button,#print-quote{display:none!important}
  body{background:#fff!important;color:#111!important}
