@@ -462,3 +462,13 @@ html:has(body.page-proforma){scroll-snap-type:y proximity;scroll-padding-top:72p
 /* Keep interactive viewers steady while scrolling and changing focus. */
 html:has(#demo-alto:not([hidden])){scroll-snap-type:none}
 #demo-alto:not([hidden]){animation:none}
+
+/* The whole offer card selects its tier; its existing links stay independently usable. */
+.pf-tier{position:relative}
+.pf-tier-select{position:absolute;inset:0;z-index:1;width:100%;height:100%;border:0;border-radius:0;background:transparent;cursor:pointer}
+.pf-tier-select:focus-visible{outline:2px solid var(--accent);outline-offset:5px}
+.pf-tier:has(.pf-tier-select:hover){border-color:var(--accent)}
+.pf-tier-foot a{position:relative;z-index:2}
+.pf-money:has(input:disabled){background:color-mix(in srgb,var(--bg) 95%,var(--ink))}
+.pf-money input:disabled,.pf-cms input:disabled{opacity:1;color:var(--muted);-webkit-text-fill-color:var(--muted);cursor:not-allowed}
+@media print{.pf-tier-select{display:none!important}}

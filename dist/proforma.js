@@ -84,6 +84,7 @@ function selectTier(k,opts={}){
   $$('[data-tab]').forEach(b=>{const s=b.dataset.tab===k;b.setAttribute('aria-selected',s);b.tabIndex=s?0:-1});
   $$('[data-panel]').forEach(p=>p.hidden=p.dataset.panel!==k);
   $$('[data-tier-card]').forEach(c=>c.classList.toggle('is-active',c.dataset.tierCard===k));
+  $$('[data-select-tier]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.selectTier===k));
   if(!projectMode&&!opts.fromStyle&&state.style!==TIER_STYLE[k]){state.style=TIER_STYLE[k];render()}
  };
  if(changed&&opts.animate&&!projectMode)withTransition(apply);else apply();
@@ -117,8 +118,6 @@ const Basic=(()=>{
  function regen(){log(`${L('regenerado','regenerated')}: ${L('tarjeta · sitio · JSON-LD · tabla de estado · sitemap · llms.txt · feed','card · site · JSON-LD · status table · sitemap · llms.txt · feed')}`);log(`IndexNow → ${cur.domain}, alphabuildershq.com`)}
  f.addEventListener('submit',e=>e.preventDefault());
  f.project.addEventListener('change',()=>{cur=P[f.project.value];fill();outputs(true);resetChat();Sound.tick();log(`${L('gestor · abre','manager · opens')} <b>${cur.name}</b>`)});
- f.m2_price.addEventListener('input',()=>{const v=+f.m2_price.value;if(v>=500&&v<=6000){cur.m2_price=v;outputs(false);fire('change')}});
- f.m2_price.addEventListener('change',()=>{outputs(true);log(`${L('gestor','manager')} · precio_m2 ${cur.slug} = ${cur.m2_price}`);regen()});
  f.status.addEventListener('change',()=>{cur.status=f.status.value;outputs(true);fire('change');log(`${L('gestor','manager')} · estado ${cur.slug} = ${cur.status}`);regen()});
  f.progress.addEventListener('input',()=>{cur.progress=+f.progress.value;f.progress_out.value=cur.progress+'%';outputs(false);fire('change')});
  f.progress.addEventListener('change',()=>{outputs(true);log(`${L('gestor','manager')} · avance ${cur.slug} = ${cur.progress}%`);regen()});
@@ -580,10 +579,10 @@ function calcQuote(){Object.keys(TIER_STYLE).forEach(k=>{const v=key=>{const i=$
   set('maintenance_network',v('maintenance')==null?null:cents(v('maintenance')*16));set('hosting_network',v('hosting')==null?null:cents(v('hosting')*16));
   const tt=$(`[data-total="${k}"]`);if(tt)tt.innerHTML=tot==null?L('Precio por definir','Price to be confirmed'):`${L('Total con IVA','Total incl. VAT')}<b>${quoteMoney(tot)}</b>`});
   $$('[data-price]').forEach(i=>{const p=$(`[data-print="${i.dataset.price}"]`);if(p)p.textContent=i.value===''?'—':quoteMoney(Number(i.value))})}
-$$('[data-price]').forEach(i=>i.addEventListener('input',calcQuote));
 const pb=$('#print-quote');if(pb)pb.onclick=()=>window.print();
 
 /* ---------- Wiring ---------- */
+$$('[data-select-tier]').forEach(b=>b.addEventListener('click',()=>selectTier(b.dataset.selectTier,{animate:true,hash:true})));
 $$('[data-tab]').forEach((b,i,all)=>{b.onclick=()=>selectTier(b.dataset.tab,{animate:true,hash:true});b.onkeydown=e=>{const d=e.key==='ArrowRight'?1:e.key==='ArrowLeft'?-1:0;if(!d)return;e.preventDefault();const visible=all.filter(x=>x.getClientRects().length);const index=visible.indexOf(b);const n=visible[(index+d+visible.length)%visible.length];n.focus();n.click()}});
 $$('[data-tier]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();selectTier(a.dataset.tier,{animate:true,hash:true,scroll:true})}));
 let lastStyle=state.style;
