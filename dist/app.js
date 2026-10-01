@@ -1,5 +1,11 @@
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const state={lang:'es',style:'immersive'};
+// Choose the first profile once per load; DOM order also sets mobile and keyboard order.
+const teamGrid=$('.team-grid');
+if(teamGrid&&teamGrid.children.length===2&&Math.random()<0.5){
+ teamGrid.append(teamGrid.firstElementChild);
+}
+
 const isBuyerPath=path=>['/','/pixel/'].includes(path);
 // Old comparison bookmarks continue to reach the dedicated comparison page.
 if(location.pathname==='/propuesta/'&&location.hash==='#opciones'){const next=new URL(location.href);next.pathname='/comparar/';next.hash='';next.searchParams.delete('style');location.replace(next.href)}
