@@ -1,6 +1,6 @@
 # Alpha Builders · Concept Studio
 
-Bilingual website concept by Martín Vélez Falconí and Alvaro Paz, prepared for private review with Alpha Builders.
+Bilingual website concept by Andean Software Lab (Martín Vélez Falconí and Alvaro Paz), prepared for private review with Alpha Builders.
 
 ## Included
 
