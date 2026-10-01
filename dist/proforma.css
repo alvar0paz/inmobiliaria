@@ -47,7 +47,7 @@
 .pf-money input:focus{outline:none}
 
 /* Demo shell */
-.pf-demo{padding:30px 6% 95px;border-top:1px solid var(--line)}
+.pf-demo{padding:30px 6% 40px;border-top:1px solid var(--line)}
 .pf-tabs{position:sticky;top:72px;z-index:10;display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:6px;background:var(--bg);border:1px solid var(--line);margin-bottom:22px}
 .js .pf-tabs{display:grid}
 .pf-tabs button{display:grid;grid-template-columns:auto 1fr;column-gap:14px;text-align:left;padding:12px 16px;font-size:14px;font-weight:600;letter-spacing:.08em;border:1px solid transparent;transition:background .2s}
@@ -277,9 +277,11 @@
 }
 
 /* Quote */
-.pf-quote{border-top:1px solid var(--line)}
+.pf-quote{border-top:1px solid var(--line);padding-top:40px}
+.pf-quote .section-header{margin-bottom:24px}
+@media(max-width:760px){.pf-quote{padding-top:28px}}
 .pf-quote-intro{max-width:850px;font-size:18px;line-height:1.65;color:var(--muted)}
-.pf-contacts{display:grid;grid-template-columns:1fr 1fr;gap:32px;margin:32px 0 42px;padding:24px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.pf-contacts{display:grid;grid-template-columns:1fr 1fr;gap:32px;margin:24px 0;padding:20px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
 .pf-contacts address{display:grid;gap:6px;font-size:16px;font-style:normal;overflow-wrap:anywhere}
 .pf-contacts strong{font-size:18px}.pf-contacts span{color:var(--muted);font-size:14px}
 .pf-contacts a{width:fit-content;text-decoration:underline;text-underline-offset:4px;text-decoration-color:var(--line)}
@@ -316,7 +318,7 @@
  .pf-tabs button{grid-template-columns:1fr;padding:8px;font-size:11px;text-align:center}
  .pf-tabs button b{grid-row:auto;font-size:20px}
  .pf-tabs button small{display:none}
- .pf-demo{padding:24px 6% 65px}
+ .pf-demo{padding:24px 6% 28px}
  .pf-panel-head{grid-template-columns:1fr;gap:18px}
  .js .pf-basic{grid-template-columns:1fr}
  .pf-phone{grid-column:auto;grid-row:auto;max-width:360px;width:100%;justify-self:center}
