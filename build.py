@@ -27,7 +27,8 @@ def language():
  return f'<div class="lang-switch js-only" role="group" aria-label="Idioma / Language"><button data-lang="es" aria-pressed="true">ES</button><span>/</span><button data-lang="en" aria-pressed="false">EN</button></div>'
 def shell(page):
  if page in ('home','project'):
-  return f'<div class="preview-return">{a("← Volver a la propuesta","← Back to proposal","/comparar/")}</div>'
+  label = 'Página principal de Alpha Builders' if page == 'home' else 'Página del proyecto Pixel'
+  return f'<aside class="demo-ribbon" lang="es" aria-label="Identificación de la demo"><strong>DEMO</strong><span>{label}</span></aside><div class="preview-return">{a("← Volver a la propuesta","← Back to proposal","/comparar/")}</div>'
  links=a('Resumen','Overview','/propuesta/','', 'aria-current="page"' if page=='proposal' else '')+a('Comparar opciones','Compare options','/comparar/','', 'aria-current="page"' if page=='comparison' else '')+a('Cómo funciona','How it works','/como-funciona/','', 'aria-current="page"' if page=='technical' else '')+a('Inversión y alcance','Investment & scope','/proforma/','', 'aria-current="page"' if page=='proforma' else '')+a('Nuestro equipo','Our team','/nosotros/','', 'aria-current="page"' if page=='about' else '')
  return menu_shell('<a class="proposal-brand" href="/propuesta/">ALPHA BUILDERS<small>'+t('PROPUESTA DIGITAL','DIGITAL PROPOSAL')+'</small></a>',links,'stakeholder')
 def menu_shell(brand,links,kind='buyer'):
