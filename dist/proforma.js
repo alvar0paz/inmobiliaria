@@ -454,7 +454,8 @@ const High=(()=>{
   };
   raf=requestAnimationFrame(step);
  }
- function focusUnit(slug,id){
+ async function focusUnit(slug,id){
+  try{await AlphaAssets.three()}catch{fail();return}
   if(!init())return;
   focus=slug;spatialMode='model';exploded=false;light();const m=B[slug]?.units.find(x=>x.userData.u.id===id);iso=m?m.userData.u.floor:0;
   if(m&&m.userData.u.status!=='disponible'){onlyFree=false;$('#avail3d').checked=false}
@@ -462,7 +463,7 @@ const High=(()=>{
  }
  on('change',()=>{if(!renderer)return;labelText();reconcile();if(sel)select(sel);else{apply();ui()}});
  on('lang',()=>{if(!renderer)return;labelText();if(sel)select(sel);else ui();loop()});
- return {show(){if(init()){if(projectMode&&!focus)focusProject(D.projects[0].slug);resize();loop()}Tour.show()},focusUnit};
+ return {show(){AlphaAssets.whenVisible(stage,async()=>{try{await AlphaAssets.three();if(tier!=='alto')return;if(init()){if(projectMode&&!focus)focusProject(D.projects[0].slug);resize();loop()}}catch{fail()}});Tour.show()},focusUnit};
 })();
 
 /* ---------- Virtual visit: renders wrapped on a panoramic arc ---------- */
@@ -565,7 +566,7 @@ const Tour=(()=>{
  }
  function open(k,slug){from=slug||'pixel';if(!init())return;stage.closest('.pf-tour-shell').scrollIntoView({behavior:'instant',block:'start'});canvas.focus({preventScroll:true});go(k);loop()}
  on('lang',()=>{if(renderer){nav();if(loaded){caption();hotspots();loop()}}});
- return {show(){if(init()){resize();loop()}},open};
+ return {show(){AlphaAssets.whenVisible(stage,async()=>{try{await AlphaAssets.three();if(tier==='alto'&&init()){resize();loop()}}catch{status(L('No se pudo cargar la visita. Recarga para intentarlo de nuevo.','The tour could not load. Reload to try again.'))}})},open};
 })();
 
 /* ---------- Quote calculator ---------- */

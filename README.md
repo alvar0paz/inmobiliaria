@@ -77,3 +77,11 @@ Buyer pages use one shared navigation with an advisor action. The project order 
 The 2D plan is the default for Interactive and Immersive. The building model is optional within Immersive. Existing `/pixel/?demo=3d#demo-3d` links remain supported. Apartment selection carries across plan/model views and into the enquiry email with the unit, floor, type and area. No message is sent automatically.
 
 Shared navigation lives in `build.py`, `dist/navigation.css` and `dist/navigation.js`. `proposal_page.py` authors the stakeholder page. Navigation, preview style preservation, ES/EN, enquiry context, keyboard menu behavior and 320–1440px layouts were checked in a local browser.
+
+## Loading performance
+
+The selected buyer hero is preloaded at high priority; other design heroes acquire a source only when selected. No-JavaScript visitors retain the image fallback. Tour-dialog images load on opening. Original PNG renders and viewer resolution are preserved.
+
+`dist/asset-loader.js` shares one on-demand Three.js download between the building, tour and sector map. Building and tour initialization waits until each approaches the viewport; explicit unit selection can initialize the building immediately. A failed script download can be retried, and existing WebGL/static fallbacks remain available. Buyer-only direction assets are omitted from stakeholder pages. All CSS/JS URLs in the generated head have content hashes for cache invalidation; hosting cache headers are unchanged.
+
+Run `node --test tests/asset-loader.test.cjs tests/viewer-controls.test.cjs tests/sector-map.test.cjs` and `python3 tests/site-structure.test.py` after building. Verify all three buyer styles, 3D deep links, map reveal and no-JavaScript rendering in a browser when changing loading behavior.

@@ -48,8 +48,10 @@
     const intersection=ray.intersectObjects(model.pickables).find(hit=>hit.object.userData.owners[hit.instanceId]);
     return intersection?.object.userData.owners[intersection.instanceId];
   }
+  let loading=false;
   function init(){
-    if(ready||failed)return;
+    if(ready||failed||loading)return;
+    if(!window.THREE&&window.AlphaAssets){loading=true;AlphaAssets.three().then(()=>{loading=false;init();draw()}).catch(()=>{loading=false;fallback()});return}
     if(!window.THREE||!window.AlphaSectorScene||!window.ViewerControls){fallback();return}
     try{
       renderer=new THREE.WebGLRenderer({canvas,alpha:true,antialias:true,powerPreference:'low-power'});

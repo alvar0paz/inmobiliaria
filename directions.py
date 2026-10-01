@@ -9,7 +9,9 @@ PROJECTS = [
 
 
 def photo(asset, alt, cls='', eager=False):
-    return f'<img class="{cls}" src="/assets/{asset}.png" alt="{alt}" loading="{"eager" if eager else "lazy"}" decoding="async">'
+    image = f'<img class="{cls}" src="/assets/{asset}.png" alt="{alt}" loading="lazy" decoding="async">'
+    if not eager: return image
+    return image.replace(' src=', ' data-hero-src=').replace('loading="lazy"', 'loading="eager" fetchpriority="high"') + '<noscript>' + image + '</noscript>'
 
 
 def demo_entry():

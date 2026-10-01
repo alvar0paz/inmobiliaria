@@ -59,7 +59,8 @@ class SiteStructure(unittest.TestCase):
         self.assertIn('EL SECTOR',source)
         for id in ('sector-title','sector-map','sector-canvas','sector-map-caption','sector-map-help'):
             self.assertEqual(page.ids.count(id),1)
-        self.assertLess(page.scripts.index('/vendor/three.min.js'),page.scripts.index('/sector-scene.js'))
+        self.assertNotIn('/vendor/three.min.js',page.scripts)
+        self.assertLess(page.scripts.index('/asset-loader.js'),page.scripts.index('/sector-scene.js'))
         self.assertLess(page.scripts.index('/sector-scene.js'),page.scripts.index('/sector-map.js'))
         self.assertIn('/assets/sector-map.png',page.references)
         self.assertIn('https://maps.app.goo.gl/JJozcsbpJE2bbfue7',page.references)

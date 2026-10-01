@@ -103,3 +103,6 @@
 @media(max-width:390px){.studio-sign{font-size:9px}.studio-tools{gap:7px}.studio-menu summary{font-size:11px}.demo-entry{padding:6px 8px}}
 
 #demo-3d{scroll-margin-top:100px}#demo-3d:focus{outline:none}@media(max-width:760px){#demo-3d{scroll-margin-top:130px}}
+
+/* Hide the JS image placeholder when its noscript fallback is active. */
+html:not(.js) [data-hero-src]{display:none}
