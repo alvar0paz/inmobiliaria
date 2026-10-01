@@ -21,7 +21,9 @@ def language():
 def shell(page):
  if page in ('home','project'):
   return f'<div class="preview-return">{a("← Volver a la propuesta","← Back to proposal","/propuesta/#opciones")}</div>'
- links=a('Resumen','Overview','/propuesta/#resumen')+a('Comparar opciones','Compare options','/propuesta/#opciones')+a('Inversión y equipo','Investment & team','/proforma/#proforma')
+ options=''.join('<li>'+a(es,en,'/?style='+style,'',f'data-preview-style="{style}"')+'</li>' for style,es,en in [('essential','Esencial','Essential'),('editorial','Interactivo','Interactive'),('immersive','Inmersivo','Immersive')])
+ compare=f'<details class="options-menu"><summary aria-controls="options-submenu">{t("Comparar opciones","Compare options")}<span class="submenu-chevron" aria-hidden="true"></span></summary><ul id="options-submenu" class="options-submenu">{options}</ul></details>'
+ links=a('Resumen','Overview','/propuesta/#resumen')+compare+a('Inversión y equipo','Investment & team','/proforma/#proforma')
  return menu_shell('<a class="proposal-brand" href="/propuesta/">ALPHA BUILDERS<small>'+t('PROPUESTA DIGITAL','DIGITAL PROPOSAL')+'</small></a>',links,'stakeholder')
 def menu_shell(brand,links,kind='buyer'):
  return f'''<header class="navigation {kind}-navigation">{brand}<button class="menu-toggle js-only" aria-expanded="false" aria-controls="primary-menu">{t('Menú','Menu')} <span aria-hidden="true">☰</span></button><nav id="primary-menu" class="primary-menu" aria-label="Principal / Main">{links}{language()}</nav></header>'''
@@ -32,7 +34,7 @@ def nav(project=False):
  return menu_shell(brand,links)+a('Hablar con un asesor','Talk to an advisor','#contact','mobile-advisor')
 def map_peek():return f'''<button class="map-peek js-only" data-open="map" aria-label="Ver ubicación de Pixel"><img src="/assets/pixel-map.webp" alt="Mapa de referencia de Pixel" width="240" height="108"><span class="map-caption"><span><b>{t('Encuentra tu lugar','Find your place')}</b><br><small>PIXEL · LA MAGDALENA</small></span><span class="map-icon"><svg viewBox="0 0 20 20"><path d="M16 8c0 5-6 9-6 9S4 13 4 8a6 6 0 1 1 12 0Z"/><circle cx="10" cy="8" r="2"/></svg></span></span></button>'''
 def footer(stakeholder=False):
- team=a('Equipo de la propuesta','Proposal team','/nosotros/') if stakeholder else ''
+ team=a('Nuestro equipo','Our team','/nosotros/') if stakeholder else ''
  return f'''<footer class="footer"><span>ALPHA BUILDERS © 2026</span>{team}<span>{t('Renders conceptuales generados con IA · No representan planos aprobados','AI-generated conceptual renders · Not approved architectural plans')}</span><a href="https://alphabuildershq.com/" target="_blank" rel="noopener">{t('Sitio oficial','Official website')}</a></footer>'''
 def proposal():return f'''<dialog id="proposal" class="dialog"><div class="dialog-head"><b>ALPHA BUILDERS / CONCEPT STUDIO</b><button class="close" data-close aria-label="Close / Cerrar">×</button></div><div class="dialog-body">{t('Una visión compartida.<br>Tres formas de expresarla.','One shared vision.<br>Three ways to express it.','h2')}<p class="lead">{t('Una marca que inspira confianza. Cada proyecto con su propia personalidad. Información clara para quien decide rápido y una visita opcional para quien quiere descubrir más.','A brand that inspires trust. A distinct personality for every project. Clear information for quick decisions, and an optional journey for those who want to explore.')}</p><div class="proposal-grid">'''+''.join(f'''<section><small>{n} / {t(level,levelen)}</small>{t(name,nameen,'h3')}{t(desc,descen,'p')}<button class="text-link" data-choose="{s}">{t('Ver dirección','View direction')}</button></section>''' for n,level,levelen,name,nameen,desc,descen,s in [
  ('01','BÁSICO','BASIC','Esencial','Essential','Un catálogo claro para encontrar un proyecto, comparar sus datos y contactar al equipo.','A clear catalogue to find a project, compare its facts and contact the team.','essential'),
