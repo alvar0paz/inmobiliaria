@@ -256,7 +256,7 @@ const High=(()=>{
   ready=true;
   if(!window.THREE){fail();return false}
   try{renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:'default'})}catch(e){fail();return false}
-  renderer.setPixelRatio(Math.min(devicePixelRatio,1.75));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputEncoding=THREE.sRGBEncoding;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.05;
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,3));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputEncoding=THREE.sRGBEncoding;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.05;
   scene=new THREE.Scene();scene.background=new THREE.Color('#263e4c');scene.fog=new THREE.Fog('#263e4c',150,400);
   camera=new THREE.PerspectiveCamera(34,1,.5,1200);ray=new THREE.Raycaster();mouse=new THREE.Vector2();
   hemi=new THREE.HemisphereLight('#e6f1f4','#686157',1.1);scene.add(hemi);
@@ -309,7 +309,7 @@ const High=(()=>{
   if(!renderer)return;
   const w=stage.clientWidth,h=stage.clientHeight;if(!w||!h)return;
   const oldFit=camera.aspect?fitting():null;
-  renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,3));renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();
   if(oldFit){goal.r=clamp(goal.r*fitting()/oldFit,spatialMode==='interior'?5:18,fitting()*2.5)}
   loop();
  }
@@ -476,7 +476,7 @@ const Tour=(()=>{
  function init(){
   if(ready)return !!renderer;ready=true;
   try{if(!window.THREE)throw new Error('WebGL unavailable');renderer=new THREE.WebGLRenderer({canvas,antialias:true})}catch(e){status(L('La visita necesita WebGL. Puedes abrir el recorrido completo en el enlace inferior.','This visit needs WebGL. Open the full tour using the link below.'));return false}
-  renderer.setPixelRatio(Math.min(devicePixelRatio,1.75));scene=new THREE.Scene();scene.background=new THREE.Color('#0b0f0c');
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,3));scene=new THREE.Scene();scene.background=new THREE.Color('#0b0f0c');
   camera=new THREE.PerspectiveCamera(fov,1,.1,100);camera.rotation.order='YXZ';
   mesh=new THREE.Mesh(new THREE.CylinderGeometry(R,R,H,96,1,true,Math.PI-ARC/2,ARC),new THREE.MeshBasicMaterial({side:THREE.BackSide,color:'#ffffff'}));mesh.visible=false;scene.add(mesh);
   const floor=new THREE.Mesh(new THREE.CircleGeometry(R,48),new THREE.MeshBasicMaterial({color:'#0b0f0c'}));floor.rotation.x=-Math.PI/2;floor.position.y=-H/2;scene.add(floor);
@@ -497,12 +497,17 @@ const Tour=(()=>{
    const timer=setTimeout(()=>{settled=true;reject(new Error('Image load timed out'))},15000);
    new THREE.TextureLoader().load(`/assets/${SC[k].img}.webp`,texture=>{
     if(settled){texture.dispose();return}settled=true;clearTimeout(timer);
-    texture.wrapS=THREE.RepeatWrapping;texture.repeat.x=-1;texture.offset.x=1;texture.anisotropy=Math.min(4,renderer.capabilities.getMaxAnisotropy());resolve(texture);
+    // Keep non-power-of-two photographs at native resolution in WebGL 1.
+    // Repeating/mipmapped textures otherwise get resized to smaller powers of two.
+    texture.wrapS=texture.wrapT=THREE.ClampToEdgeWrapping;
+    texture.generateMipmaps=false;texture.minFilter=texture.magFilter=THREE.LinearFilter;
+    texture.repeat.x=-1;texture.offset.x=1;
+    texture.anisotropy=renderer.capabilities.getMaxAnisotropy();resolve(texture);
    },undefined,error=>{if(settled)return;settled=true;clearTimeout(timer);reject(error)});
   }).catch(error=>{textures.delete(k);throw error});
   textures.set(k,promise);return promise;
  }
- function resize(){if(!renderer)return;const w=stage.clientWidth,h=stage.clientHeight;if(!w||!h)return;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();loop()}
+ function resize(){if(!renderer)return;const w=stage.clientWidth,h=stage.clientHeight;if(!w||!h)return;renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,3));renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();loop()}
  function limits(){const v=gFov*Math.PI/360,hf=Math.atan(Math.tan(v)*camera.aspect);return{y:Math.max(0,ARC/2-hf-.015),p:Math.max(0,Math.atan(H/2/R)-v-.015)}}
  function rotate(dx,dy){const k=gFov/Math.max(1,stage.clientHeight)*Math.PI/180;gYaw+=dx*k;gPitch+=dy*k;loop()}
  function zoom(scale){gFov=clamp(gFov*scale,28,54);loop()}
