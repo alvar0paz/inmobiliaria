@@ -1,10 +1,11 @@
 # Alpha Builders · Concept Studio
 
-Bilingual website concept by Martín Vélez Falconí and Alvaro Paz, prepared for private review with Alpha Builders.
+Bilingual website concept by Andean Software Lab (Martín Vélez Falconí and Alvaro Paz), prepared for private review with Alpha Builders.
 
 ## Included
 
 - Three homepage experiences: Essential is a compact project catalogue, Editorial tells architectural stories, and Immersive offers a cinematic project selector.
+- The High experience adds a cinematic arrival using Pixel renders, a detailed model with separating floors, and an illustrative furnished room with cutaway/eye-level cameras and morning/sunset/night lighting. The unit selector, filters, 2D links and existing render tour remain connected.
 - Pixel carries each direction through a complete project journey. Essential prioritizes facts and home types; Editorial adds the 2D floor selector; Immersive leads into the 3D model and panoramic visit. Home type enquiries carry their context into the contact section.
 - About us page with both professional profiles and LinkedIn links.
 - Quote page (`/proforma/`) with the brief's three design levels, each with a live demo: Basic (central manager + WhatsApp bot), Mid (2D elevation and floor plans) and High (3D model of the projects + virtual visits), plus the price table from section 11 of the brief.
@@ -36,6 +37,9 @@ Example: <http://127.0.0.1:4173/nosotros/?style=immersive&lang=es>.
 | `dist/vendor/three.min.js` | three.js r128 (MIT), served locally so the 3D works offline. |
 | `dist/styles.css` | Shared styles and the three visual directions. |
 | `dist/app.js` | Language and style switching, dialogs and guided journey. |
+| `sector.py` | Shared bilingual EL SECTOR location section for all three visual directions. |
+| `dist/sector-scene.js`, `dist/sector-map.js`, `dist/sector-map.css` | Instanced 3D streetscape, landmark selection, camera controls and responsive location design. |
+| `scripts/render-sector-map.py` | Regenerate the static map fallback from the same geometry, without a browser (Node, Pillow and NumPy). |
 | `dist/assets/` | Optimized project images, logos and profile portraits. |
 | `asset-manifest.json` | Architectural image sources and reference notes. |
 | `profile-sources.json` | Sources for the professional profiles. |
@@ -50,6 +54,8 @@ After building, run `python3 tests/site-structure.test.py` to check route target
 The quote page uses illustrative units, prices, statuses and dates (labelled as sample data). The commercial quote is separate from demo inventory: `PRICING` in `proforma.py` holds the Basic / Mid / High offers at USD 36,000 / 42,000 / 48,000 before the provisional 15% VAT calculation. Values are rendered in HTML and can be adjusted temporarily during a presentation; reloading restores the published offer. The quote includes contacts, payment milestones, warranty, recurring costs and scope conditions. Its virtual visit wraps existing Pixel renders on a panoramic viewer; it is not 360 photography. The sound is synthesised in the browser and stays off until the visitor explicitly enables it.
 
 
-This is a presentation prototype with four pages, not the full production platform. The optional journey uses architectural images and transitions; it is not a navigable 3D model or a verified representation of circulation inside the building. The map is a reference image with a link to Google Maps. There is no CMS or backend, and production prices, availability and project status require approved data.
+This is a presentation prototype with four pages, not the full production platform. The arrival uses architectural images and transitions. The interactive building, furnished room and lighting are illustrative, not verified architectural plans, real circulation, accurate views or a solar study. EL SECTOR uses a locally rendered, interactive 3D diorama with a static fallback and a link to Google Maps. Pixel, Metro, Coral and the two avenue names come from Pixel’s original location diagram; surrounding massing, landscaping and distances are illustrative. The map dialog also preserves the original published image. There is no CMS or backend, and production prices, availability and project status require approved data.
 
 Architecture, logos and reference images remain the property of their respective rights holders. They are included for private proposal review; see `asset-manifest.json`. The profile portraits come from the LinkedIn profiles supplied for the About us page.
+
+The sector map loads WebGL as it approaches the viewport and renders only on interaction. Run `node --test tests/sector-map.test.cjs` for projection, landmark selection, language, camera, lazy rendering and WebGL fallback checks. To regenerate its image after editing the geometry, run `python3 scripts/render-sector-map.py`.

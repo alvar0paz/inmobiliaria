@@ -50,6 +50,18 @@ class SiteStructure(unittest.TestCase):
         for id in ('project-explorer','demo-medio','demo-alto','elev','scene3d','tour3d','unit3d-select'):
             self.assertIn(id,page.ids)
         self.assertLess(page.scripts.index('/viewer-controls.js'),page.scripts.index('/proforma.js'))
+    def test_sector_map_is_shared_and_progressively_enhanced(self):
+        source=(DIST/'pixel/index.html').read_text()
+        page=Page(DIST/'pixel/index.html')
+        self.assertNotIn('EL BARRIO',source)
+        self.assertIn('EL SECTOR',source)
+        for id in ('sector-title','sector-map','sector-canvas','sector-map-caption','sector-map-help'):
+            self.assertEqual(page.ids.count(id),1)
+        self.assertLess(page.scripts.index('/vendor/three.min.js'),page.scripts.index('/sector-scene.js'))
+        self.assertLess(page.scripts.index('/sector-scene.js'),page.scripts.index('/sector-map.js'))
+        self.assertIn('/assets/sector-map.png',page.references)
+        self.assertIn('https://maps.app.goo.gl/JJozcsbpJE2bbfue7',page.references)
+
     def test_proforma_keeps_all_three_projects(self):
         self.assertEqual(len(json.loads(Page(DIST/'proforma/index.html').feed)['projects']),3)
 
