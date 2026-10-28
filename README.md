@@ -1,4 +1,4 @@
-# Demo inmobiliaria · Andean Software Lab
+# Demo inmobiliaria · Biotico Software Lab
 
 Single immersive bilingual real estate demonstration at https://inmobiliaria.alvaropaz.com/.
 
