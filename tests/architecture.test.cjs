@@ -1,12 +1,13 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
-const THREE=require('../dist/vendor/three.min.js');
+// The site package is ESM; evaluate the browser UMD bundle as a browser would.
+const threeContext={};vm.runInNewContext(fs.readFileSync(require.resolve('../public/vendor/three.min.js'),'utf8'),threeContext);const THREE=threeContext.THREE;
 function fixture(options={}){
  const renders=[],anchors=[];let frame,now=0;
  class Renderer {constructor(){this.shadowMap={};this.info={render:{calls:0,triangles:0}}}setPixelRatio(){}setSize(){}render(scene,camera){renders.push({scene,camera})}dispose(){this.disposed=true}}
  class Observer{observe(){}disconnect(){}}
  const canvas={dataset:{},parentElement:{getBoundingClientRect:()=>({width:options.width||900,height:options.height||580})}};
  const window={};const context={window,devicePixelRatio:2,performance:{now:()=>now},matchMedia:q=>({matches:q.includes("reduced-motion")?options.reduced!==false:!!options.compact}),ResizeObserver:Observer,IntersectionObserver:Observer,document:{hidden:false,addEventListener(){},removeEventListener(){}},requestAnimationFrame:f=>(frame=f,1),cancelAnimationFrame(){frame=null},ViewerControls:{fitDistance:()=>90,bind:()=>({cancel(){}})}};
- vm.runInNewContext(fs.readFileSync(require.resolve('../dist/architecture.js'),'utf8'),context);
+ vm.runInNewContext(fs.readFileSync(require.resolve('../public/architecture.js'),'utf8'),context);
  const api=window.Architecture.create({...THREE,WebGLRenderer:Renderer},canvas,()=>{},{onRender:list=>anchors.splice(0,anchors.length,...list),...options});
  function flush(count=4){for(let i=0;i<count&&frame;i++){now+=1000/60;const f=frame;frame=null;f()}}
  flush();return{api,canvas,renders,flush,anchors,floorY:window.Architecture.floorY,scene:()=>renders.at(-1).scene};

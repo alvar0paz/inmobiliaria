@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const {gestures,wheelScale,fitDistance} = require('../dist/viewer-controls.js');
+const {gestures,wheelScale,fitDistance} = require('../public/viewer-controls.js');
 function fixture(){
  const result={rotations:[],zooms:[],taps:[],active:[]};
  const control=gestures({rotate:(...v)=>result.rotations.push(v),zoom:v=>result.zooms.push(v),tap:e=>result.taps.push(e.pointerId),active:v=>result.active.push(v)});

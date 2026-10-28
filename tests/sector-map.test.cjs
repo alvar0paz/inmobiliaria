@@ -2,9 +2,9 @@ const test=require('node:test');
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const vm=require('node:vm');
-const THREE=require('../dist/vendor/three.min.js');
+const THREE=require('../public/vendor/three.min.js');
 const Scene=require('../legacy-viewer/sector-scene.js');
-const Controls=require('../dist/viewer-controls.js');
+const Controls=require('../public/viewer-controls.js');
 
 // Use the real scene, raycaster and projection math; stub only browser/WebGL I/O.
 function mount({webgl=true,width=720,height=640}={}){

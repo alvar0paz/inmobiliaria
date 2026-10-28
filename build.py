@@ -3,7 +3,7 @@ from html import escape
 from hashlib import sha256
 import re
 import json
-ROOT=Path(__file__).parent/'dist'
+ROOT=Path(__file__).parent/'public'
 def t(es,en,tag='span',cls=''):
  return f'<{tag}'+(f' class="{cls}"' if cls else '')+f' data-es="{escape(es,quote=True)}" data-en="{escape(en,quote=True)}">{es}</{tag}>'
 def a(es,en,href,cls='',extra=''): return f'<a href="{href}" class="{cls}" {extra}>{t(es,en)}</a>'

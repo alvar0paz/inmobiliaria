@@ -5,3 +5,13 @@ __pycache__/
 .env
 .env.*
 !.env.example
+
+node_modules/
+.sites-runtime/
+.wrangler/
+.vinext/
+.next/
+outputs/
+*.tsbuildinfo
+.dev.vars*
+dist/

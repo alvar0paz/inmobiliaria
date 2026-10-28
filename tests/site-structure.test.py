@@ -5,7 +5,7 @@ from pathlib import Path
 from html.parser import HTMLParser
 from urllib.parse import urlsplit, unquote
 
-DIST=Path(__file__).resolve().parents[1]/'dist'
+DIST=Path(__file__).resolve().parents[1]/'public'
 
 class Page(HTMLParser):
     def __init__(self,path):

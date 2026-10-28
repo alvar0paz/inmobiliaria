@@ -6,7 +6,7 @@ function mount(){
  const scripts=[],observers=[];
  const context={document:{createElement:()=>({remove(){}}),head:{append:script=>scripts.push(script)}},IntersectionObserver:class{constructor(fn){this.fn=fn;observers.push(this)}observe(){}disconnect(){this.disconnected=true}}};
  context.window=context;
- vm.runInNewContext(fs.readFileSync(require.resolve('../dist/asset-loader.js'),'utf8'),context);
+ vm.runInNewContext(fs.readFileSync(require.resolve('../public/asset-loader.js'),'utf8'),context);
  return {context,scripts,observers,assets:context.AlphaAssets};
 }
 test('concurrent viewers share one download and failed downloads can retry',async()=>{
