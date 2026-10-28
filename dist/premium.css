@@ -25,3 +25,6 @@
 .unit-list button span .dot{margin-right:5px}
 @media(max-width:700px){.floor-stepper{right:14px}.floor-stepper button{width:44px;height:36px}.floor-stepper b{font-size:21px}.hotspot>span{font-size:9px;padding:7px 8px}.hotspot-unit>span{font-size:10px;padding:6px 7px;top:-32px}.scene-bottom>.scene-legend{gap:8px;max-width:none}}
 @media(prefers-reduced-motion:reduce){.hotspot>i::after,.scene-status::after{animation:none}.scene-wrap canvas,.hotspot{transition:none}}
+
+/* Typology context stays visible above the room navigation. */
+.interior-summary{padding:0 0 16px;border-bottom:1px solid var(--line,#d6d3c8);margin-bottom:16px}.interior-summary strong{font-size:15px;font-weight:500}.interior-summary p{font-size:13px;line-height:1.6;margin:8px 0 0}.room-buttons [hidden]{display:none}

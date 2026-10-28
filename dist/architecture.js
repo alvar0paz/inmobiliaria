@@ -25,15 +25,13 @@ window.Architecture = (() => {
     terraces: {at: [5, floorY(9) + 1.5, 8.7], normal: [0, 0, 1], view: {theta: .42, phi: 1.33, r: 22, x: 4.5, y: floorY(9) + 1, z: 7.5}},
     lobby: {at: [0, 2.6, 10.4], normal: [0, 0, 1], view: {theta: .25, phi: 1.43, r: 24, x: 0, y: 2.8, z: 6}},
   };
-  // Interior cameras are relative to the apartment floor.
-  const ROOMS = {
-    overview: {theta: .55, phi: .7, r: 23, x: 0, y: 0, z: 1.2},
-    living: {theta: Math.PI + .7, phi: 1.42, r: 6.2, x: -2.4, y: 1, z: 3.4},
-    kitchen: {theta: .22, phi: 1.39, r: 5.1, x: -4.4, y: 1.2, z: -3.8},
-    bedroom: {theta: .34, phi: 1.16, r: 4.4, x: 5, y: .9, z: -3.5},
-    terrace: {theta: Math.PI + .4, phi: 1.5, r: 4.4, x: 3.2, y: 1.3, z: 7.2},
+  // Concept plans in metres. Inventory metadata selects a plan; no unit-ID inference.
+  const PLANS = {
+    estudio: {w: 6.2, d: 5.8, beds: 0, bedrooms: [[1.35, -1.5, 1.5]], social: .2, bath: [-2.1, -1.85]},
+    suite: {w: 7.6, d: 7, beds: 1, bedrooms: [[1.9, -1.9, 1.6]], social: .3, bath: [-2.65, -2.3]},
+    depa2: {w: 10, d: 7.6, beds: 2, bedrooms: [[-1.15, -2.2, 1.6], [2.95, -2.2, 1.2]], social: .35, bath: [-4, -2.6]},
+    depa3: {w: 12, d: 8.6, beds: 3, bedrooms: [[-2.45, -2.7, 1.6], [.95, -2.7, 1.2], [4.3, -2.7, 1.2]], social: -.15, bath: [-5, -3.1]},
   };
-  const ROOM_SPOTS = {living: [-3.4, 1.9, 1.6], kitchen: [-4.6, 2.1, -3.4], bedroom: [5, 1.7, -3.2], terrace: [3.5, 1.6, 7]};
 
   function create(T, canvas, onUnit, options = {}) {
     const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -380,62 +378,169 @@ window.Architecture = (() => {
     halo.scale.set(1.07, 1.1, 1.1);
     halo.userData.keep = true;
 
-    /* ---------- One furnished apartment, placed at the chosen floor ---------- */
-    const interior = new T.Group();
-    home.add(interior);
-    box(interior, 15, .3, 11, 0, -.15, 0, stone);
-    for (let i = 0; i < 54; i++) box(interior, .265, .035, 10.9, -7.15 + i * .27, .025, 0, i % 3 === 0 ? oak : mat('floor', '#bda17d'));
-    box(interior, 15, 3.2, .18, 0, 1.6, -5.5, lightStone); box(interior, .18, 3.2, 11, -7.5, 1.6, 0, lightStone);
-    box(interior, 3, 1, .18, 6, .5, -.2, lightStone); box(interior, .18, 3.2, 5, 2.5, 1.6, -3, lightStone);
-    box(interior, 15, .12, .1, 0, .12, -5.35, oak); box(interior, .1, .12, 11, -7.35, .12, 0, oak);
-    // Kitchen, with cabinet gaps, recessed handles, hob, basin and tap.
-    for (let i = 0; i < 7; i++) { box(interior, .74, .9, .7, -6.7 + i * .78, .5, -4.95, oak); box(interior, .52, .025, .03, -6.7 + i * .78, .82, -4.57, metal); box(interior, .74, .75, .4, -6.7 + i * .78, 2.5, -5.18, lightStone); }
-    box(interior, 5.5, .09, .85, -4.4, 1, -4.9, lightStone); box(interior, 5.5, .035, .05, -4.4, 2.08, -4.94, glow);
-    box(interior, 1, .03, .55, -5.8, 1.06, -4.85, metal); for (const x of [-6.05, -5.55]) for (const z of [-5, -4.7]) cyl(interior, .12, .02, x, 1.08, z, dark);
-    box(interior, .7, .015, .45, -3, 1.06, -4.85, metal); box(interior, .56, .02, .32, -3, 1.075, -4.85, mat('basin', '#80938b', {metalness: .6})); cyl(interior, .025, .35, -3, 1.25, -5.1, brass); box(interior, .25, .035, .035, -2.9, 1.43, -5.1, brass);
-    box(interior, 2.8, .9, 1.15, -4.7, .5, -2, wood); box(interior, 3, .1, 1.35, -4.7, 1, -2, lightStone);
-    for (const x of [-5.5, -4.2]) { cyl(interior, .33, .1, x, .72, -.9, oak); for (const z of [-1.1, -.7]) for (const xx of [-.18, .18]) box(interior, .04, .65, .04, x + xx, .36, z, metal); }
-    for (const x of [-5.7, -3.8]) { cyl(interior, .025, 1.1, x, 2.65, -2, metal); cyl(interior, .27, .2, x, 2.04, -2, brass, .1); cyl(interior, .23, .025, x, 1.93, -2, glow); }
-    // Living room: layered rug, modular sofa, cushions, coffee table, books and shelving.
-    box(interior, 5, .035, 3.7, -2.7, .07, 2.2, mat('rug', '#d1c8b2', {roughness: 1}));
-    for (let i = 0; i < 27; i++) box(interior, 4.85, .012, .026, -2.7, .095, .5 + i * .13, mat('rugThread', '#bcb69e'));
-    box(interior, 3.5, .32, 1.15, -3.7, .35, 1.1, wood); box(interior, 3.45, .25, 1.05, -3.7, .63, 1.1, fabric); box(interior, 3.6, .85, .25, -3.7, .78, .55, fabric);
-    for (const x of [-5.4, -2]) box(interior, .24, .7, 1.3, x, .65, 1.1, fabric);
-    for (const x of [-4.7, -3.7, -2.7]) { box(interior, .94, .22, .95, x, .72, 1.2, fabric); box(interior, .68, .55, .18, x, .98, .8, cushion).rotation.x = -.16; }
-    cyl(interior, .85, .13, -3.3, .52, 3, stone); cyl(interior, .4, .45, -3.3, .27, 3, wood); box(interior, .4, .055, .3, -3.55, .63, 3.1, oak); box(interior, .3, .04, .24, -3.5, .68, 3.1, lightStone); cyl(interior, .13, .27, -3, .72, 2.9, brass, .08);
-    box(interior, .4, 2.1, 3, -7.15, 1.1, 1.7, wood); for (const y of [.35, 1, 1.7, 2.3]) box(interior, .5, .06, 3.3, -7, y, 1.7, oak);
-    for (let i = 0; i < 12; i++) box(interior, .3, .4, .1, -7, .59, 1 + i * .12, i % 3 ? stone : cushion);
-    plant(interior, -6.3, .05, 4.3, 1.1); plant(interior, -.7, .05, 3.9, .7);
-    // Dining and sculptural pendant.
-    cyl(interior, .85, .12, .6, .9, -1.4, oak); cyl(interior, .25, .85, .6, .43, -1.4, wood);
-    for (let i = 0; i < 4; i++) { const a = i * Math.PI / 2, x = .6 + Math.cos(a) * 1.15, z = -1.4 + Math.sin(a) * 1.15; cyl(interior, .33, .14, x, .5, z, fabric); cyl(interior, .12, .45, x, .23, z, wood); }
-    cyl(interior, .02, .6, .6, 2.9, -1.4, metal); sphere(interior, .38, .6, 2.4, -1.4, glow, 1.5, .6, 1.5);
-    // Bedroom: upholstered bed, linen layers, pillows, bedside tables and wardrobe.
-    box(interior, 2.7, .3, 2.6, 5, .3, -3.4, wood); box(interior, 2.6, .28, 2.45, 5, .55, -3.4, fabric); box(interior, 2.8, 1.2, .18, 5, .85, -4.72, cushion);
-    box(interior, 2.65, .09, 1.4, 5, .74, -2.95, mat('linen', '#b5ad93'));
-    for (const x of [4.35, 5.65]) { box(interior, 1, .17, .55, x, .81, -4.1, fabric).rotation.y = x < 5 ? .05 : -.05; const bx = x < 5 ? 3.1 : 6.9; box(interior, .65, .45, .6, bx, .3, -4.1, oak); cyl(interior, .16, .22, bx, .67, -4.1, brass); sphere(interior, .2, bx, .88, -4.1, glow); }
-    for (const x of [3.4, 4.4, 5.4, 6.4]) { box(interior, .94, 2.8, .6, x, 1.45, -5.07, oak); box(interior, .03, .42, .03, x + .25, 1.4, -4.74, brass); }
-    box(interior, 2.5, .025, 1.5, 5, .08, -1.4, mat('bedrug', '#d2c8af'));
-    // Window frames and voile curtains remain visible in every interior view.
+    /* ---------- Four furnished plans, each with its own circulation and room views ---------- */
     const homeGlass = mat('homeglass', '#bdd6d2', {transparent: true, opacity: .12, roughness: .1, metalness: .15, depthWrite: false, noShadow: true});
-    for (let x = -7; x <= 7; x += 1.75) { box(interior, .065, 3.2, .09, x, 1.6, 5.5, metal); box(interior, 1.7, 2.9, .025, x + .85, 1.6, 5.5, homeGlass); }
+    const linen = mat('linen', '#b5ad93'), rug = mat('rug', '#d1c8b2', {roughness: 1});
     const curtain = mat('curtain', '#e9e3d3', {transparent: true, opacity: .8});
-    for (const x of [-7.1, 6.9]) for (let k = 0; k < 7; k++) cyl(interior, .065, 2.9, x + k * .08, 1.65, 5.22, curtain);
-    box(interior, 15, .09, .12, 0, 3.18, 5.5, metal); box(interior, 15, .06, .12, 0, .15, 5.5, metal);
-    box(interior, 15, .2, 2.5, 0, -.04, 6.85, stone); for (let i = 0; i < 50; i++) box(interior, .23, .035, 2.4, -7.3 + i * .3, .08, 6.85, oak);
-    box(interior, 15, 1, .045, 0, .7, 8.05, glass); box(interior, 15, .045, .06, 0, 1.23, 8.05, metal);
-    for (const x of [-7, -3.5, 0, 3.5, 7]) box(interior, .05, 1.2, .05, x, .65, 8, metal);
-    for (const x of [-6.5, 6.5]) plant(interior, x, .1, 7.2, 1);
-    cyl(interior, .5, .08, 3.5, .65, 6.8, stone); cyl(interior, .16, .6, 3.5, .32, 6.8, metal);
-    for (const x of [2.3, 4.7]) { box(interior, .8, .12, .8, x, .45, 6.8, fabric); box(interior, .8, .65, .12, x, .75, 6.4, wood); for (const z of [6.5, 7.1]) for (const a of [-.3, .3]) box(interior, .04, .4, .04, x + a, .2, z, metal); }
-    merge(interior);
-    // The tower continues below the apartment, so terrace views look down its facade.
-    const shaft = new T.Group();
-    home.add(shaft);
-    const shaftBody = box(shaft, 14.8, 1, 10.8, 0, 0, 0, unitLit[3]);
-    const shaftSlabs = Array.from({length: 12}, () => box(shaft, 15.6, .27, 11.6, 0, 0, 0, lightStone));
-    // Warm lamps for evenings inside.
-    const homeLights = [[-3, 1.25, 2.9], [.6, 2.1, -1.4], [5, 1.4, -3.6]].map(([x, y, z]) => { const l = new T.PointLight('#ffb867', 0, 8, 2); l.position.set(x, y, z); home.add(l); return l; });
+    const tile = mat('tile', '#c3c5ba', {roughness: .4});
+    function group(parent, x, z, angle = 0) {
+      const g = new T.Group(); g.position.set(x, 0, z); g.rotation.y = angle; parent.add(g); return g;
+    }
+    function bed(parent, x, z, w, index) {
+      const g = group(parent, x, z); g.userData.bed = index;
+      box(g, w + .12, .25, 2.12, 0, .24, 0, wood);
+      box(g, w, .25, 2, 0, .48, 0, fabric);
+      box(g, w + .25, 1.12, .13, 0, .68, -1.08, cushion);
+      box(g, w + .02, .07, 1.15, 0, .64, .35, linen);
+      for (let i = 0; i < 12; i++) box(g, w, .012, .018, 0, .683, -.1 + i * .075, rug);
+      const pillows = w > 1.4 ? [-w / 4, w / 4] : [0];
+      for (const px of pillows) box(g, .56, .15, .4, px, .68, -.66, fabric).rotation.y = px < 0 ? .06 : -.06;
+      for (const bx of [-w / 2 - .35, w / 2 + .35]) {
+        box(g, .42, .42, .42, bx, .24, -.7, oak);
+        cyl(g, .08, .2, bx, .55, -.7, brass); sphere(g, .13, bx, .74, -.7, glow);
+      }
+      box(g, w + .7, .025, 1, 0, .06, 1, rug);
+      // Built-in wardrobe along the back wall, offset from the headboard.
+      box(g, .5, 2.5, 1.05, w / 2 + .6, 1.3, .2, oak);
+      box(g, .025, .4, .025, w / 2 + .32, 1.2, .2, brass);
+    }
+    function kitchen(parent, x, z, length) {
+      const g = group(parent, x, z, Math.PI / 2), count = Math.round(length / .55), width = length / count;
+      for (let i = 0; i < count; i++) {
+        const at = -length / 2 + width * (i + .5);
+        box(g, width - .025, .82, .58, at, .46, 0, oak);
+        box(g, width * .65, .02, .035, at, .78, .31, brass);
+        box(g, width - .025, .65, .32, at, 2.05, -.12, lightStone);
+      }
+      box(g, length + .08, .07, .68, 0, .91, 0, lightStone);
+      box(g, length, .025, .025, 0, 1.7, -.04, glow);
+      box(g, .52, .02, .42, -length / 2 + .4, .96, 0, metal);
+      for (const xx of [-.12, .12]) for (const zz of [-.11, .11]) cyl(g, .07, .015, -length / 2 + .4 + xx, .98, zz, dark);
+      box(g, .5, .018, .38, length / 2 - .4, .96, 0, metal);
+      box(g, .38, .02, .27, length / 2 - .4, .975, 0, tile);
+      cyl(g, .02, .25, length / 2 - .4, 1.1, -.2, brass);
+      box(g, .17, .025, .025, length / 2 - .32, 1.23, -.2, brass);
+      for (let i = 0; i < 3; i++) cyl(g, .06, .14 + i * .03, -.2 + i * .15, 1.04, -.15, i % 2 ? oak : stone);
+    }
+    function living(parent, x, z, wide) {
+      const g = group(parent, x, z), w = wide ? 2.6 : 2.05;
+      box(g, w + .5, .025, 2.55, 0, .055, .55, rug);
+      for (let i = 0; i < 20; i++) box(g, w + .4, .009, .015, 0, .072, -.6 + i * .12, linen);
+      box(g, w, .25, .86, 0, .25, 0, wood);
+      box(g, w, .58, .18, 0, .6, -.4, fabric);
+      for (const xx of [-w / 2, w / 2]) box(g, .16, .5, .95, xx, .5, 0, fabric);
+      for (let i = 0; i < 3; i++) {
+        const xx = (i - 1) * (w - .2) / 3;
+        box(g, (w - .28) / 3, .2, .76, xx, .48, .05, fabric);
+        box(g, .42, .38, .15, xx, .75, -.2, i === 1 ? linen : cushion).rotation.x = -.15;
+      }
+      cyl(g, .55, .08, 0, .42, 1.25, stone); cyl(g, .2, .36, 0, .21, 1.25, wood);
+      box(g, .3, .04, .22, -.15, .49, 1.25, oak); box(g, .25, .035, .18, -.12, .53, 1.25, lightStone);
+      cyl(g, .08, .16, .23, .55, 1.2, brass);
+    }
+    function dining(parent, x, z, seats) {
+      const g = group(parent, x, z), radius = seats === 6 ? .85 : seats === 4 ? .62 : .44;
+      cyl(g, radius, .07, 0, .76, 0, oak); cyl(g, .18, .7, 0, .38, 0, wood);
+      for (let i = 0; i < seats; i++) {
+        const a = i * Math.PI * 2 / seats, cx = Math.cos(a) * (radius + .32), cz = Math.sin(a) * (radius + .32);
+        const c = group(g, cx, cz, -a + Math.PI / 2);
+        box(c, .38, .08, .4, 0, .44, 0, fabric); box(c, .4, .4, .07, 0, .67, .2, oak);
+        for (const xx of [-.14, .14]) for (const zz of [-.14, .14]) box(c, .035, .4, .035, xx, .22, zz, wood);
+      }
+      cyl(g, .015, .6, 0, 2.7, 0, metal); sphere(g, .25, 0, 2.3, 0, glow, 1.5, .6, 1.5);
+      cyl(g, .1, .22, 0, .9, 0, brass, .06);
+    }
+    function bathroom(parent, x, z) {
+      const g = group(parent, x, z);
+      box(g, 1.8, .04, 2.1, 0, .06, 0, tile);
+      for (let i = 0; i < 5; i++) box(g, .012, .01, 2.1, -.8 + i * .4, .085, 0, lightStone);
+      box(g, .09, 1.1, 2.1, .9, .6, 0, lightStone);
+      box(g, .75, .06, .85, -.43, .12, -.58, lightStone);
+      box(g, .025, 2, .9, 0, 1.15, -.58, homeGlass);
+      cyl(g, .025, 1.8, -.75, 1.1, -.85, brass); box(g, .35, .025, .28, -.6, 2, -.85, metal);
+      box(g, .6, .6, .43, .52, .53, .4, oak); box(g, .65, .06, .48, .52, .86, .4, lightStone);
+      cyl(g, .2, .06, .52, .92, .4, stone); cyl(g, .015, .22, .52, 1.02, .2, brass);
+      box(g, .45, .4, .18, -.5, .44, .78, lightStone); sphere(g, .25, -.5, .32, .5, lightStone, .8, .65, 1.2);
+      box(g, .12, .35, .4, .81, 1.1, .4, fabric);
+    }
+    function makePlan(type, plan) {
+      const g = new T.Group(), {w, d, bedrooms, social, bath} = plan;
+      g.name = 'interior-' + type; g.userData.typology = type; home.add(g); g.visible = false;
+      box(g, w, .25, d, 0, -.13, 0, stone);
+      for (let i = 0; i < Math.floor(w / .2); i++) box(g, .19, .028, d - .1, -w / 2 + .1 + i * .2, .018, 0, i % 3 ? oak : mat('floor', '#bda17d'));
+      box(g, w, 2.8, .12, 0, 1.4, -d / 2, lightStone);
+      box(g, .12, 1.1, d, -w / 2, .55, 0, lightStone);
+      box(g, .12, 1.1, d, w / 2, .55, 0, lightStone);
+      box(g, w, .1, .07, 0, .1, -d / 2 + .09, oak);
+      bathroom(g, ...bath);
+      if (plan.beds === 0) {
+        // Open sleeping nook: timber screen, without an enclosed bedroom.
+        for (let i = 0; i < 12; i++) box(g, .06, 2.3, .07, .05, 1.15, -2.6 + i * .13, oak);
+      } else {
+        const left = plan.beds === 1 ? .05 : -w / 2 + 1.8;
+        const span = (w / 2 - left) / plan.beds, front = -d / 2 + 3.65;
+        for (let i = 0; i < plan.beds; i++) {
+          const edge = left + i * span;
+          box(g, .1, 1.2, 3.65, edge, .6, -d / 2 + 1.825, lightStone);
+          // Cutaway partitions retain a real, 85 cm circulation opening.
+          box(g, span - .9, 1.1, .1, edge + (span - .9) / 2, .55, front, lightStone);
+          box(g, .8, .025, .08, edge + span - .45, .06, front, brass);
+        }
+      }
+      bedrooms.forEach(([x, z, bw], i) => bed(g, x, z, bw, i + 1));
+      const kx = -w / 2 + .4, kz = social + 1.25, lx = w / 4, lz = social + .7;
+      kitchen(g, kx, kz, plan.beds === 0 ? 1.9 : 2.5);
+      living(g, lx, lz, plan.beds >= 2);
+      if (plan.beds === 0) {
+        box(g, .55, .06, .85, -.5, .9, 1.75, oak); cyl(g, .22, .48, -.05, .25, 1.75, wood);
+      } else dining(g, plan.beds === 1 ? -.9 : -1, social + 2.2, plan.beds === 3 ? 6 : 4);
+      plant(g, w / 2 - .5, .04, d / 2 - .5, .65);
+      // A slim bookcase and a work ledge give each second/third bedroom a use.
+      bedrooms.slice(1).forEach(([x, z], i) => {
+        box(g, 1, .06, .45, x, .76, z + 1.55, oak);
+        box(g, .04, .72, .4, x - .44, .38, z + 1.55, wood);
+        box(g, .04, .72, .4, x + .44, .38, z + 1.55, wood);
+        for (let j = 0; j < 5; j++) box(g, .08, .22 + j * .015, .18, x - .35 + j * .09, .92, z + 1.55, j % 2 ? cushion : lightStone);
+      });
+      // Glazed frontage and a furnished balcony, scaled to this plan only.
+      const bays = Math.ceil(w / 1.5), bay = w / bays, tz = d / 2 + 1;
+      for (let i = 0; i <= bays; i++) {
+        const x = -w / 2 + i * bay;
+        box(g, .045, 2.7, .06, x, 1.4, d / 2, metal);
+        if (i < bays) box(g, bay - .06, 2.6, .025, x + bay / 2, 1.4, d / 2, homeGlass);
+      }
+      box(g, w, .06, .08, 0, 2.77, d / 2, metal);
+      for (const x of [-w / 2 + .08, w / 2 - .5]) for (let k = 0; k < 5; k++) cyl(g, .045, 2.55, x + k * .08, 1.4, d / 2 - .15, curtain);
+      box(g, w, .18, 1.9, 0, -.05, tz, stone);
+      for (let i = 0; i < Math.floor(w / .2); i++) box(g, .19, .025, 1.8, -w / 2 + .1 + i * .2, .06, tz, oak);
+      box(g, w, .95, .035, 0, .6, tz + .9, glass); box(g, w, .035, .045, 0, 1.1, tz + .9, metal);
+      for (let i = 0; i <= bays; i++) box(g, .04, 1, .04, -w / 2 + i * bay, .6, tz + .9, metal);
+      for (const x of [-w / 2 + .45, w / 2 - .45]) plant(g, x, .08, tz, .75);
+      const tx = plan.beds >= 2 ? 1.6 : 0;
+      cyl(g, .38, .06, tx, .62, tz, stone); cyl(g, .08, .56, tx, .32, tz, metal);
+      for (const x of [tx - .8, tx + .8]) {
+        box(g, .55, .1, .6, x, .45, tz, fabric); box(g, .55, .5, .08, x, .7, tz - .3, oak);
+        for (const dx of [-.2, .2]) for (const dz of [-.2, .2]) box(g, .035, .4, .035, x + dx, .22, tz + dz, wood);
+      }
+      merge(g);
+      const view = (x, z, r = 4.3, theta = .3) => ({x, y: .7, z, r, theta, phi: 1.04});
+      const views = {overview: {x: 0, y: .3, z: .6, r: Math.max(w, d) * 1.9 + 2, theta: .4, phi: .65},
+        living: view(lx, lz + .35, 4.8), kitchen: view(kx + .3, kz, 4, 1.1)};
+      bedrooms.forEach(([x, z], i) => views[i ? 'bedroom' + (i + 1) : 'bedroom'] = view(x, z, 4.2));
+      views.bathroom = view(bath[0], bath[1], 3.4, .5);
+      views.terrace = {x: tx, y: 1.1, z: tz, r: 3.5, theta: Math.PI + .25, phi: 1.4};
+      const spots = Object.fromEntries(Object.entries(views).filter(([key]) => key !== 'overview').map(([key, v]) => [key, [v.x, 1.4, v.z]]));
+      return {group: g, views, spots, ...plan};
+    }
+    const interiors = Object.fromEntries(Object.entries(PLANS).map(([type, plan]) => [type, makePlan(type, plan)]));
+    const inventoryTypes = new Map((options.units || []).map(u => [String(u.id), u.type]));
+    let typology = 'suite', activeInterior = interiors.suite;
+    activeInterior.group.visible = true;
+    // The tower continues below the apartment; its dimensions follow the concept plan.
+    const shaft = new T.Group(); home.add(shaft);
+    const shaftBody = box(shaft, 1, 1, 1, 0, 0, 0, unitLit[3]);
+    const shaftSlabs = Array.from({length: 12}, () => box(shaft, 1, .27, 1, 0, 0, 0, lightStone));
+    const homeLights = Array.from({length: 4}, () => { const l = new T.PointLight('#ffb867', 0, 8, 2); home.add(l); return l; });
 
     // Full-screen fade used when the camera passes between the tower and the apartment.
     const fade = new T.Mesh(new T.PlaneGeometry(2, 2), new T.ShaderMaterial({uniforms: {opacity: {value: 0}, color: {value: new T.Color('#efebe2')}},
@@ -479,8 +584,8 @@ window.Architecture = (() => {
     }
     function currentView() {
       if (mode === 'interior') {
-        const r = ROOMS[room] || ROOMS.overview;
-        return {...r, theta: r.theta, y: r.y + home.position.y, r: room === 'overview' && compact ? 28 : r.r, fov: room === 'overview' ? 40 : 56};
+        const r = activeInterior.views[room] || activeInterior.views.overview;
+        return {...r, theta: r.theta, y: r.y + home.position.y, r: room === 'overview' ? r.r * Math.max(1, 1.2 / camera.aspect) : r.r, fov: room === 'overview' ? 40 : 56};
       }
       if (aim.startsWith('amenity:')) return {...AMENITIES[aim.slice(8)].view, fov: 40};
       if (focus !== null) {
@@ -529,7 +634,10 @@ window.Architecture = (() => {
       const n = selected ? selected.userData.floor : (focus ?? lastFloor);
       const y = floorY(n) + .135, h = y - .5;
       home.position.set(0, y, 0);
-      shaftBody.scale.y = h;
+      shaftBody.scale.set(activeInterior.w - .2, h, activeInterior.d - .2);
+      shaftSlabs.forEach(s => s.scale.set(activeInterior.w + .3, 1, activeInterior.d + .3));
+      const lamps = ['living', 'kitchen', 'bedroom', 'terrace'];
+      homeLights.forEach((l, i) => { const v = activeInterior.views[lamps[i]]; l.position.set(v.x, 2.2, v.z); });
       shaftBody.position.y = -.3 - h / 2;
       shaftSlabs.forEach((s, k) => { const m = n - 1 - k; s.visible = m >= 2; s.position.y = floorY(m) - y + .1; });
     }
@@ -677,7 +785,7 @@ window.Architecture = (() => {
           for (const [key, a] of Object.entries(AMENITIES)) add(`amenity:${key}`, ...a.at, a.normal);
           if (selected) { selected.getWorldPosition(w); add(`selected:${selected.userData.unitId}`, w.x, w.y + 1.9, w.z, [0, 0, selected.userData.side]); }
         } else for (const u of units) if (u.userData.floor === focus && (!paintMap || paintMap[u.userData.unitId] !== 'dim')) { u.getWorldPosition(w); add(`unit:${u.userData.unitId}`, w.x, w.y + 1.75, w.z); }
-      } else for (const [key, p] of Object.entries(ROOM_SPOTS)) if (key !== room) add(`room:${key}`, p[0], p[1] + home.position.y, p[2]);
+      } else for (const [key, p] of Object.entries(activeInterior.spots)) if (key !== room) add(`room:${key}`, p[0], p[1] + home.position.y, p[2]);
       return list;
     }
     function draw() {
@@ -740,7 +848,7 @@ window.Architecture = (() => {
     }
     function setMode(value, view = 'overview') {
       const next = value === 'interior' ? 'interior' : 'building';
-      room = view;
+      room = activeInterior.views[view] ? view : 'overview';
       if (seq) {
         mode = next;
         // Before the swap, its destination can still be changed safely. Once fading
@@ -768,6 +876,20 @@ window.Architecture = (() => {
       const u = id == null ? null : units.find(m => m.userData.unitId === String(id)) || null;
       if (halo.parent) halo.parent.remove(halo);
       selected = u;
+      const nextType = inventoryTypes.get(u?.userData.unitId) || 'suite';
+      const nextInterior = interiors[nextType] || interiors.suite;
+      const changed = nextInterior !== activeInterior;
+      activeInterior.group.visible = false;
+      activeInterior = nextInterior;
+      typology = activeInterior.group.userData.typology;
+      activeInterior.group.visible = true;
+      canvas.dataset.typology = typology;
+      if (!activeInterior.views[room]) room = 'overview';
+      canvas.dataset.room = room;
+      if (shown === 'interior') {
+        placeHome();
+        if (changed) fly(currentView(), 900);
+      }
       if (u) u.add(halo);
       if (reduced || !u) { selectedMat.emissiveIntensity = .45; halo.material.opacity = .14; }
       repaint();
@@ -822,6 +944,7 @@ window.Architecture = (() => {
     applyLight();
     repaint();
     canvas.dataset.mode = 'building';
+    canvas.dataset.typology = typology;
     canvas.dataset.room = room;
     size();
     if (!intro) travel(defaultView(), 0);
@@ -858,7 +981,7 @@ window.Architecture = (() => {
         Object.values(materials).forEach(m => m.dispose());
         renderer.dispose();
       },
-      state() { return {mode: shown, room, focus, selected: selected?.userData.unitId ?? null, aim, home: home.position.y, transitioning: !!(seq || flight || intro)}; },
+      state() { return {mode: shown, room, typology, rooms: Object.keys(activeInterior.views), bedrooms: activeInterior.beds, focus, selected: selected?.userData.unitId ?? null, aim, home: home.position.y, transitioning: !!(seq || flight || intro)}; },
       stats() { return {drawCalls: renderer.info.render.calls, triangles: renderer.info.render.triangles}; },
     };
   }

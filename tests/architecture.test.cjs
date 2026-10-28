@@ -4,8 +4,8 @@ function fixture(options={}){
  const renders=[],anchors=[];let frame,now=0;
  class Renderer {constructor(){this.shadowMap={};this.info={render:{calls:0,triangles:0}}}setPixelRatio(){}setSize(){}render(scene,camera){renders.push({scene,camera})}dispose(){this.disposed=true}}
  class Observer{observe(){}disconnect(){}}
- const canvas={dataset:{},parentElement:{getBoundingClientRect:()=>({width:900,height:580})}};
- const window={};const context={window,devicePixelRatio:2,performance:{now:()=>now},matchMedia:q=>({matches:q.includes("reduced-motion")?options.reduced!==false:false}),ResizeObserver:Observer,IntersectionObserver:Observer,document:{hidden:false,addEventListener(){},removeEventListener(){}},requestAnimationFrame:f=>(frame=f,1),cancelAnimationFrame(){frame=null},ViewerControls:{fitDistance:()=>90,bind:()=>({cancel(){}})}};
+ const canvas={dataset:{},parentElement:{getBoundingClientRect:()=>({width:options.width||900,height:options.height||580})}};
+ const window={};const context={window,devicePixelRatio:2,performance:{now:()=>now},matchMedia:q=>({matches:q.includes("reduced-motion")?options.reduced!==false:!!options.compact}),ResizeObserver:Observer,IntersectionObserver:Observer,document:{hidden:false,addEventListener(){},removeEventListener(){}},requestAnimationFrame:f=>(frame=f,1),cancelAnimationFrame(){frame=null},ViewerControls:{fitDistance:()=>90,bind:()=>({cancel(){}})}};
  vm.runInNewContext(fs.readFileSync(require.resolve('../dist/architecture.js'),'utf8'),context);
  const api=window.Architecture.create({...THREE,WebGLRenderer:Renderer},canvas,()=>{},{onRender:list=>anchors.splice(0,anchors.length,...list),...options});
  function flush(count=4){for(let i=0;i<count&&frame;i++){now+=1000/60;const f=frame;frame=null;f()}}
@@ -62,4 +62,50 @@ test('animated navigation before the swap honours the latest destination',()=>{
 test('filtered units have no selectable scene hotspots',()=>{
  const f=fixture();f.api.focusFloor(7);f.api.paint(Object.fromEntries(['701','702','703','704','705','706'].map(id=>[id,id==='705'?'available':'dim'])));f.flush();
  assert.deepEqual(f.anchors.filter(a=>a.key.startsWith('unit:')).map(a=>a.key),['unit:705']);f.api.dispose();
+});
+
+test('inventory metadata selects four genuinely different furnished plans',()=>{
+ const units=[{id:'701',type:'estudio'},{id:'702',type:'suite'},{id:'703',type:'depa2'},{id:'704',type:'depa3'}];
+ const f=fixture({units}),widths=[];
+ for(const [i,u] of units.entries()){
+  f.api.select(u.id,false);f.api.setMode('interior');f.flush();
+  const state=f.api.state(),home=f.scene().children[1],plans=home.children.filter(g=>g.userData.typology),active=plans.filter(g=>g.visible);
+  assert.equal(state.typology,u.type);assert.equal(f.canvas.dataset.typology,u.type);assert.equal(state.bedrooms,i);
+  assert.equal(active.length,1);assert.equal(active[0].userData.typology,u.type);
+  const beds=[];active[0].traverse(o=>{if(o.userData.bed)beds.push(o)});assert.equal(beds.length,Math.max(1,i));
+  assert.equal(state.rooms.filter(r=>r.startsWith('bedroom')).length,Math.max(1,i));
+  const bounds=new THREE.Box3().setFromObject(active[0]),size=bounds.getSize(new THREE.Vector3());widths.push(size.x);
+  for(const room of state.rooms){f.api.setMode('interior',room);f.flush();assert.equal(f.canvas.dataset.room,room);assert.ok(f.renders.at(-1).camera.position.toArray().every(Number.isFinite));}
+ }
+ assert.ok(widths.every((w,i)=>i===0||w>widths[i-1]),`distinct increasing footprints: ${widths}`);f.api.dispose();
+});
+test('switching from a third bedroom to a studio removes stale rooms and anchors',()=>{
+ const f=fixture({units:[{id:'705',type:'depa3'},{id:'703',type:'estudio'}]});
+ f.api.select('705',false);f.api.setMode('interior','bedroom3');f.flush();
+ f.api.setMode('building');f.api.select('703',false);f.api.setMode('interior','bedroom3');f.flush();
+ assert.equal(f.api.state().typology,'estudio');assert.equal(f.api.state().room,'overview');
+ assert.ok(!f.anchors.some(a=>/bedroom[23]/.test(a.key)));assert.ok(f.anchors.some(a=>a.key==='room:bedroom'));
+ f.api.select(null,false);f.api.setMode('interior');f.flush();assert.equal(f.api.state().typology,'suite');f.api.dispose();
+});
+test('changing type during the animated crossing uses the latest selected unit and floor',()=>{
+ const f=fixture({reduced:false,intro:false,orbit:false,units:[{id:'705',type:'depa3'},{id:'1103',type:'estudio'}]});
+ f.api.select('705',false);f.api.setMode('interior','bedroom3');f.flush(20);
+ f.api.select('1103',false);f.api.setMode('interior','bedroom');f.flush(240);
+ assert.equal(f.api.state().typology,'estudio');assert.equal(f.api.state().mode,'interior');assert.equal(f.api.state().room,'bedroom');
+ assert.ok(Math.abs(f.api.state().home-f.floorY(11)-.135)<1e-6);assert.equal(f.api.state().transitioning,false);f.api.dispose();
+});
+
+test('portrait overview keeps each furnished plan inside the mobile canvas',()=>{
+ const units=['estudio','suite','depa2','depa3'].map((type,i)=>({id:`70${i+1}`,type}));
+ const f=fixture({units,compact:true,width:350,height:420});
+ for(const u of units){
+  f.api.select(u.id,false);f.api.setMode('interior');f.flush();
+  f.scene().updateMatrixWorld(true);
+  const active=f.scene().children[1].children.find(g=>g.userData.typology===u.type),bounds=new THREE.Box3().setFromObject(active),camera=f.renders.at(-1).camera;
+  camera.updateMatrixWorld();
+  for(const x of [bounds.min.x,bounds.max.x])for(const y of [bounds.min.y,bounds.max.y])for(const z of [bounds.min.z,bounds.max.z]){
+   const p=new THREE.Vector3(x,y,z).project(camera);assert.ok(Math.abs(p.x)<1&&Math.abs(p.y)<1,`${u.type} clips at ${p.x}, ${p.y}`);
+  }
+ }
+ f.api.dispose();
 });

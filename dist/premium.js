@@ -6,15 +6,34 @@
   const copy = [
     ['01 / LA ARQUITECTURA', '01 / THE ARCHITECTURE', 'La primera mirada.', 'The first look.', 'Gira el edificio y toca los puntos dorados para acercarte a la piscina, las terrazas y el lobby. Después, elige tu hogar.', 'Rotate the building and tap the gold points to move closer to the pool, terraces and lobby. Then choose your home.'],
     ['02 / TU DEPARTAMENTO', '02 / YOUR APARTMENT', 'Un espacio para ti.', 'A space for you.', 'Elige un piso y el edificio se abre para mostrarlo. Los colores indican disponibilidad; toca una unidad en el modelo o en la lista.', 'Choose a floor and the building opens to reveal it. Colours show availability; tap a unit on the model or in the list.'],
-    ['03 / LA VIDA DENTRO', '03 / LIFE INSIDE', 'Imagina lo cotidiano.', 'Imagine the everyday.', 'Entra a tu unidad y recorre sala, cocina, dormitorio y terraza. La vista exterior cambia con la altura del piso elegido.', 'Step inside and move through the living room, kitchen, bedroom and terrace. The outside view changes with your floor’s height.'],
+    ['03 / LA VIDA DENTRO', '03 / LIFE INSIDE', 'Imagina lo cotidiano.', 'Imagine the everyday.', 'Entra a tu unidad y descubre la distribución de su tipología, espacio por espacio. La vista exterior cambia con la altura del piso elegido.', 'Step inside and discover the layout for your apartment type, space by space. The outside view changes with your floor’s height.'],
     ['04 / EL SIGUIENTE PASO', '04 / YOUR NEXT STEP', 'Hablemos de tu hogar.', 'Let’s talk about your home.', 'Tu selección acompaña la conversación. Una experiencia conectada de principio a fin.', 'Your selection travels with the conversation. A connected experience from start to finish.'],
   ];
   const STATUS = {disponible: ['Disponible', 'Available', 'available'], reservado: ['Reservado', 'Reserved', 'reserved'], vendido: ['Vendido', 'Sold', 'sold']};
   const AMENITY = {pool: ['Piscina en la azotea', 'Rooftop pool', 'left'], garden: ['Jardín en altura', 'Sky garden', 'right'], terraces: ['Terrazas privadas', 'Private terraces', 'right'], lobby: ['Lobby y acceso', 'Lobby & entrance', 'left']};
-  const ROOM = {living: ['Sala', 'Living'], kitchen: ['Cocina', 'Kitchen'], bedroom: ['Dormitorio', 'Bedroom'], terrace: ['Terraza', 'Terrace']};
+  const ROOM = {living: ['Sala', 'Living'], kitchen: ['Cocina', 'Kitchen'], bedroom: ['Dormitorio principal', 'Main bedroom'], bedroom2: ['Dormitorio 2', 'Bedroom 2'], bedroom3: ['Dormitorio 3', 'Bedroom 3'], bathroom: ['Baño', 'Bathroom'], terrace: ['Terraza', 'Terrace']};
   const status = u => L(...STATUS[u.status]);
   const typeName = u => feed.typologies[u.type].name[lang === 'es' ? 0 : 1];
   const unitById = id => p?.units.find(u => u.id === id);
+  const interiorCopy = {
+    estudio: ['Un espacio abierto con zona de descanso, cocina compacta y balcón.', 'An open space with a sleeping nook, compact kitchen and balcony.'],
+    suite: ['Un dormitorio independiente, comedor para cuatro y una terraza íntima.', 'A separate bedroom, dining for four and an intimate terrace.'],
+    depa2: ['Dos dormitorios, espacio de trabajo y una sala para compartir.', 'Two bedrooms, a workspace and a living room to share.'],
+    depa3: ['Tres dormitorios independientes, comedor para seis y una amplia terraza.', 'Three separate bedrooms, dining for six and a generous terrace.'],
+  };
+  const currentType = () => selected?.type || 'suite';
+  const roomLabel = key => key === 'bedroom' && currentType() === 'estudio' ? L('Zona de descanso', 'Sleeping area') : L(...ROOM[key]);
+  function renderInterior() {
+    const type = currentType(), beds = feed.typologies[type].beds;
+    $('#interior-type').textContent = feed.typologies[type].name[lang === 'es' ? 0 : 1] + (selected ? ` · ${L('Unidad', 'Unit')} ${selected.id}` : ` · ${L('Vista de ejemplo', 'Sample view')}`);
+    $('#interior-description').textContent = L(...interiorCopy[type]);
+    $$('[data-room]').forEach(b => {
+      const key = b.dataset.room;
+      b.hidden = key === 'bedroom2' && beds < 2 || key === 'bedroom3' && beds < 3;
+      if (key !== 'overview') b.textContent = roomLabel(key);
+    });
+  }
+
 
   function translate() {
     document.documentElement.lang = lang;
@@ -36,6 +55,7 @@
     return 'RESIDENCIA 01';
   }
   function renderStep() {
+    renderInterior();
     const c = copy[step], offset = lang === 'es' ? 0 : 1;
     $('#step-label').textContent = c[offset];
     $('#step-title').textContent = c[2 + offset];
@@ -104,6 +124,7 @@
   function choose(id) {
     const unit = unitById(id);
     if (!unit || ($('#available').checked && unit.status !== 'disponible') || ($('#bedrooms').value !== 'all' && feed.typologies[unit.type].beds !== +$('#bedrooms').value)) return;
+    if (unit.type !== currentType()) { room = 'overview'; clearHotspots(); }
     selected = unit;
     $('#floor').value = String(unit.floor);
     list();
@@ -179,7 +200,7 @@
     el.className = `hotspot hotspot-${kind}`;
     let label = id;
     if (kind === 'amenity') { label = L(AMENITY[id][0], AMENITY[id][1]); el.dataset.side = AMENITY[id][2]; }
-    if (kind === 'room') label = L(...ROOM[id]);
+    if (kind === 'room') label = roomLabel(id);
     if (kind === 'selected') label = `${L('Tu hogar', 'Your home')} · ${id}`;
     if (kind === 'unit') {
       const u = unitById(id);
@@ -235,6 +256,7 @@
   canvas.addEventListener('webglcontextrestored', () => location.reload());
   AlphaAssets.whenVisible(canvas, () => AlphaAssets.three().then(() => {
     engine = Architecture.create(THREE, canvas, p ? id => { if (step !== 1) go(1); choose(id); } : null, {
+      units: p?.units,
       onReady: () => { $('#scene-status').hidden = true; canvas.dataset.ready = 'true'; },
       onRender: renderHotspots,
       onHover: p ? hoverUnit : null,
