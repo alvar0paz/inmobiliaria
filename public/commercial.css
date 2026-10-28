@@ -17,4 +17,6 @@
 @media(max-width:700px){.modelling-pricing{padding:46px 7%}.modelling-rates li{grid-template-columns:22px minmax(0,1fr);gap:12px;padding:24px 0}.model-price{grid-column:2;align-items:flex-start;margin-top:4px}.modelling-rates h3{font-size:20px}.modelling-terms{grid-template-columns:1fr;gap:0}.commercial-proforma .modelling-intro h2{font-size:34px}.hero-offer strong{font-size:25px}}
 @media print{.price-from{font-size:8pt;margin-top:12px}.price-from+.offer-price{margin-top:2px}.price-qualification{font-size:7pt;line-height:1.4;margin:0 0 12px}.tax-note{margin-bottom:12px}.commercial-proforma .modelling-pricing{break-before:page;padding:12mm 0 0;border-top:0}.commercial-proforma .modelling-intro h2{font-size:24pt}.modelling-intro>p{font-size:9pt}.modelling-rates{margin-top:24px}.modelling-rates li{grid-template-columns:24px 1fr 165px;padding:22px 0;gap:16px}.modelling-rates h3{font-size:12pt}.modelling-rates p{font-size:8pt}.model-price strong{font-size:19pt}.model-price>span,.model-price small{font-size:8pt}.model-number{font-size:8pt}.modelling-terms{gap:24px}.modelling-terms p{font-size:8pt;line-height:1.5}.modelling-cta{display:none}}
 
-.footer-identity{display:flex;flex-direction:column;gap:15px}.instagram-link{font-size:11px;color:var(--muted);width:fit-content}.instagram-link:hover{text-decoration:underline}
+.footer-identity{display:flex;flex-direction:column;gap:15px}.footer-email{font-size:11px;color:var(--muted);width:fit-content}.footer-email:hover{text-decoration:underline}
+
+.team-solo{grid-template-columns:minmax(0,640px)}

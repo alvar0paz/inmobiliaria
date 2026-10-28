@@ -1,4 +1,4 @@
-# Demo inmobiliaria · Biotico Software Lab
+# Demo inmobiliaria · tnkoo Software Lab
 
 Single immersive bilingual real estate demonstration at https://inmobiliaria.alvaropaz.com/.
 

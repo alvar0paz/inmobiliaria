@@ -34,7 +34,7 @@
       status.focus();
     } catch (error) {
       status.dataset.state = 'error';
-      status.textContent = error.message === 'rate' ? say('Has enviado varias consultas. Inténtalo en una hora o escríbenos por correo.', 'You have sent several enquiries. Try in an hour or contact us by email.') : say('No pudimos confirmar el envío. Conservamos lo que escribiste: vuelve a intentarlo o escribe a alvaroipazr@gmail.com.', 'We could not confirm delivery. Your entries are preserved: retry or email alvaroipazr@gmail.com.');
+      status.textContent = error.message === 'rate' ? say('Has enviado varias consultas. Inténtalo en una hora o escríbenos por correo.', 'You have sent several enquiries. Try in an hour or contact us by email.') : say('No pudimos confirmar el envío. Conservamos lo que escribiste: vuelve a intentarlo o escribe a info@tnkoo.com.', 'We could not confirm delivery. Your entries are preserved: retry or email info@tnkoo.com.');
       button.disabled = false; status.focus();
     } finally { pending = false; form.removeAttribute('aria-busy'); }
   });

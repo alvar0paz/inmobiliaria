@@ -25,7 +25,7 @@
   const detail=interest.id?`${en?'Apartment':'Departamento'} ${interest.id} · ${en?'Floor':'Piso'} ${interest.floor} · ${type} · ${interest.m2} m²`:type;
   el.hidden=false;el.textContent=(en?'Your selection: ':'Tu selección: ')+detail;
   const email=document.querySelector('[data-enquiry-email]');
-  if(email){const subject=en?'Real estate website demo':'Demo web inmobiliaria';const body=(en?'Hello, I would like this experience for my project. I tried the demo with ':'Hola, me gustaría esta experiencia para mi proyecto. Probé la demo con ')+detail+(interest.id?(en?'. This is a fictional selection from the demo.':'. Esta es una selección ficticia de la demo.'):(en?'. Please send me more information.':'. Por favor enviarme más información.'));email.href='mailto:alvaroipazr@gmail.com?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body)}
+  if(email){const subject=en?'Real estate website demo':'Demo web inmobiliaria';const body=(en?'Hello, I would like this experience for my project. I tried the demo with ':'Hola, me gustaría esta experiencia para mi proyecto. Probé la demo con ')+detail+(interest.id?(en?'. This is a fictional selection from the demo.':'. Esta es una selección ficticia de la demo.'):(en?'. Please send me more information.':'. Por favor enviarme más información.'));email.href='mailto:info@tnkoo.com?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body)}
  }
  document.querySelectorAll('[data-home-type]').forEach(a=>a.addEventListener('click',()=>{interest={type:a.dataset.homeType};showInterest()}));
  document.addEventListener('pixel:interest',e=>{const value=typeof e.detail==='string'?{type:e.detail}:e.detail;if(labels[value.type]){interest=value;showInterest()}});

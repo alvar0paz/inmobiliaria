@@ -79,6 +79,6 @@ class SiteStructure(unittest.TestCase):
             for ref in Page(path).references:
                 self.assertNotIn('.example',urlsplit(ref).netloc,ref)
         self.assertNotEqual((DIST/'demo/index.html').read_text(),(DIST/'proforma/index.html').read_text())
-        self.assertIn('alvaroipazr@gmail.com',(DIST/'contacto/index.html').read_text())
+        self.assertIn('info@tnkoo.com',(DIST/'contacto/index.html').read_text())
 
 if __name__=='__main__': unittest.main()
