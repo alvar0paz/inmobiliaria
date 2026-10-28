@@ -104,3 +104,25 @@ body:has(.demo-ribbon) .buyer-navigation{top:var(--demo-ribbon-height)}
 .project-destination-note{display:block;margin-top:10px;font-size:12px;line-height:1.5;color:var(--muted)}
 .advisor-projects a{padding-block:10px}
 .advisor-projects small{display:block;margin-top:6px;font-size:12px;line-height:1.5;color:var(--muted)}
+
+/* Reusable real estate demonstration */
+.proposal-brand{max-width:240px;line-height:1.25;font-size:15px;letter-spacing:.08em}
+.demo-disclosure{font:11px/1.6 Arial,sans-serif!important;letter-spacing:.06em;opacity:.65;margin-top:20px!important}
+.demo-journey{padding:70px 7%;border-top:1px solid var(--line,#d9d5c8)}
+.demo-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:40px;margin-top:36px}
+.demo-steps article>span{font-size:12px;letter-spacing:.15em;opacity:.55}
+.demo-steps h3{font-size:24px;margin:18px 0 12px}.demo-steps p{line-height:1.7;opacity:.75}
+.demo-tools>.technical-intro{padding:70px 5vw 24px}.contact-options{display:grid;gap:18px;margin:30px 0}
+.contact-options a{overflow-wrap:anywhere}.contact-scope{max-width:760px;line-height:1.8}
+@media(max-width:800px){.demo-steps{grid-template-columns:1fr;gap:24px}.demo-journey{padding:40px 6%}.proposal-brand{font-size:12px;max-width:190px}.pixel-word{font-size:22px}.demo-tools>.technical-intro{padding-top:40px}}
+
+.proposal-main .action-row{display:flex;gap:18px;align-items:center;flex-wrap:wrap;margin-top:28px}
+
+@media(min-width:801px) and (max-width:1100px){
+ .stakeholder-navigation{flex-wrap:wrap;gap:0}
+ .js .stakeholder-navigation .menu-toggle{display:flex;align-items:center;gap:12px;min-height:44px}
+ .stakeholder-navigation .primary-menu{flex-basis:100%;flex-direction:column;align-items:stretch;gap:0;padding:12px 0}
+ .js .stakeholder-navigation .primary-menu:not(.is-open){display:none}
+ .stakeholder-navigation .primary-menu>a{padding:14px 4px;border-top:1px solid var(--line);font-size:16px}
+ .stakeholder-navigation .primary-menu .advisor-link{padding:14px;margin:10px 0}
+}

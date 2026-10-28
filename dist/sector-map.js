@@ -5,9 +5,9 @@
   const canvas=document.getElementById('sector-canvas'),labelsHost=document.getElementById('sector-map-labels');
   const reduce=matchMedia('(prefers-reduced-motion: reduce)');
   const descriptions={
-    pixel:['Pixel, en la esquina de Av. 5 de Junio y Rodrigo de Chávez.','Pixel, at the corner of Av. 5 de Junio and Rodrigo de Chávez.'],
-    metro:['Metro, una referencia de movilidad en el esquema de ubicación de Pixel.','Metro, a transit landmark in Pixel’s location diagram.'],
-    coral:['Coral, una referencia comercial en el esquema de ubicación de Pixel.','Coral, a shopping landmark in Pixel’s location diagram.']
+    pixel:['Residencia 01, en la esquina de Avenida Central y Calle del Parque.','Residencia 01, at the corner of Avenida Central and Calle del Parque.'],
+    metro:['Transporte, un punto de interés ficticio.','Transport, a fictional point of interest.'],
+    coral:['Comercio, un punto de interés ficticio.','Shops, a fictional point of interest.']
   };
   let renderer,model,camera,ray,input,ready=false,failed=false,lost=false,visible=false,raf=0,selection='pixel';
   const cam={theta:.63,phi:.99,zoom:1},goal={...cam},labels=[],roadLabels=[];
@@ -25,7 +25,7 @@
   function fallback(){
     failed=true;stage.dataset.ready='false';canvas.hidden=true;
     labelsHost.hidden=true;document.getElementById('sector-map-tools').hidden=true;
-    help.textContent=language()?'Illustrative area model. Use Get directions to plan your visit.':'Maqueta del sector. Usa Cómo llegar para planificar tu visita.';
+    help.textContent=language()?'Fictional area model for demonstration.':'Maqueta de un entorno ficticio para demostración.';
     input?.cancel();cancelAnimationFrame(raf);raf=0;
   }
   function copy(){
@@ -61,11 +61,11 @@
       model=AlphaSectorScene.build(THREE);camera=new THREE.OrthographicCamera(-65,65,55,-55,.1,500);ray=new THREE.Raycaster();
       Object.entries(model.places).forEach(([key,place],i)=>{
         const element=document.createElement('button');element.type='button';element.className='sector-map-pin';element.dataset.sectorPlace=key;
-        element.innerHTML=`<i>0${i+1}</i><span>${key==='pixel'?'Pixel':key==='metro'?'Metro':'Coral'}</span>`;
+        element.innerHTML=`<i>0${i+1}</i><span>${key==='pixel'?'Residencia 01':key==='metro'?'Transporte':'Comercio'}</span>`;
         element.addEventListener('click',()=>select(key));labelsHost.append(element);
         labels.push({element,position:new THREE.Vector3(...place.position)});
       });
-      [['Av. 5 de Junio',[-18,.5,-24]],['Av. Rodrigo de Chávez',[22,.5,10]]].forEach(([text,position])=>{
+      [['Avenida Central',[-18,.5,-24]],['Av. Calle del Parque',[22,.5,10]]].forEach(([text,position])=>{
         const element=document.createElement('span');element.className='sector-map-road';element.textContent=text;labelsHost.append(element);
         roadLabels.push({element,position:new THREE.Vector3(...position)});
       });

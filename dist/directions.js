@@ -1,6 +1,6 @@
 /* The featured project changes its image, description and destination together. */
 (()=>{
- const projects={pixel:{name:'Pixel',url:'/pixel/',copy:['Entra a Pixel. Descubre sus espacios y explora una nueva forma de elegir tu hogar.','Step inside Pixel. Discover its spaces and a new way to choose your home.']},magnus:{name:'Magnus',url:'https://alphabuildershq.com/magnus/',copy:['Descubre la arquitectura de Magnus. Continúa en el sitio del proyecto para conocer sus detalles.','Discover the architecture of Magnus. Continue to the project website for details.']},sparta:{name:'Sparta',url:'https://alphabuildershq.com/proyecto-sparta/',copy:['Sparta, en la Av. Bélgica y Shyris. Conoce el proyecto y sus espacios en su sitio oficial.','Sparta, on Av. Bélgica and Shyris. Discover the project and its spaces on its official website.']}};
+ const projects={pixel:{name:'Residencia 01',url:'/proyecto/',copy:['Explora Residencia 01, un proyecto ficticio para descubrir esta experiencia.','Explore Residencia 01, a fictional project showcasing this experience.']},magnus:{name:'Residencia 02',url:'/demo/#demo-medio',copy:['Otro ejemplo de arquitectura para tu portafolio.','Another architectural example for your portfolio.']},sparta:{name:'Residencia 03',url:'/demo/#demo-alto',copy:['Una tercera identidad visual, conectada a la misma información.','A third visual identity connected to the same information.']}};
  let featured='pixel';
  function update(){
   const link=document.querySelector('#featured-link');if(!link)return;
@@ -8,8 +8,8 @@
   document.querySelectorAll('[data-scene-home]').forEach(e=>e.hidden=e.dataset.sceneHome!==featured);
   document.querySelectorAll('[data-featured]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.featured===featured)));
   const description=document.querySelector('#featured-description');description.removeAttribute('data-es');description.removeAttribute('data-en');description.textContent=p.copy[en?1:0];
-  link.textContent=featured==='pixel'?(en?'View proposed Pixel demo':'Ver demo propuesta de Pixel'):(en?'Current website: ':'Sitio actual: ')+p.name+' ↗';
-  link.href=featured==='pixel'?`/pixel/?style=${state.style}&lang=${state.lang}`:p.url;
+  link.textContent=featured==='pixel'?(en?'View proposed Residencia 01 demo':'Ver demo propuesta de Residencia 01'):(en?'Explore demo: ':'Explorar demo: ')+p.name+' ↗';
+  link.href=featured==='pixel'?`/proyecto/?style=${state.style}&lang=${state.lang}`:p.url;
   if(featured==='pixel'){link.removeAttribute('target');link.removeAttribute('rel')}else{link.target='_blank';link.rel='noopener'}
  }
  document.querySelectorAll('[data-featured]').forEach(b=>b.onclick=()=>{featured=b.dataset.featured;update()});
@@ -25,7 +25,7 @@
   const detail=interest.id?`${en?'Apartment':'Departamento'} ${interest.id} · ${en?'Floor':'Piso'} ${interest.floor} · ${type} · ${interest.m2} m²`:type;
   el.hidden=false;el.textContent=(en?'Your selection: ':'Tu selección: ')+detail;
   const email=document.querySelector('[data-enquiry-email]');
-  if(email){const subject=en?'Enquiry about Pixel':'Consulta sobre Pixel';const body=(en?'Hello, I am interested in ':'Hola, me interesa ')+detail+(interest.id?(en?'. I saw this apartment in the illustrative preview; please confirm actual availability and pricing.':'. Vi este departamento en la muestra ilustrativa; por favor confirmar disponibilidad y precio reales.'):(en?'. Please send me more information.':'. Por favor enviarme más información.'));email.href='mailto:contacto@pixel.com.ec?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body)}
+  if(email){const subject=en?'Real estate website demo':'Demo web inmobiliaria';const body=(en?'Hello, I would like this experience for my project. I tried the demo with ':'Hola, me gustaría esta experiencia para mi proyecto. Probé la demo con ')+detail+(interest.id?(en?'. This is a fictional selection from the demo.':'. Esta es una selección ficticia de la demo.'):(en?'. Please send me more information.':'. Por favor enviarme más información.'));email.href='mailto:alvaroipazr@gmail.com?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body)}
  }
  document.querySelectorAll('[data-home-type]').forEach(a=>a.addEventListener('click',()=>{interest={type:a.dataset.homeType};showInterest()}));
  document.addEventListener('pixel:interest',e=>{const value=typeof e.detail==='string'?{type:e.detail}:e.detail;if(labels[value.type]){interest=value;showInterest()}});

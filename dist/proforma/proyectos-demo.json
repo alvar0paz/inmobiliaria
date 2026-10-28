@@ -94,10 +94,10 @@
  "projects": [
   {
    "slug": "pixel",
-   "name": "Pixel",
-   "domain": "pixel.com.ec",
-   "sector": "La Magdalena",
-   "address": "Av. 5 de Junio y Rodrigo de Chávez",
+   "name": "Residencia 01",
+   "domain": "residencia01.example",
+   "sector": "Sector de ejemplo",
+   "address": "Avenida Central y Calle del Parque",
    "floors": 12,
    "front": 3,
    "layout": [
@@ -113,12 +113,12 @@
    "progress": 64,
    "delivery": "2027-11",
    "color": "#e0bd75",
-   "image": "pixel-exterior-render",
+   "image": "residencia-exterior-render",
    "amenities": [
     "lobby",
     "pool"
    ],
-   "whatsapp": "+593996775283",
+   "whatsapp": "",
    "units": [
     {
      "id": "201",
@@ -700,8 +700,8 @@
   },
   {
    "slug": "magnus",
-   "name": "Magnus",
-   "domain": "magnus.alphabuildershq.com",
+   "name": "Residencia 02",
+   "domain": "residencia02.example",
    "sector": "Quito",
    "address": "Dirección según ficha oficial",
    "floors": 16,
@@ -722,7 +722,7 @@
     "lobby",
     "rooftop"
    ],
-   "whatsapp": "+59325133210",
+   "whatsapp": "",
    "units": [
     {
      "id": "201",
@@ -1240,10 +1240,10 @@
   },
   {
    "slug": "sparta",
-   "name": "Sparta",
-   "domain": "sparta.alphabuildershq.com",
-   "sector": "Av. Bélgica y Shyris",
-   "address": "Av. Bélgica y Shyris",
+   "name": "Residencia 03",
+   "domain": "residencia03.example",
+   "sector": "Sector de ejemplo",
+   "address": "Sector de ejemplo",
    "floors": 9,
    "front": 3,
    "layout": [
@@ -1263,7 +1263,7 @@
     "lobby",
     "gym"
    ],
-   "whatsapp": "+59325133210",
+   "whatsapp": "",
    "units": [
     {
      "id": "201",

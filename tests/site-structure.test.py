@@ -63,9 +63,21 @@ class SiteStructure(unittest.TestCase):
         self.assertLess(page.scripts.index('/asset-loader.js'),page.scripts.index('/sector-scene.js'))
         self.assertLess(page.scripts.index('/sector-scene.js'),page.scripts.index('/sector-map.js'))
         self.assertIn('/assets/sector-map.png',page.references)
-        self.assertIn('https://maps.app.goo.gl/JJozcsbpJE2bbfue7',page.references)
+        self.assertFalse(any('maps.app.goo.gl' in ref for ref in page.references))
 
     def test_proforma_keeps_all_three_projects(self):
         self.assertEqual(len(json.loads(Page(DIST/'proforma/index.html').feed)['projects']),3)
+
+    def test_reusable_demo_has_no_client_brand_or_commercial_quote(self):
+        forbidden=('alpha builders','alphabuilders','pixel.com.ec','contacto@pixel','41.990','46.990','49.990','zolutium','16 sitios','15 sitios','data-price=','RUC 17')
+        for path in list(DIST.rglob('*.html'))+list(DIST.glob('*.js'))+list(DIST.rglob('*.json')):
+            text=path.read_text().lower()
+            for term in forbidden:
+                self.assertNotIn(term.lower(),text,str(path))
+        for path in DIST.rglob('*.html'):
+            for ref in Page(path).references:
+                self.assertNotIn('.example',urlsplit(ref).netloc,ref)
+        self.assertEqual((DIST/'demo/index.html').read_text(),(DIST/'proforma/index.html').read_text())
+        self.assertIn('alvaroipazr@gmail.com',(DIST/'contacto/index.html').read_text())
 
 if __name__=='__main__': unittest.main()

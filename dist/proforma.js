@@ -1,5 +1,5 @@
 /* Proforma page: tier tabs, level 1 (central manager + WhatsApp bot), level 2 (2D buildings),
-   level 3 (3D model + virtual visit), quote calculator, launch screen and sound.
+   level 3 (3D model + virtual visit), illustrative project data and virtual visits.
    Runs after app.js, so `state`, `render`, `$` and `$$` are available. */
 (()=>{
 'use strict';
@@ -102,20 +102,20 @@ const Basic=(()=>{
  const chat=$('#wa-body'),quick=$('#wa-quick');
  const today=()=>new Date().toLocaleDateString(en()?'en-US':'es-EC',{day:'numeric',month:'short',year:'numeric'});
  function fill(){f.project.value=cur.slug;f.m2_price.value=cur.m2_price;f.status.value=cur.status;f.progress.value=cur.progress;f.progress_out.value=cur.progress+'%';f.sellable.checked=cur.sellable;[...f.age].forEach(r=>r.checked=+r.value===cur.priceAge)}
- function note(){const n=$('#cms-note');n.textContent=!cur.sellable?L('Regla activa: no comercializable. El sitio sigue publicado, sin botones de compra ni formularios de venta.','Rule active: not for sale. The site stays live, without purchase buttons or sales forms.'):cur.priceAge>D.priceValidDays?L(`Regla activa: precios con ${cur.priceAge} días. Se muestra “Consultar precio” en todos los sitios y se avisa al responsable comercial.`,`Rule active: prices are ${cur.priceAge} days old. “Ask for price” is shown on every site and the sales lead is notified.`):L('Cada cambio regenera la tarjeta, el sitio, el JSON-LD, la tabla de estado, los sitemaps, el llms.txt y el feed.','Every change regenerates the card, the site, the JSON-LD, the status table, the sitemaps, llms.txt and the feed.')}
- function feedJSON(){const ok=priceOk(cur);const o={nombre:cur.name,nombre_completo:`Edificio ${cur.name} · Alpha Builders`,dominio:cur.domain,sector:cur.sector,estado:cur.status,avance_obra:cur.progress,fecha_estimada_entrega:cur.delivery,comercializable:cur.sellable,precio_m2_usd:ok?cur.m2_price:null,nota_precio:ok?null:'Consultar precio',tipologias:typesOf(cur).map(k=>({tipo:D.typologies[k].name[0],dormitorios:D.typologies[k].beds,desde_usd:ok?fromPrice(cur,k):null,disponibles:free(cur).filter(u=>u.type===k).length})),publisher:'https://alphabuildershq.com/#organization',ultima_actualizacion:new Date().toISOString().slice(0,10)};
+ function note(){const n=$('#cms-note');n.textContent=!cur.sellable?L('Regla activa: no comercializable. El sitio sigue publicado, sin botones de compra ni formularios de venta.','Rule active: not for sale. The site stays live, without purchase buttons or sales forms.'):cur.priceAge>D.priceValidDays?L(`Regla activa: precios con ${cur.priceAge} días. Se muestra “Consultar precio” en todos los sitios y se avisa al responsable comercial.`,`Rule active: prices are ${cur.priceAge} days old. “Ask for price” is shown on every site and the sales lead is notified.`):L('Esta demo local actualiza la tarjeta, el sitio, el JSON-LD, la tabla de estado, los sitemaps, el llms.txt y el feed.','This local demo updates the card, the site, the JSON-LD, the status table, the sitemaps, llms.txt and the feed.')}
+ function feedJSON(){const ok=priceOk(cur);const o={nombre:cur.name,nombre_completo:`Edificio ${cur.name} · Andean Software Lab`,dominio:cur.domain,sector:cur.sector,estado:cur.status,avance_obra:cur.progress,fecha_estimada_entrega:cur.delivery,comercializable:cur.sellable,precio_m2_usd:ok?cur.m2_price:null,nota_precio:ok?null:'Consultar precio',tipologias:typesOf(cur).map(k=>({tipo:D.typologies[k].name[0],dormitorios:D.typologies[k].beds,desde_usd:ok?fromPrice(cur,k):null,disponibles:free(cur).filter(u=>u.type===k).length})),publisher:'https://inmobiliaria.alvaropaz.com/',ultima_actualizacion:new Date().toISOString().slice(0,10)};
   return esc(JSON.stringify(o,null,2)).replace(/(&quot;[^&]*?&quot;)(\s*:)?|\b(true|false|null)\b|-?\b\d+(?:\.\d+)?\b/g,(m,s,colon,lit)=>s?`<span class="${colon?'k':'s'}">${s}</span>${colon||''}`:`<span class="n">${m}</span>`)}
  function outputs(flash){
   const ok=priceOk(cur),from=fromPrice(cur);
   $('#out-card').innerHTML=`<div class="pf-card-mini"><img src="/assets/${cur.image}.png" alt=""><div><h4>${cur.name}</h4><p>${esc(cur.sector)} · Quito</p><span class="pf-badge gold">${stName(cur.status)}</span><span class="pf-badge">${free(cur).length} ${L('disponibles','available')}</span><span class="pf-price ${ok?'':'ask'}">${!cur.sellable?L('Sin unidades a la venta','No units for sale'):ok&&from?L('Desde ','From ')+money(from):L('Consultar precio','Ask for price')}</span></div></div>`;
   $('#out-page-domain').textContent=cur.domain+'/';
-  $('#out-page').innerHTML=`<div class="pf-page-mini"><span class="pf-byline">${L('Un proyecto de Alpha Builders','A project by Alpha Builders')}</span><h4>${cur.name}</h4><dl><dt>${L('Dirección','Address')}</dt><dd>${esc(cur.address)}</dd><dt>${L('Estado','Status')}</dt><dd>${stName(cur.status)} · ${cur.progress}%</dd><dt>${L('Entrega','Delivery')}</dt><dd>${cur.status==='entregado'?L('Entregado','Delivered'):month(cur.delivery)}</dd><dt>${L('Precio/m²','Price/m²')}</dt><dd>${ok?money(cur.m2_price):L('Consultar','Ask')}</dd></dl><div class="pf-cta">${cur.sellable?`<span>${L('Cotizar','Get a quote')}</span><span class="alt">WhatsApp</span>`:`<span class="alt">${L('Contacto para propietarios','Owner contact')}</span>`}</div><p>${L('Última actualización: ','Last updated: ')}${today()}</p></div>`;
+  $('#out-page').innerHTML=`<div class="pf-page-mini"><span class="pf-byline">${L('Proyecto ficticio · Demo','Fictional project · Demo')}</span><h4>${cur.name}</h4><dl><dt>${L('Dirección','Address')}</dt><dd>${esc(cur.address)}</dd><dt>${L('Estado','Status')}</dt><dd>${stName(cur.status)} · ${cur.progress}%</dd><dt>${L('Entrega','Delivery')}</dt><dd>${cur.status==='entregado'?L('Entregado','Delivered'):month(cur.delivery)}</dd><dt>${L('Precio/m²','Price/m²')}</dt><dd>${ok?money(cur.m2_price):L('Consultar','Ask')}</dd></dl><div class="pf-cta">${cur.sellable?`<span>${L('Cotizar','Get a quote')}</span><span class="alt">WhatsApp</span>`:`<span class="alt">${L('Contacto para propietarios','Owner contact')}</span>`}</div><p>${L('Última actualización: ','Last updated: ')}${today()}</p></div>`;
   $('#out-status').innerHTML=`<table class="pf-status-row"><thead><tr><th>${L('Proyecto','Project')}</th><th>${L('Estado','Status')}</th><th>${L('Avance','Progress')}</th><th>${L('Entrega','Delivery')}</th></tr></thead><tbody>${D.projects.map(p=>`<tr class="${p===cur?'is-current':''}"><td>${p.name}</td><td>${stName(p.status)}</td><td>${p.progress}%<div class="pf-bar"><i style="width:${p.progress}%"></i></div></td><td>${p.status==='entregado'?'—':month(p.delivery)}</td></tr>`).join('')}</tbody></table>`;
   $('#out-feed').innerHTML=feedJSON();
   note();
   if(flash&&!reduce)$$('.pf-out').forEach((el,i)=>{el.classList.remove('flash');void el.offsetWidth;setTimeout(()=>el.classList.add('flash'),i*90)});
  }
- function regen(){log(`${L('regenerado','regenerated')}: ${L('tarjeta · sitio · JSON-LD · tabla de estado · sitemap · llms.txt · feed','card · site · JSON-LD · status table · sitemap · llms.txt · feed')}`);log(`IndexNow → ${cur.domain}, alphabuildershq.com`)}
+ function regen(){log(`${L('regenerado','regenerated')}: ${L('tarjeta · sitio · JSON-LD · tabla de estado · sitemap · llms.txt · feed','card · site · JSON-LD · status table · sitemap · llms.txt · feed')}`);log(`Simulación → ${cur.domain}, promotora.example`)}
  f.addEventListener('submit',e=>e.preventDefault());
  f.project.addEventListener('change',()=>{cur=P[f.project.value];fill();outputs(true);resetChat();Sound.tick();log(`${L('gestor · abre','manager · opens')} <b>${cur.name}</b>`)});
  f.status.addEventListener('change',()=>{cur.status=f.status.value;outputs(true);fire('change');log(`${L('gestor','manager')} · estado ${cur.slug} = ${cur.status}`);regen()});
@@ -150,7 +150,7 @@ const Basic=(()=>{
  function resetChat(){chatToken++;chat.innerHTML='';awaitingName=false;chatLang=state.lang;$('#wa-name').textContent=cur.name;const av=$('#wa-avatar');av.textContent=cur.name[0];av.style.background=cur.color;setQuick([]);
   msg('out',L(`Hola, vi ${cur.name} en ${cur.domain}`,`Hi, I saw ${cur.name} on ${cur.domain}`));
   log(`GA4 · whatsapp_click · proyecto=${cur.slug} · origen=${cur.domain}`);
-  bot(L(`¡Hola! 👋 Soy el asistente de <b>${cur.name}</b>, un proyecto de Alpha Builders. Respondo con los mismos datos que publica el sitio. ¿Qué te gustaría saber?`,`Hi! 👋 I’m the <b>${cur.name}</b> assistant, a project by Alpha Builders. I answer with the same data the website shows. What would you like to know?`),1100).then(ok=>ok&&setQuick(QUICK))}
+  bot(L(`¡Hola! 👋 Soy el asistente de <b>${cur.name}</b>, un proyecto ficticio de demostración. Respondo con los mismos datos que publica el sitio. ¿Qué te gustaría saber?`,`Hi! 👋 I’m the <b>${cur.name}</b> assistant, a fictional demonstration project. I answer with the same data the website shows. What would you like to know?`),1100).then(ok=>ok&&setQuick(QUICK))}
  fill();
  on('lang',()=>{outputs(false);const i=$('#wa-text');i.placeholder=i.dataset[en()?'phEn':'phEs'];if(chatLang&&chatLang!==state.lang&&tier==='basico')resetChat()});
  return {show(){outputs(false);if(chatLang!==state.lang)resetChat()}};
@@ -472,8 +472,8 @@ const Tour=(()=>{
  const SC={
   living:{img:'pixel-living-render',group:'apt',title:['Sala, comedor y cocina','Living, dining and kitchen'],desc:['Un solo ambiente integrado, con ventanal hacia la ciudad.','One open-plan space with a window onto the city.'],hot:[{u:.05,v:.5,to:'suite',label:['Ir al dormitorio','Go to the bedroom'],icon:'→'},{u:.3,v:.34,label:['Cocina abierta con isla','Open kitchen with island'],icon:'i'},{u:.66,v:.36,label:['Ventanal de piso a techo','Floor-to-ceiling window'],icon:'i'},{u:.56,v:.86,to:'lobby',label:['Bajar al lobby','Go down to the lobby'],icon:'↓'}]},
   suite:{img:'pixel-apartment-render',group:'apt',title:['Dormitorio','Bedroom'],desc:['Dormitorio con vista, zona de TV y escritorio.','A bedroom with a view, TV area and desk.'],hot:[{u:.03,v:.5,to:'living',label:['Volver a la sala','Back to the living room'],icon:'←'},{u:.44,v:.36,label:['Vista hacia Quito','View over Quito'],icon:'i'},{u:.77,v:.42,label:['Muro de TV con acento de color','TV wall with colour accent'],icon:'i'}]},
-  lobby:{img:'pixel-lobby-render',group:'common',title:['Lobby · Pixel Colors','Lobby · Pixel Colors'],desc:['El primer espacio que recibe a residentes y visitas.','The first space that welcomes residents and guests.'],hot:[{u:.05,v:.55,to:'living',label:['Subir al departamento','Go up to the apartment'],icon:'↑'},{u:.94,v:.58,to:'pool',label:['Ir a la piscina','Go to the pool'],icon:'→'},{u:.5,v:.14,label:['Techo de píxeles de colores','Colour pixel ceiling'],icon:'i'}]},
-  pool:{img:'pixel-pool-water-render',group:'common',title:['Piscina · Pixel Pool','Pool · Pixel Pool'],desc:['Piscina cubierta con zona lounge.','Indoor pool with a lounge area.'],hot:[{u:.56,v:.3,label:['Zona lounge','Lounge area'],icon:'i'},{u:.42,v:.72,label:['Piscina con zona de descanso','Pool with a rest area'],icon:'i'},{u:.08,v:.5,to:'lobby',label:['Volver al lobby','Back to the lobby'],icon:'←'}]}};
+  lobby:{img:'pixel-lobby-render',group:'common',title:['Lobby · Residencia 01 Colors','Lobby · Residencia 01 Colors'],desc:['El primer espacio que recibe a residentes y visitas.','The first space that welcomes residents and guests.'],hot:[{u:.05,v:.55,to:'living',label:['Subir al departamento','Go up to the apartment'],icon:'↑'},{u:.94,v:.58,to:'pool',label:['Ir a la piscina','Go to the pool'],icon:'→'},{u:.5,v:.14,label:['Techo de píxeles de colores','Colour pixel ceiling'],icon:'i'}]},
+  pool:{img:'pixel-pool-water-render',group:'common',title:['Piscina · Residencia 01 Pool','Pool · Residencia 01 Pool'],desc:['Piscina cubierta con zona lounge.','Indoor pool with a lounge area.'],hot:[{u:.56,v:.3,label:['Zona lounge','Lounge area'],icon:'i'},{u:.42,v:.72,label:['Piscina con zona de descanso','Pool with a rest area'],icon:'i'},{u:.08,v:.5,to:'lobby',label:['Volver al lobby','Back to the lobby'],icon:'←'}]}};
  const ORDER=[['apt',['DEPARTAMENTO','APARTMENT'],['living','suite']],['common',['ÁREAS COMUNES','SHARED SPACES'],['lobby','pool']]];
  const ARC=150*Math.PI/180,R=10;
  const H=R*ARC/(1920/841);
@@ -524,7 +524,7 @@ const Tour=(()=>{
   if(!box.children.length){box.innerHTML=ORDER.flatMap(([, ,keys])=>keys.map(k=>`<button class="pf-chip" data-scene3="${k}"></button>`)).join('');$$('[data-scene3]').forEach(b=>b.onclick=()=>go(b.dataset.scene3))}
   $$('[data-scene3]').forEach(b=>{b.textContent=tr(SC[b.dataset.scene3].title);b.setAttribute('aria-pressed',String(loaded&&b.dataset.scene3===cur))});
  }
- function caption(){const s=SC[cur],g=ORDER.find(o=>o[0]===s.group);$('#tour-kicker').textContent=`${L('VISITA VIRTUAL','VIRTUAL VISIT')} · ${P[from].name} · ${tr(g[1])}${from!=='pixel'?' · '+L('interiores de referencia de Pixel','Pixel reference interiors'):''}`;$('#tour-title').textContent=tr(s.title);$('#tour-desc').textContent=tr(s.desc)}
+ function caption(){const s=SC[cur],g=ORDER.find(o=>o[0]===s.group);$('#tour-kicker').textContent=`${L('VISITA VIRTUAL','VIRTUAL VISIT')} · ${P[from].name} · ${tr(g[1])}${from!=='pixel'?' · '+L('interiores de referencia de Residencia 01','Residencia 01 reference interiors'):''}`;$('#tour-title').textContent=tr(s.title);$('#tour-desc').textContent=tr(s.desc)}
  function hotspots(){
   const box=$('#tourHotspots');box.innerHTML='';
   SC[cur].hot.forEach(h=>{
@@ -569,19 +569,6 @@ const Tour=(()=>{
  return {show(){AlphaAssets.whenVisible(stage,async()=>{try{await AlphaAssets.three();if(tier==='alto'&&init()){resize();loop()}}catch{status(L('No se pudo cargar la visita. Recarga para intentarlo de nuevo.','The tour could not load. Reload to try again.'))}})},open};
 })();
 
-/* ---------- Quote calculator ---------- */
-const quoteMoney=n=>'USD '+n.toLocaleString(en()?'en-US':'es-EC',{minimumFractionDigits:2,maximumFractionDigits:2});
-const quoteVat=Number($('#proforma')?.dataset.vat||0);
-const cents=n=>Math.round((n+Number.EPSILON)*100)/100;
-function calcQuote(){Object.keys(TIER_STYLE).forEach(k=>{const v=key=>{const i=$(`[data-price="${k}:${key}"]`),n=parseFloat(i&&i.value);return isNaN(n)?null:n};
-  const set=(key,n)=>{const c=$(`[data-calc="${k}:${key}"]`);if(c)c.textContent=n==null?'—':quoteMoney(n)};
-  const core=v('core'),site=v('site'),sites=site==null?null:cents(site*15),tot=core==null||sites==null?null:cents(core+sites),sub=tot==null?null:cents(tot/(1+quoteVat)),vat=tot==null?null:cents(tot-sub),sign=tot==null?null:cents(tot*.7);
-  set('sites',sites);set('subtotal',sub);set('vat',vat);set('total',tot);set('sign',sign);set('accept',tot==null?null:cents(tot-sign));
-  set('maintenance_network',v('maintenance')==null?null:cents(v('maintenance')*16));set('hosting_network',v('hosting')==null?null:cents(v('hosting')*16));
-  const tt=$(`[data-total="${k}"]`);if(tt)tt.innerHTML=tot==null?L('Precio por definir','Price to be confirmed'):`${L('Total con IVA','Total incl. VAT')}<b>${quoteMoney(tot)}</b>`});
-  $$('[data-price]').forEach(i=>{const p=$(`[data-print="${i.dataset.price}"]`);if(p)p.textContent=i.value===''?'—':quoteMoney(Number(i.value))})}
-const pb=$('#print-quote');if(pb)pb.onclick=()=>window.print();
-
 /* ---------- Wiring ---------- */
 $$('[data-select-tier]').forEach(b=>b.addEventListener('click',()=>selectTier(b.dataset.selectTier,{animate:true,hash:true})));
 $$('[data-tab]').forEach((b,i,all)=>{b.onclick=()=>selectTier(b.dataset.tab,{animate:true,hash:true});b.onkeydown=e=>{const d=e.key==='ArrowRight'?1:e.key==='ArrowLeft'?-1:0;if(!d)return;e.preventDefault();const visible=all.filter(x=>x.getClientRects().length);const index=visible.indexOf(b);const n=visible[(index+d+visible.length)%visible.length];n.focus();n.click()}});
@@ -589,7 +576,7 @@ $$('[data-tier]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();s
 let lastStyle=state.style;
 document.addEventListener('site:render',()=>{if(state.style===lastStyle)return;lastStyle=state.style;const k=projectMode?'medio':STYLE_TIER[state.style];if(k&&k!==tier)selectTier(k,{fromStyle:true,animate:false})});
 let lastLang=state.lang;
-new MutationObserver(()=>{if(state.lang!==lastLang){lastLang=state.lang;fire('lang');calcQuote()}}).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
+new MutationObserver(()=>{if(state.lang!==lastLang){lastLang=state.lang;fire('lang')}}).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
 // Explicit demo links select the live model, bypassing the optional arrival story.
 function open3DDemo(){
  if(projectMode&&state.style!=='immersive'){state.style='immersive';render()}
@@ -613,6 +600,6 @@ const fromHash=projectMode?null:location.hash==='#api-json'?'basico':(location.h
 selectTier(projectMode?'medio':(fromHash||STYLE_TIER[state.style]||'basico'),{fromStyle:!fromHash});
 if(!projectMode&&location.hash==='#api-json')requestAnimationFrame(()=>document.getElementById('api-json').scrollIntoView({block:'start'}));
 window.addEventListener('hashchange',()=>{if(!projectMode&&location.hash==='#api-json'){selectTier('basico');document.getElementById('api-json').scrollIntoView({block:'start'})}});
-calcQuote();
+
 if(new URLSearchParams(location.search).get('demo')==='3d')open3DDemo();
 })();

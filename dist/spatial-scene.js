@@ -1,4 +1,4 @@
-/* Arrival uses verified Pixel renders; the furnished room is explicitly illustrative. */
+/* Arrival uses verified Residencia 01 renders; the furnished room is explicitly illustrative. */
 (()=>{
  const frames=[...document.querySelectorAll('[data-arrival-image]')];if(!frames.length)return;
  let stop=0;const titles=[['Todo empieza<br>con una mirada.','It starts<br>with a first look.'],['Un lugar<br>que te recibe.','A place<br>that welcomes you.'],['Aquí empieza<br>tu historia.','Your story<br>begins here.']],captions=[['La ciudad queda afuera. Tu historia está por empezar.','The city stays outside. Your story is about to begin.'],['El color, la luz y el primer paso hacia casa.','Colour, light and your first step towards home.'],['Deja que el espacio te cuente el resto.','Let the space tell you the rest.']],actions=[['Entrar al lobby','Enter the lobby'],['Conocer el interior','See the interior'],['Abrir la maqueta','Open the model']];

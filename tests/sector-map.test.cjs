@@ -66,7 +66,7 @@ test('landmark selection, bilingual status, views and zoom work at mobile width'
   app.click(app.places,'metro');assert.equal(app.get('sector-map').dataset.selected,'metro');
   assert.equal(app.places[1].attributes['aria-pressed'],'true');
   app.document.documentElement.lang='en';app.documentEvents['site:render']();app.flush();
-  assert.match(app.get('sector-place-description').textContent,/transit landmark/);
+  assert.match(app.get('sector-place-description').textContent,/fictional point of interest/);
   app.click(app.views,'above');assert.equal(app.get('sector-map').dataset.view,'above');assert.ok(app.camera.position.y>160);
   for(let i=0;i<20;i++)app.click(app.actions,'in');assert.ok(app.camera.zoom<=1.85);
   app.click(app.actions,'reset');assert.equal(app.camera.zoom,1);assert.equal(app.views[0].attributes['aria-pressed'],'true');
@@ -76,7 +76,7 @@ test('landmark selection, bilingual status, views and zoom work at mobile width'
 
 test('WebGL failure leaves the static map and directions context usable',()=>{
   const app=mount({webgl:false});app.reveal();assert.equal(app.get('sector-canvas').hidden,true);assert.equal(app.get('sector-map-tools').hidden,true);
-  assert.equal(app.get('sector-map').dataset.ready,'false');app.click(app.places,'coral');assert.match(app.get('sector-place-description').textContent,/Coral/);
+  assert.equal(app.get('sector-map').dataset.ready,'false');app.click(app.places,'coral');assert.match(app.get('sector-place-description').textContent,/Comercio/);
 });
 
 test('WebGL context restoration re-enables controls and redraws the scene',()=>{

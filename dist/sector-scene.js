@@ -1,4 +1,4 @@
-/* Offline architectural diorama. The roads and landmarks follow Pixel's reference
+/* Offline architectural diorama. The roads and landmarks follow Residencia 01's reference
    diagram; building massing and landscaping are illustrative, not survey data. */
 (function(root,factory){
   const api=factory();
@@ -54,7 +54,7 @@
       box(3.1,.03,.7,m.stripe,-25,.29,6.8+i*1.05);
       box(3.1,.03,.7,m.stripe,-11,.29,6.8+i*1.05);
     }
-    // Pixel's colourful framed facade, recessed glazing, balconies and roof garden.
+    // Residencia 01's colourful framed facade, recessed glazing, balconies and roof garden.
     const px=-3,pz=-6,W=13,D=13,H=28;
     box(W,H,D,m.glass,px,H/2+.55,pz,'pixel');
     box(W+1,1,D+1,m.concrete,px,.95,pz,'pixel');

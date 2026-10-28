@@ -42,11 +42,11 @@ draw=ImageDraw.Draw(im)
 try: font=ImageFont.truetype('/System/Library/Fonts/Helvetica.ttc',18)
 except OSError: font=ImageFont.load_default()
 for i,(key,(x,y,_)) in enumerate(data['places'].items()):
-    width=120 if key=='pixel' else 110
+    width=190 if key=='pixel' else 140
     left=x-width/2;top=y-54
     draw.line([(x,top+38),(x,y)],fill='#dce7ad',width=2)
     draw.rounded_rectangle((left,top,left+width,top+38),radius=3,fill='#e0ebae' if i==0 else '#192e2d',outline='#91a18c')
-    draw.text((x,top+20),f'0{i+1} · {key.title()}',anchor='mm',font=font,fill='#192e2d' if i==0 else '#eeeede')
+    draw.text((x,top+20),f'0{i+1} · '+{'pixel':'Residencia 01','metro':'Transporte','coral':'Comercio'}[key],anchor='mm',font=font,fill='#192e2d' if i==0 else '#eeeede')
 output=ROOT/'dist/assets/sector-map.png'
 im.save(output,optimize=True)
 print(f'Rendered {output.name} ({output.stat().st_size//1024} KB)')
