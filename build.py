@@ -28,7 +28,7 @@ def language():
 def shell(page):
  if page in ('home','project'):
   label = 'Portafolio ficticio · Datos de ejemplo' if page == 'home' else 'Proyecto ficticio · Datos de ejemplo'
-  return f'<aside class="demo-ribbon" lang="es" aria-label="Identificación de la demo"><strong>DEMO</strong><span>{t(label,'Fictional projects · Sample data')}</span></aside><div class="preview-return">{a("← Volver a la demo","← Back to the demo","/comparar/")}</div>'
+  return f'<aside class="demo-ribbon" lang="es" aria-label="Identificación de la demo"><strong>DEMO</strong><span>{t(label,"Fictional projects · Sample data")}</span></aside><div class="preview-return">{a("← Volver a la demo","← Back to the demo","/comparar/")}</div>'
  links=a('Resumen','Overview','/propuesta/','', 'aria-current="page"' if page=='proposal' else '')+a('Comparar opciones','Compare options','/comparar/','', 'aria-current="page"' if page=='comparison' else '')+a('Cómo funciona','How it works','/como-funciona/','', 'aria-current="page"' if page=='technical' else '')+a('Herramientas','Tools','/demo/','', 'aria-current="page"' if page=='proforma' else '')+a('Nuestro equipo','Our team','/nosotros/','', 'aria-current="page"' if page=='about' else '')
  return menu_shell('<a class="proposal-brand" href="/propuesta/">ANDEAN SOFTWARE LAB<small>'+t('DEMO INMOBILIARIA','REAL ESTATE DEMO')+'</small></a>',links+a('Hablemos','Let’s talk','/contacto/','advisor-link'),'stakeholder')
 def menu_shell(brand,links,kind='buyer'):
