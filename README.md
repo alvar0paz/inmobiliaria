@@ -6,7 +6,7 @@ Single immersive bilingual real estate demonstration at https://inmobiliaria.alv
 - `/` and `/propuesta/`: live 3D architecture introduction.
 - `/proyecto/`: four-step guided journey: architecture, apartment selection, furnished interior and enquiry.
 - `/pixel/` and `/comparar/`: compatible aliases of the same full experience. Old style parameters no longer select tiers.
-- `/proforma/`: printable commercial offer at US$997.99 including IVA, sharing its scope and price with the homepage through `commercial.py`.
+- `/proforma/`: printable commercial offer starting at US$997.99 including IVA, sharing its scope and price with the homepage through `commercial.py`.
 - `/demo/`: retained local content-management and WhatsApp simulation, with all three example inventories. No external CRM or message delivery.
 - `/como-funciona/`, `/nosotros/`, `/contacto/`: explanation, team and contact.
 
@@ -40,7 +40,7 @@ All architecture, projects, units, availability, prices and locations are illust
 The contact form posts to `/api/enquiries`, saves to D1 and confirms a reference only after persistence. Selected demo unit and type accompany the enquiry. `/consultas/` is restricted to the authenticated site owner (alvarop3000@gmail.com). It lists saved leads and offers email reply links; automatic email notifications are not configured. Anonymous users cannot read enquiries. Rate limits, a honeypot, consent, length limits and idempotent retries protect submissions. Local and hosted databases are separate. The manager and simulated WhatsApp assistant run only in-browser and reset on reload. No reservation, payment or external integration is active. Existing hostname aliases and public audience remain unchanged.
 
 ## Commercial scope
-The US$997.99 IVA-inclusive implementation covers one project, up to two supplied compatible apartment models and 100 units, two consolidated review rounds, 10 business days after deposit and approved materials, and 30 days of in-scope bug fixes. Deposit US$499.00; balance US$498.99 before launch. Bespoke modelling, hosting, domain, licences and external integrations are separate. The demo still illustrates all four apartment types.
+Website implementation starts at US$997.99 including IVA. The starting scope covers one project, up to two supplied compatible apartment models and 100 units, two consolidated review rounds, 10 business days after deposit and approved materials, and 30 days of in-scope bug fixes. 50% deposit and 50% before launch, based on the accepted personalised quote. Modelling estimates are USD900–1,500 + IVA per furnished type, USD1,500–3,000 + IVA for exterior/grounds, and from USD3,900 + IVA for an exterior plus two types. Bespoke modelling, hosting, domain, licences and external integrations are separate. The demo still illustrates all four apartment types.
 
 ## Database preview
 After building, apply the generated `drizzle/0000_keen_tempest.sql` once to local D1 with the Sites starter command. Publishing applies hosted migrations. Never commit `.wrangler`, `.sites-runtime`, local database records or credentials.
