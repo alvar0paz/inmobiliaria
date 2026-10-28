@@ -4,7 +4,7 @@
   const feed = $('#demo-data') ? JSON.parse($('#demo-data').textContent) : null, p = feed?.project;
   const L = (es, en) => lang === 'es' ? es : en;
   const copy = [
-    ['01 / LA ARQUITECTURA', '01 / THE ARCHITECTURE', 'La primera mirada.', 'The first look.', 'Gira el edificio y toca los puntos dorados para acercarte a la piscina, las terrazas y el lobby. Después, elige tu hogar.', 'Rotate the building and tap the gold points to move closer to the pool, terraces and lobby. Then choose your home.'],
+    ['01 / LA ARQUITECTURA', '01 / THE ARCHITECTURE', 'La primera mirada.', 'The first look.', 'Gira el edificio y toca los puntos de interés para acercarte a la piscina, las terrazas y el lobby. Después, elige tu hogar.', 'Rotate the building and tap the points of interest to move closer to the pool, terraces and lobby. Then choose your home.'],
     ['02 / TU DEPARTAMENTO', '02 / YOUR APARTMENT', 'Un espacio para ti.', 'A space for you.', 'Elige un piso y el edificio se abre para mostrarlo. Los colores indican disponibilidad; toca una unidad en el modelo o en la lista.', 'Choose a floor and the building opens to reveal it. Colours show availability; tap a unit on the model or in the list.'],
     ['03 / LA VIDA DENTRO', '03 / LIFE INSIDE', 'Imagina lo cotidiano.', 'Imagine the everyday.', 'Entra a tu unidad y descubre la distribución de su tipología, espacio por espacio. La vista exterior cambia con la altura del piso elegido.', 'Step inside and discover the layout for your apartment type, space by space. The outside view changes with your floor’s height.'],
     ['04 / EL SIGUIENTE PASO', '04 / YOUR NEXT STEP', 'Hablemos de tu hogar.', 'Let’s talk about your home.', 'Tu selección acompaña la conversación. Una experiencia conectada de principio a fin.', 'Your selection travels with the conversation. A connected experience from start to finish.'],
@@ -263,7 +263,7 @@
       onRender: renderHotspots,
       onHover: p ? hoverUnit : null,
     });
-    if (p) go(step);
+    if (p) go(step); else engine.lighting(2);
   }).catch(fallback));
   window.addEventListener('pagehide', e => { if (!e.persisted) engine?.dispose(); });
 })();
