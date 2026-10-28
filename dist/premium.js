@@ -38,6 +38,7 @@
   function translate() {
     document.documentElement.lang = lang;
     $$('[data-es][data-en]').forEach(e => e.innerHTML = e.dataset[lang]);
+    $$('.offer-enquiry').forEach(a => a.href = a.dataset[lang === 'es' ? 'mailEs' : 'mailEn']);
     $('#language').textContent = lang === 'es' ? 'EN' : 'ES';
     $$('a[href^="/"]').forEach(a => { const url = new URL(a.getAttribute('href'), location.origin); url.searchParams.set('lang', lang); a.setAttribute('href', url.pathname + url.search + url.hash); });
     if (p) { renderStep(); list(); selection(); }
@@ -242,6 +243,7 @@
   }
 
   translate();
+  $('#print-proforma')?.addEventListener('click', () => window.print());
   if (!canvas) return;
   $$('[data-light]').forEach(b => b.onclick = () => { engine?.lighting(+b.dataset.light); $$('[data-light]').forEach(x => x.setAttribute('aria-pressed', String(x === b))); });
   $$('[data-camera]').forEach(b => b.onclick = () => engine?.command(b.dataset.camera));

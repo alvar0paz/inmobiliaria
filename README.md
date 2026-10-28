@@ -6,7 +6,8 @@ Single immersive bilingual real estate demonstration at https://inmobiliaria.alv
 - `/` and `/propuesta/`: live 3D architecture introduction.
 - `/proyecto/`: four-step guided journey: architecture, apartment selection, furnished interior and enquiry.
 - `/pixel/` and `/comparar/`: compatible aliases of the same full experience. Old style parameters no longer select tiers.
-- `/demo/` and `/proforma/`: retained local content-management and WhatsApp simulation, with all three example inventories. No external CRM or message delivery.
+- `/proforma/`: printable commercial offer at US$997.99 including IVA, sharing its scope and price with the homepage through `commercial.py`.
+- `/demo/`: retained local content-management and WhatsApp simulation, with all three example inventories. No external CRM or message delivery.
 - `/como-funciona/`, `/nosotros/`, `/contacto/`: explanation, team and contact.
 
 ## The 3D experience
