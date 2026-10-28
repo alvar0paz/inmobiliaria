@@ -75,8 +75,5 @@ def about():
  (ROOT/'nosotros').mkdir(exist_ok=True);(ROOT/'nosotros'/'index.html').write_text(out)
 
 if __name__=='__main__':
- from proforma import proforma
- from proposal_page import proposal_page
- from technical_page import technical_page
- from contact_page import contact_page
- home();project();about();proforma();proposal_page();technical_page();contact_page()
+ from premium import build
+ build()

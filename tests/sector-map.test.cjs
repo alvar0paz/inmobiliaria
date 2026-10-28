@@ -3,7 +3,7 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const vm=require('node:vm');
 const THREE=require('../dist/vendor/three.min.js');
-const Scene=require('../dist/sector-scene.js');
+const Scene=require('../legacy-viewer/sector-scene.js');
 const Controls=require('../dist/viewer-controls.js');
 
 // Use the real scene, raycaster and projection math; stub only browser/WebGL I/O.
@@ -34,7 +34,7 @@ function mount({webgl=true,width=720,height=640}={}){
     requestAnimationFrame:fn=>{frames.set(++id,fn);return id},cancelAnimationFrame:key=>frames.delete(key),
     IntersectionObserver:class{constructor(fn){observers.push(fn)}observe(){}},ResizeObserver:class{constructor(fn){this.fn=fn}observe(){this.fn()}}};
   context.window=context;context.window.devicePixelRatio=1;
-  vm.runInNewContext(fs.readFileSync(require.resolve('../dist/sector-map.js'),'utf8'),context);
+  vm.runInNewContext(fs.readFileSync(require.resolve('../legacy-viewer/sector-map.js'),'utf8'),context);
   function flush(){let count=0;while(frames.size){assert.ok(count++<10,'animation settles');const callbacks=[...frames.values()];frames.clear();callbacks.forEach(fn=>fn())}}
   function reveal(value=true){observers[0]([{isIntersecting:value}]);flush()}
   function click(items,key){const e=items.find(x=>Object.values(x.dataset).includes(key));e.emit('click');flush()}

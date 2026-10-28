@@ -42,31 +42,32 @@ class SiteStructure(unittest.TestCase):
                             self.assertIn(u.fragment,Page(target).ids,ref)
                     elif ref.startswith('#'):
                         self.assertIn(u.fragment,page.ids,ref)
-    def test_three_distinct_directions_on_both_buyer_pages(self):
-        for path in (DIST/'index.html',DIST/'pixel/index.html'):
-            self.assertEqual(set(Page(path).directions),{'essential','editorial','immersive'})
-    def test_pixel_reuses_viewers_with_only_its_own_inventory(self):
-        page=Page(DIST/'pixel/index.html');data=json.loads(page.feed)
-        self.assertEqual([p['slug'] for p in data['projects']],['pixel'])
-        self.assertTrue(data['sample'])
-        for id in ('project-explorer','demo-medio','demo-alto','elev','scene3d','tour3d','unit3d-select'):
+    def test_one_complete_experience_and_legacy_routes(self):
+        source=(DIST/'proyecto/index.html').read_text()
+        page=Page(DIST/'proyecto/index.html');data=json.loads(page.feed)
+        self.assertTrue(data['sample']);self.assertEqual(len(data['project']['units']),72)
+        for id in ('architecture','floor','bedrooms','available','unit-list','selected-home','enquire'):
             self.assertIn(id,page.ids)
-        self.assertLess(page.scripts.index('/viewer-controls.js'),page.scripts.index('/proforma.js'))
-    def test_sector_map_is_shared_and_progressively_enhanced(self):
-        source=(DIST/'pixel/index.html').read_text()
-        page=Page(DIST/'pixel/index.html')
-        self.assertNotIn('EL BARRIO',source)
-        self.assertIn('EL SECTOR',source)
-        for id in ('sector-title','sector-map','sector-canvas','sector-map-caption','sector-map-help'):
-            self.assertEqual(page.ids.count(id),1)
+        self.assertEqual(source.count('data-step='),4)
+        for alias in ('pixel','comparar'):
+            self.assertEqual((DIST/alias/'index.html').read_text(),source)
+        self.assertLess(page.scripts.index('/viewer-controls.js'),page.scripts.index('/architecture.js'))
+        self.assertLess(page.scripts.index('/architecture.js'),page.scripts.index('/premium.js'))
         self.assertNotIn('/vendor/three.min.js',page.scripts)
-        self.assertLess(page.scripts.index('/asset-loader.js'),page.scripts.index('/sector-scene.js'))
-        self.assertLess(page.scripts.index('/sector-scene.js'),page.scripts.index('/sector-map.js'))
-        self.assertIn('/assets/sector-map.png',page.references)
-        self.assertFalse(any('maps.app.goo.gl' in ref for ref in page.references))
 
-    def test_proforma_keeps_all_three_projects(self):
-        self.assertEqual(len(json.loads(Page(DIST/'proforma/index.html').feed)['projects']),3)
+    def test_no_raster_images_or_tier_interfaces_are_published(self):
+        self.assertFalse([p for p in DIST.rglob('*') if p.suffix in ('.png','.jpg','.jpeg','.webp','.gif')])
+        for path in list(DIST.rglob('*.html'))+list(DIST.glob('*.js')):
+            source=path.read_text().lower()
+            for term in ('<img','textureloader','data-tier','data-direction','compare options','comparar opciones','tres niveles','three tiers'):
+                self.assertNotIn(term,source,str(path))
+
+    def test_management_retains_three_projects_and_feed(self):
+        page=Page(DIST/'demo/index.html')
+        self.assertEqual(len(json.loads(page.feed)['projects']),3)
+        for id in ('cms','out-card','out-feed','wa-form'):
+            self.assertIn(id,page.ids)
+        self.assertIn('/management.js',page.scripts)
 
     def test_reusable_demo_has_no_client_brand_or_commercial_quote(self):
         forbidden=('alpha builders','alphabuilders','pixel.com.ec','contacto@pixel','41.990','46.990','49.990','zolutium','16 sitios','15 sitios','data-price=','RUC 17')

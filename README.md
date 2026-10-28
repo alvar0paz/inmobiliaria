@@ -1,38 +1,27 @@
 # Demo inmobiliaria · Andean Software Lab
 
-Reusable bilingual sales demonstration for real estate developers, published at https://inmobiliaria.alvaropaz.com/.
+Single immersive bilingual real estate demonstration at https://inmobiliaria.alvaropaz.com/.
 
-## Experience
-
-- `/propuesta/`: developer-facing introduction, customer journey and pilot contact.
-- `/comparar/`: Essential, Interactive and Immersive experiences.
-- `/?style=essential|editorial|immersive`: fictional developer portfolio.
-- `/proyecto/`: fictional Residencia 01 with floor plans, apartment selection, 3D building, rendered tours and selected-unit enquiry context.
-- `/demo/`: local management simulation, illustrative WhatsApp conversation and 2D/3D tools.
-- `/como-funciona/`: explanation of the possible data and integration flow.
-- `/nosotros/` and `/contacto/`: Andean Software Lab team and email contact.
-
-Legacy `/pixel/` and `/proforma/` routes remain compatible, serving the neutral project and tools pages. No fixed service quotation, tax identifiers, client-specific contract terms, original developer logos, sales contacts or external project tours are published. The old custom hostname remains attached to the same updated site.
+## Routes
+- `/` and `/propuesta/`: live 3D architecture introduction.
+- `/proyecto/`: four-step guided journey: architecture, apartment selection, furnished interior and enquiry.
+- `/pixel/` and `/comparar/`: compatible aliases of the same full experience. Old style parameters no longer select tiers.
+- `/demo/` and `/proforma/`: retained local content-management and WhatsApp simulation, with all three example inventories. No external CRM or message delivery.
+- `/como-funciona/`, `/nosotros/`, `/contacto/`: explanation, team and contact.
 
 ## Development
+Run `python3 build.py`, then serve `dist/`. The active generator is `premium.py`; inventory and management markup come from `proforma.py`. Active visuals and navigation live in `dist/architecture.js`, `dist/premium.js` and `dist/premium.css`. The geometry uses the locally vendored Three.js r128 and shared keyboard/pointer controls. `dist/management.js` retains the management simulation.
 
-Buildless deployment; Python generates HTML into tracked `dist/`:
+`legacy-viewer/` preserves replaced viewer scripts outside the published directory. Previous raster assets are recoverable through Git history; no photographs, raster renders or image textures are published or loaded by the current experience.
 
+## Validation
 ```
-python3 build.py
-python3 -m http.server 4173 --bind 127.0.0.1 --directory dist
 python3 tests/site-structure.test.py
-node --test tests/asset-loader.test.cjs tests/viewer-controls.test.cjs tests/sector-map.test.cjs
+node --test tests/architecture.test.cjs tests/asset-loader.test.cjs tests/viewer-controls.test.cjs
 ```
+Browser QA covers responsive exterior/interior views, apartment selection, lighting, ES/EN, enquiry context and management updates.
 
-Edit HTML in `build.py`, `proposal_page.py`, `directions.py`, `proforma.py`, `technical_page.py`, `contact_page.py`, `sector.py` and `spatial.py`. Shared CSS and browser scripts live in `dist/`. Static hosting identity stays in `.openai/hosting.json`.
+## Boundaries
+All architecture, projects, units, availability, prices and locations are illustrative. One shared apartment demonstrates navigation and furnishings; it is not an exact plan for every unit. Real geometry must be prepared from approved architectural drawings. Views use real-time geometry, not photorealistic offline renders or captured 360 photography.
 
-## Demo boundaries
-
-Residencia 01/02/03, units, dates, availability, streets and prices are fictional examples. Images are AI-generated architectural concepts, not approved plans. The panorama uses 2D renders; it is not captured 360 photography. Building geometry and interiors are illustrative.
-
-The manager and WhatsApp assistant run locally, reset on reload and do not send messages or connect to a production CRM. Enquiry links open an email to Alvaro, with the chosen example unit where applicable; visitors submit it themselves. Production scope and pricing are defined per project. New 3D, 360 or render production is evaluated separately from integrating existing assets.
-
-## Asset provenance
-
-`render-prompts.json` retains original render provenance. `rebrand-image-provenance.json` records the built-in image-generation edit used to remove signage from the demo exterior. Published asset: `dist/assets/residencia-exterior-render.png`. Original logos and the branded location image were removed from `dist/`. `scripts/render-sector-map.py` generates the unbranded map fallback from the same Three.js geometry with fictional labels.
+Email links retain the chosen home and open a draft for the visitor to review and send. The manager and simulated WhatsApp assistant run only in-browser and reset on reload. No reservation, payment or external integration is active. Existing hostname aliases and public audience remain unchanged.
