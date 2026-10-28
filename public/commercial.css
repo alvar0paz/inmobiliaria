@@ -20,3 +20,6 @@
 .footer-identity{display:flex;flex-direction:column;gap:15px}.footer-email{font-size:11px;color:var(--muted);width:fit-content}.footer-email:hover{text-decoration:underline}
 
 .team-solo{grid-template-columns:minmax(0,640px)}
+
+/* Combined website and modelling budget. */
+.package-ceiling{margin:2rem 0;padding:clamp(1.25rem,3vw,2rem);border:1px solid currentColor;border-radius:12px}.package-ceiling p{font-size:clamp(1.5rem,4vw,2.75rem);line-height:1.2;margin:.75rem 0}.package-ceiling strong{white-space:nowrap}.package-ceiling>span:last-child{font-size:.9rem;line-height:1.6;display:block}
