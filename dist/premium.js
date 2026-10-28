@@ -103,10 +103,9 @@
   }
   function choose(id) {
     const unit = unitById(id);
-    if (!unit) return;
+    if (!unit || ($('#available').checked && unit.status !== 'disponible') || ($('#bedrooms').value !== 'all' && feed.typologies[unit.type].beds !== +$('#bedrooms').value)) return;
     selected = unit;
     $('#floor').value = String(unit.floor);
-    if (!$('#unit-options').hidden) { $('#bedrooms').value = 'all'; if (unit.status !== 'disponible') $('#available').checked = false; }
     list();
     selection();
     renderStep();

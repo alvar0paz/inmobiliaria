@@ -1,14 +1,14 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
 const THREE=require('../dist/vendor/three.min.js');
 function fixture(options={}){
- const renders=[],anchors=[];let frame;
+ const renders=[],anchors=[];let frame,now=0;
  class Renderer {constructor(){this.shadowMap={};this.info={render:{calls:0,triangles:0}}}setPixelRatio(){}setSize(){}render(scene,camera){renders.push({scene,camera})}dispose(){this.disposed=true}}
  class Observer{observe(){}disconnect(){}}
  const canvas={dataset:{},parentElement:{getBoundingClientRect:()=>({width:900,height:580})}};
- const window={};const context={window,devicePixelRatio:2,matchMedia:()=>({matches:true}),ResizeObserver:Observer,IntersectionObserver:Observer,document:{hidden:false,addEventListener(){},removeEventListener(){}},requestAnimationFrame:f=>(frame=f,1),cancelAnimationFrame(){frame=null},ViewerControls:{fitDistance:()=>90,bind:()=>({cancel(){}})}};
+ const window={};const context={window,devicePixelRatio:2,performance:{now:()=>now},matchMedia:q=>({matches:q.includes("reduced-motion")?options.reduced!==false:false}),ResizeObserver:Observer,IntersectionObserver:Observer,document:{hidden:false,addEventListener(){},removeEventListener(){}},requestAnimationFrame:f=>(frame=f,1),cancelAnimationFrame(){frame=null},ViewerControls:{fitDistance:()=>90,bind:()=>({cancel(){}})}};
  vm.runInNewContext(fs.readFileSync(require.resolve('../dist/architecture.js'),'utf8'),context);
  const api=window.Architecture.create({...THREE,WebGLRenderer:Renderer},canvas,()=>{},{onRender:list=>anchors.splice(0,anchors.length,...list),...options});
- function flush(){for(let i=0;i<4&&frame;i++){const f=frame;frame=null;f()}}
+ function flush(count=4){for(let i=0;i<count&&frame;i++){now+=1000/60;const f=frame;frame=null;f()}}
  flush();return{api,canvas,renders,flush,anchors,floorY:window.Architecture.floorY,scene:()=>renders.at(-1).scene};
 }
 const unit=(scene,id)=>{let found;scene.traverse(o=>{if(o.userData.unitId===id)found=o});return found};
@@ -47,3 +47,19 @@ test('night lighting switches on windows, lamps and stars',()=>{
  f.api.lighting(0);f.flush();assert.equal(mats().unitGlass0.emissiveIntensity,0);
  f.api.lighting(2);f.flush();assert.ok(mats().unitGlass0.emissiveIntensity>.5);assert.ok(mats().cityLit.emissiveIntensity>.2);
  let stars;f.scene().traverse(o=>{if(o.isPoints)stars=o});assert.ok(stars.visible&&stars.material.opacity>.9);f.api.dispose()});
+
+test('animated navigation during fade-in reaches the latest mode and room',()=>{
+ const f=fixture({reduced:false,intro:false,orbit:false});
+ f.api.setMode('interior','living');f.flush(60);assert.equal(f.api.state().mode,'interior');
+ f.api.setMode('building');f.flush(240);assert.equal(f.api.state().mode,'building');assert.equal(f.api.state().transitioning,false);
+ f.api.setMode('interior','living');f.flush(60);f.api.setMode('interior','kitchen');f.flush(240);
+ assert.equal(f.api.state().mode,'interior');assert.equal(f.canvas.dataset.room,'kitchen');assert.equal(f.api.state().transitioning,false);f.api.dispose();
+});
+test('animated navigation before the swap honours the latest destination',()=>{
+ const f=fixture({reduced:false,intro:false,orbit:false});f.api.setMode('interior');f.flush(15);f.api.setMode('building');f.flush(240);
+ assert.equal(f.api.state().mode,'building');assert.equal(f.api.state().transitioning,false);f.api.dispose();
+});
+test('filtered units have no selectable scene hotspots',()=>{
+ const f=fixture();f.api.focusFloor(7);f.api.paint(Object.fromEntries(['701','702','703','704','705','706'].map(id=>[id,id==='705'?'available':'dim'])));f.flush();
+ assert.deepEqual(f.anchors.filter(a=>a.key.startsWith('unit:')).map(a=>a.key),['unit:705']);f.api.dispose();
+});

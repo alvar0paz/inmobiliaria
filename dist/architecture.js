@@ -595,7 +595,7 @@ window.Architecture = (() => {
       const b = canvas.getBoundingClientRect();
       pointer.set((e.clientX - b.left) / b.width * 2 - 1, -(e.clientY - b.top) / b.height * 2 + 1);
       ray.setFromCamera(pointer, camera);
-      const hit = ray.intersectObjects(units.filter(u => !floors[u.userData.floor - 2].ghost), false)[0];
+      const hit = ray.intersectObjects(units.filter(u => !floors[u.userData.floor - 2].ghost && (!paintMap || paintMap[u.userData.unitId] !== 'dim')), false)[0];
       return hit ? hit.object : null;
     }
 
@@ -676,7 +676,7 @@ window.Architecture = (() => {
         if (focus === null) {
           for (const [key, a] of Object.entries(AMENITIES)) add(`amenity:${key}`, ...a.at, a.normal);
           if (selected) { selected.getWorldPosition(w); add(`selected:${selected.userData.unitId}`, w.x, w.y + 1.9, w.z, [0, 0, selected.userData.side]); }
-        } else for (const u of units) if (u.userData.floor === focus) { u.getWorldPosition(w); add(`unit:${u.userData.unitId}`, w.x, w.y + 1.75, w.z); }
+        } else for (const u of units) if (u.userData.floor === focus && (!paintMap || paintMap[u.userData.unitId] !== 'dim')) { u.getWorldPosition(w); add(`unit:${u.userData.unitId}`, w.x, w.y + 1.75, w.z); }
       } else for (const [key, p] of Object.entries(ROOM_SPOTS)) if (key !== room) add(`room:${key}`, p[0], p[1] + home.position.y, p[2]);
       return list;
     }
@@ -741,7 +741,16 @@ window.Architecture = (() => {
     function setMode(value, view = 'overview') {
       const next = value === 'interior' ? 'interior' : 'building';
       room = view;
-      if (seq) { mode = next; return wake(); }
+      if (seq) {
+        mode = next;
+        // Before the swap, its destination can still be changed safely. Once fading
+        // in, cancel that completed crossing and honour the latest navigation.
+        if (seq.phase === 'out') return wake();
+        seq = null;
+        flight = null;
+        fade.visible = false;
+        fade.material.uniforms.opacity.value = 0;
+      }
       if (next === shown) {
         mode = next;
         canvas.dataset.room = room;
