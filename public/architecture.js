@@ -770,11 +770,11 @@ window.Architecture = (() => {
     fade.visible = false;
     scene.add(fade);
 
-    /* ---------- Post-processing on capable screens: ambient occlusion and bloom ----------
-       The scene renders into a 4× multisampled buffer. A half-resolution depth pre-pass feeds
-       screen-space ambient occlusion (contact shadows in corners, under furniture and between
-       buildings); bright lamps, windows and the sun bloom softly. Phones, WebGL1 and slow GPUs
-       keep the direct render, which already has sky lighting, reflections and surface detail. */
+    /* ---------- Post-processing on capable screens: multisampling and bloom ----------
+       The scene renders into a 4× multisampled buffer; bright lamps, windows and the sun bloom
+       softly, with a light vignette. Screen-space ambient occlusion was tried and removed: up close
+       (the furnished apartment, paving joints) it left noisy halos and dashed edges. Phones, WebGL1
+       and slow GPUs keep the direct render, which already has sky lighting, reflections and detail. */
     function makePipeline() {
       const caps = renderer.capabilities;
       if (!caps || !caps.isWebGL2 || !T.WebGLMultisampleRenderTarget || options.quality === 'low' || (compact && options.quality !== 'high')) return null;
@@ -787,28 +787,7 @@ window.Architecture = (() => {
       const color = new T.WebGLMultisampleRenderTarget(1, 1, {minFilter: T.LinearFilter, magFilter: T.LinearFilter});
       color.samples = 4;
       color.texture.encoding = T.sRGBEncoding;
-      const depth = new T.WebGLRenderTarget(1, 1, {minFilter: T.NearestFilter, magFilter: T.NearestFilter});
-      depth.depthTexture = new T.DepthTexture(1, 1, T.UnsignedIntType);
-      const aoRaw = new T.WebGLRenderTarget(1, 1, linear), aoBlur = new T.WebGLRenderTarget(1, 1, linear);
       const mips = [2, 4, 8, 16, 32].map(() => new T.WebGLRenderTarget(1, 1, linear));
-      const depthOnly = new T.MeshBasicMaterial({colorWrite: false});
-      const projInv = new T.Matrix4();
-      const aoMat = pass({tDepth: {value: depth.depthTexture}, projInv: {value: projInv}, proj: {value: camera.projectionMatrix}, radius: {value: 2}, texel: {value: new T.Vector2()}, reach: {value: 220}},
-        `uniform sampler2D tDepth;uniform mat4 projInv,proj;uniform float radius,reach;uniform vec2 texel;varying vec2 vUv;
-         vec3 pos(vec2 uv){float d=texture2D(tDepth,uv).x;vec4 v=projInv*vec4(uv*2.-1.,d*2.-1.,1.);return v.xyz/v.w;}
-         void main(){float d=texture2D(tDepth,vUv).x;if(d>=1.){gl_FragColor=vec4(1.);return;}
-          vec3 p=pos(vUv),px=pos(vUv+vec2(texel.x,0.))-p,nx=p-pos(vUv-vec2(texel.x,0.)),py=pos(vUv+vec2(0.,texel.y))-p,ny=p-pos(vUv-vec2(0.,texel.y));
-          vec3 n=normalize(cross(abs(px.z)<abs(nx.z)?px:nx,abs(py.z)<abs(ny.z)?py:ny));
-          float rs=clamp(radius*proj[1][1]*.5/-p.z,texel.y*3.,.12),ang=fract(52.9829189*fract(dot(gl_FragCoord.xy,vec2(.06711056,.00583715))))*6.2832,occ=0.;
-          for(int i=0;i<12;i++){float f=(float(i)+.5)/12.;float a=ang+float(i)*2.3998;vec2 o=vec2(cos(a),sin(a)*texel.y/texel.x)*rs*sqrt(f);
-           vec3 v=pos(vUv+o)-p;float l=length(v);occ+=max(dot(n,v/l)-.08,0.)*clamp(1.-l/radius,0.,1.);}
-          float ao=pow(clamp(1.-occ/12.*3.2,0.,1.),1.6);gl_FragColor=vec4(mix(ao,1.,smoothstep(reach*.6,reach,-p.z)),0.,0.,1.);}`);
-      const blurMat = pass({tAO: {value: aoRaw.texture}, tDepth: {value: depth.depthTexture}, texel: {value: new T.Vector2()}, near: {value: .5}, far: {value: 4000}},
-        `uniform sampler2D tAO,tDepth;uniform vec2 texel;uniform float near,far;varying vec2 vUv;
-         float lin(float d){float z=d*2.-1.;return 2.*near*far/(far+near-z*(far-near));}
-         void main(){float c=lin(texture2D(tDepth,vUv).x),s=0.,w=0.;
-          for(int x=-2;x<=2;x++)for(int y=-2;y<=2;y++){vec2 uv=vUv+vec2(float(x),float(y))*texel;float k=1./(1.+abs(lin(texture2D(tDepth,uv).x)-c)*8./max(c*.02,.05));s+=texture2D(tAO,uv).x*k;w+=k;}
-          gl_FragColor=vec4(s/w,0.,0.,1.);}`);
       const brightMat = pass({tColor: {value: color.texture}, threshold: {value: .9}, texel: {value: new T.Vector2()}},
         `uniform sampler2D tColor;uniform float threshold;uniform vec2 texel;varying vec2 vUv;
          void main(){vec3 c=vec3(0.);for(int i=0;i<4;i++){vec2 o=vec2(i==1||i==3?1.:-1.,i>1?1.:-1.)*texel;c+=texture2D(tColor,vUv+o).rgb;}c*=.25;
@@ -821,70 +800,41 @@ window.Architecture = (() => {
          void main(){vec3 c=texture2D(tSrc,vUv).rgb*.25;c+=(texture2D(tSrc,vUv+vec2(texel.x,0.)).rgb+texture2D(tSrc,vUv-vec2(texel.x,0.)).rgb+texture2D(tSrc,vUv+vec2(0.,texel.y)).rgb+texture2D(tSrc,vUv-vec2(0.,texel.y)).rgb)*.1875;gl_FragColor=vec4(c*weight,1.);}`);
       upMat.blending = T.AdditiveBlending;
       upMat.transparent = true;
-      const finalMat = pass({tColor: {value: color.texture}, tAO: {value: aoBlur.texture}, tBloom: {value: mips[0].texture}, aoStrength: {value: .8}, bloom: {value: .3}, useAO: {value: 1}},
-        `uniform sampler2D tColor,tAO,tBloom;uniform float aoStrength,bloom,useAO;varying vec2 vUv;
-         void main(){vec3 c=texture2D(tColor,vUv).rgb;float ao=mix(1.,texture2D(tAO,vUv).x,aoStrength*useAO);
-          c=c*ao+texture2D(tBloom,vUv).rgb*bloom;c=1.-(1.-c)*(1.-max(c-1.,0.));
+      const finalMat = pass({tColor: {value: color.texture}, tBloom: {value: mips[0].texture}, bloom: {value: .3}},
+        `uniform sampler2D tColor,tBloom;uniform float bloom;varying vec2 vUv;
+         void main(){vec3 c=texture2D(tColor,vUv).rgb+texture2D(tBloom,vUv).rgb*bloom;c=1.-(1.-c)*(1.-max(c-1.,0.));
           vec2 q=vUv-.5;c*=1.-dot(q,q)*.22;
           c+=(fract(sin(dot(gl_FragCoord.xy,vec2(12.9898,78.233)))*43758.5453)-.5)/255.;gl_FragColor=vec4(c,1.);}`);
-      const hidden = [];
       const run = (material, out) => { quad.material = material; renderer.setRenderTarget(out); renderer.render(quadScene, quadCam); };
-      let w = 0, h = 0, slow = 0, frames = 0, aoOn = true;
+      let slow = 0, frames = 0;
       return {
-        resize(bw, bh) {
-          w = bw; h = bh;
+        resize(w, h) {
           color.setSize(w, h);
-          const hw = Math.max(1, w >> 1), hh = Math.max(1, h >> 1);
-          depth.setSize(hw, hh); aoRaw.setSize(hw, hh); aoBlur.setSize(hw, hh);
-          aoMat.uniforms.texel.value.set(1 / hw, 1 / hh);
-          blurMat.uniforms.texel.value.set(1 / hw, 1 / hh);
           mips.forEach((m, i) => m.setSize(Math.max(1, Math.round(w / (2 << i))), Math.max(1, Math.round(h / (2 << i)))));
           brightMat.uniforms.texel.value.set(.5 / w, .5 / h);
         },
-        // Frames that take longer than about 30 fps drop ambient occlusion, then the whole pipeline.
+        // Sustained frames slower than about 30 fps fall back to the direct render.
         measure(ms) {
           if (++frames < 40 || options.quality === 'high') return true;
           slow = ms > 36 ? slow + 1 : Math.max(0, slow - 2);
-          if (slow > 45) { slow = 0; frames = 0; if (aoOn) aoOn = false; else return false; }
-          return true;
+          return slow < 45;
         },
         render(look) {
-          const inside = shown === 'interior', autoShadow = renderer.shadowMap.autoUpdate;
           renderer.setRenderTarget(color);
           renderer.render(scene, camera);
-          const calls = renderer.info.render.calls, triangles = renderer.info.render.triangles;
+          const calls = renderer.info.render.calls, triangles = renderer.info.render.triangles, autoShadow = renderer.shadowMap.autoUpdate;
           renderer.shadowMap.autoUpdate = false;
-          if (aoOn && look.ao > .01) {
-            // Depth of opaque surfaces only; glass, ghosts, sky and effects are skipped.
-            scene.traverseVisible(o => { if ((o.isMesh || o.isPoints) && (o.material.transparent || o.material.isShaderMaterial || o.isPoints)) hidden.push(o); });
-            hidden.forEach(o => { o.visible = false; });
-            scene.overrideMaterial = depthOnly;
-            const background = scene.background; scene.background = null;
-            renderer.setRenderTarget(depth);
-            renderer.render(scene, camera);
-            scene.overrideMaterial = null; scene.background = background;
-            hidden.forEach(o => { o.visible = true; });
-            hidden.length = 0;
-            projInv.copy(camera.projectionMatrixInverse);
-            aoMat.uniforms.radius.value = inside ? .7 : 2.6;
-            aoMat.uniforms.reach.value = inside ? 40 : 260;
-            blurMat.uniforms.near.value = camera.near; blurMat.uniforms.far.value = camera.far;
-            run(aoMat, aoRaw);
-            run(blurMat, aoBlur);
-          }
           run(brightMat, mips[0]);
           for (let i = 1; i < mips.length; i++) { downMat.uniforms.tSrc.value = mips[i - 1].texture; downMat.uniforms.texel.value.set(1 / mips[i - 1].width, 1 / mips[i - 1].height); run(downMat, mips[i]); }
           renderer.autoClear = false;
           for (let i = mips.length - 1; i > 0; i--) { upMat.uniforms.tSrc.value = mips[i].texture; upMat.uniforms.texel.value.set(1 / mips[i].width, 1 / mips[i].height); upMat.uniforms.weight.value = .9; run(upMat, mips[i - 1]); }
           renderer.autoClear = true;
-          finalMat.uniforms.aoStrength.value = look.ao;
-          finalMat.uniforms.useAO.value = aoOn ? 1 : 0;
           finalMat.uniforms.bloom.value = look.bloom;
           run(finalMat, null);
           renderer.shadowMap.autoUpdate = autoShadow;
           return {calls, triangles};
         },
-        dispose() { [color, depth, aoRaw, aoBlur, ...mips].forEach(t => t.dispose()); [aoMat, blurMat, brightMat, downMat, upMat, finalMat, depthOnly].forEach(m => m.dispose()); quad.geometry.dispose(); },
+        dispose() { [color, ...mips].forEach(t => t.dispose()); [brightMat, downMat, upMat, finalMat].forEach(m => m.dispose()); quad.geometry.dispose(); },
       };
     }
     let pipeline = makePipeline(), sceneStats = null, lastFrame = 0;
@@ -1159,7 +1109,7 @@ window.Architecture = (() => {
       refreshEnvironment(false);
       if (pipeline) {
         const fading = fade.visible ? fade.material.uniforms.opacity.value : 0, n = light.night;
-        sceneStats = pipeline.render({ao: (shown === 'interior' ? .9 : .8) * (1 - fading), bloom: lerp(.07, .85, n) * (1 - fading)});
+        sceneStats = pipeline.render({bloom: lerp(.07, .85, n) * (shown === 'interior' ? .5 : 1) * (1 - fading)});
         // Continuous animation measures real frame time; a struggling GPU steps quality down.
         if (lastFrame && t - lastFrame < 200 && !pipeline.measure(t - lastFrame)) { pipeline.dispose(); pipeline = null; renderer.setRenderTarget(null); }
       } else {
