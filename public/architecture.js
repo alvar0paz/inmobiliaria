@@ -14,8 +14,8 @@ window.Architecture = (() => {
 
   // Raw display colours. Fog and sky share the horizon, so the ground melts into the distance.
   const LIGHTS = [
-    {top: '#7fa8d4', horizon: '#e1e8e6', sun: '#fff1d6', sunI: 2.5, sky: '#e6f1ff', ground: '#7c735e', hemiI: .72, fill: .32, exposure: 1, sunAt: [45, 75, 38], night: 0},
-    {top: '#7488b0', horizon: '#f1d7b6', sun: '#ffc285', sunI: 2.3, sky: '#f2dcc6', ground: '#6c5d48', hemiI: .6, fill: .22, exposure: .98, sunAt: [-62, 30, 44], night: .22},
+    {top: '#5287c4', horizon: '#d3e0e6', sun: '#fff0d8', sunI: 2.7, sky: '#e0edff', ground: '#6d6a55', hemiI: .6, fill: .25, exposure: .8, sunAt: [-40, 60, 50], night: 0},
+    {top: '#5d74a6', horizon: '#f0cda4', sun: '#ffb36b', sunI: 2.5, sky: '#f2dcc6', ground: '#5c4c3a', hemiI: .55, fill: .18, exposure: .86, sunAt: [-62, 26, 44], night: .22},
     {top: '#07111d', horizon: '#243548', sun: '#a9c2e0', sunI: .28, sky: '#3f5878', ground: '#14181d', hemiI: .26, fill: .08, exposure: 1.05, sunAt: [-30, 70, -25], night: 1},
   ];
   // Points of interest on the exterior, with the camera that frames each one.
@@ -48,7 +48,8 @@ window.Architecture = (() => {
     scene.add(world, home, env);
     home.visible = false;
     scene.background = new T.Color();
-    scene.fog = new T.Fog('#e1e8e6', 70, 520);
+    // Exponential haze: clear near the tower, thickening into aerial perspective toward the Andes.
+    scene.fog = new T.FogExp2('#e1e8e6', .0017);
 
     const hemi = new T.HemisphereLight('#e8f3ff', '#73664c', .7);
     const sun = new T.DirectionalLight('#ffe3b2', 2.4);
@@ -63,26 +64,97 @@ window.Architecture = (() => {
     const materials = {}, geometries = {};
     const mat = (name, color, extra = {}) => {
       if (materials[name]) return materials[name];
-      const {noShadow, ...rest} = extra;
+      const {noShadow, surface, ...rest} = extra;
       const m = new T.MeshStandardMaterial({color, roughness: .65, ...rest});
       m.name = name;
       m.color.convertSRGBToLinear();
       if (noShadow) m.userData.noShadow = true;
+      if (surface) detail(m, surface);
       return materials[name] = m;
     };
-    const stone = mat('stone', '#ded4bd'), lightStone = mat('lightStone', '#ece5d6'), wood = mat('wood', '#97704a'), oak = mat('oak', '#bd9567');
-    const dark = mat('dark', '#37443c'), metal = mat('metal', '#424b43', {metalness: .65, roughness: .3});
-    const glass = mat('glass', '#829d9b', {metalness: .55, roughness: .12, transparent: true, opacity: .58, depthWrite: false, noShadow: true});
-    const leaf = mat('leaf', '#506946'), leaf2 = mat('leaf2', '#7c8c59'), water = mat('water', '#5baca9', {metalness: .5, roughness: .13});
-    const fabric = mat('fabric', '#e9dfc9', {roughness: 1}), cushion = mat('cushion', '#9b9f82', {roughness: 1}), brass = mat('brass', '#bb985b', {metalness: .6, roughness: .3});
+    /* Procedural surface detail. Each finish is a few lines of GLSL evaluated in the object's own
+       space, so merged geometry needs no UVs and nothing is downloaded: plaster mottling and rain
+       streaks, asphalt grain, mown grass, wood grain, windowed neighbours and rippled water. */
+    const NOISE = `float rHash(vec3 p){p=fract(p*.3183099+.1);p*=17.;return fract(p.x*p.y*p.z*(p.x+p.y+p.z));}
+      float rNoise(vec3 x){vec3 i=floor(x),f=fract(x);f=f*f*(3.-2.*f);
+      return mix(mix(mix(rHash(i),rHash(i+vec3(1,0,0)),f.x),mix(rHash(i+vec3(0,1,0)),rHash(i+vec3(1,1,0)),f.x),f.y),
+        mix(mix(rHash(i+vec3(0,0,1)),rHash(i+vec3(1,0,1)),f.x),mix(rHash(i+vec3(0,1,1)),rHash(i+vec3(1,1,1)),f.x),f.y),f.z);}
+      float rFbm(vec3 p){return rNoise(p)*.55+rNoise(p*2.03+3.1)*.28+rNoise(p*4.1+7.7)*.17;}`;
+    const SURFACES = {
+      plaster: `float n=rFbm(P*.9),g=rNoise(P*31.),st=rNoise(vec3(P.x*2.3,P.y*.12,P.z*2.3));
+        sTint=vec3(.94+.1*n+.04*g)*(1.-.07*(1.-abs(N.y))*smoothstep(.5,.85,st));sRough=.8+.35*n;`,
+      paving: `vec2 id=floor((P.xz+vec2(15.,12.))/1.1);float n=rFbm(P*.6),g=rNoise(P*27.);
+        sTint=vec3(.9+.08*n+.05*g+.06*rHash(vec3(id,1.)));sRough=.75+.4*g;`,
+      asphalt: `float g=rNoise(P*11.),n=rFbm(P*.25),w=rNoise(vec3(P.x*.05,0.,P.z*1.6));
+        sTint=vec3(.74+.34*g)*(.86+.24*n)*(1.-.14*smoothstep(.55,.8,w));sRough=.85+.25*g;`,
+      grass: `float n=rFbm(P*.16),m=rNoise(P*1.3),g=rNoise(P*17.);
+        sTint=mix(vec3(.78,.9,.66),vec3(1.12,1.06,.84),n)*(.84+.22*m)*(.88+.16*g);sRough=1.;`,
+      fields: `vec2 w=vec2(P.x,-P.y);float r=length(w),n=rFbm(P*.011),m=rFbm(P*.05+4.),g=rNoise(P*2.5);
+        vec3 land=mix(mix(vec3(.6,.76,.48),vec3(.98,.93,.76),smoothstep(.4,.7,n)),vec3(.5,.64,.42),smoothstep(.5,.72,m)*.7);
+        vec2 q=fract((w+vec2(12.,11.))/vec2(24.,22.)),e=min(q,1.-q)*vec2(24.,22.);float edge=min(e.x,e.y);
+        float town=1.-smoothstep(200.,240.,r),street=1.-smoothstep(2.5,2.8,edge),walk=(1.-smoothstep(3.7,3.9,edge))-street;
+        float park=max(step(-25.,w.y)*step(abs(w.x),110.),1.-step(90.,r)),yard=max(smoothstep(.3,.6,rFbm(P*.09+9.)),park);
+        vec3 lot=mix(vec3(.9,.88,.83)*(.92+.1*g),land*.95,yard);
+        town*=1.-park*step(r,180.);vec3 c=mix(land,lot,town);c=mix(c,vec3(.93,.91,.87),walk*town);c=mix(c,vec3(.36,.37,.38)*(.9+.2*g),street*town);
+        sTint=c*(.9+.14*g);sRough=1.;`,
+      wood: `vec3 q=abs(N.y)>.5?vec3(P.x*26.,P.y,P.z*1.1):abs(N.x)>.5?vec3(P.x,P.y*1.1,P.z*26.):vec3(P.x*26.,P.y*1.1,P.z);
+        float gr=rNoise(q)*.6+rNoise(q*2.7)*.4,k=rNoise(P*3.);sTint=vec3(.84+.28*gr)*(.94+.1*k);sRough=.85+.3*gr;`,
+      plank: `float gr=rNoise(vec3(P.x*34.,P.y*34.,P.z*1.3))*.6+rNoise(vec3(P.x*90.,P.y*9.,P.z*3.))*.4,k=rNoise(P*1.7);
+        sTint=vec3(.86+.24*gr)*(.95+.1*k);sRough=.8+.35*gr;`,
+      leaf: `float n=rFbm(P*.3),l=rNoise(P*8.5),u=N.y*.5+.5;
+        sTint=mix(vec3(.92,1.,.82),vec3(1.14,1.08,.78),n)*(.5+.62*u)*(.78+.34*l);sRough=1.;`,
+      unit: `float n=rNoise(vec3(P.x*6.,P.y*1.5,P.z*6.)),ceil=smoothstep(-.5,.45,P.y),cur=smoothstep(.35,.65,rNoise(vec3((P.x+P.z)*7.,0.,3.)));
+        sTint=vec3(.9+.2*n);sRough=.5+.9*n;sLit=vec3(mix(.3,1.35,ceil*ceil))*(1.-.5*cur);`,
+      city: `float n=rFbm(P*.4),g=rNoise(P*19.),wall=step(abs(N.y),.5),roof=step(.5,N.y);
+        float b=rHash(vec3(floor((P.x+12.)/24.),5.,floor((P.z+11.)/22.)));
+        vec2 uv=abs(N.x)>.5?vec2(P.z,P.y):vec2(P.x,P.y);vec2 c=vec2(uv.x/mix(2.2,3.1,b),(uv.y+.2)/3.2),f=fract(c),id=floor(c);
+        float wx=mix(.14,.32,fract(b*7.)),win=wall*step(wx,f.x)*step(f.x,1.-wx*.6)*step(.3,f.y)*step(f.y,.88)*step(1.,c.y);
+        float shop=wall*(1.-step(1.,c.y))*step(.12,f.y)*step(.06,f.x)*step(f.x,.94);
+        vec3 body=mix(vec3(1.),vec3(1.05,.97,.88),step(.55,b))*(.92+.09*n+.04*g);
+        vec3 glassC=vec3(.26,.31,.35)*(.7+.6*rHash(vec3(id,b*31.)));
+        sTint=mix(body,glassC,max(win,shop));sTint=mix(sTint,vec3(.66,.66,.64)*(.85+.25*g)*(.9+.15*n),roof);
+        sRough=mix(1.,.12,max(win,shop));
+        float on=step(.56,rHash(vec3(id*1.7,b*13.)));
+        sLit=win*on*mix(vec3(1.,.8,.58),vec3(1.,.95,.86),rHash(vec3(id,3.)))*(.55+.45*rHash(vec3(id,9.)))+shop*step(.4,b)*vec3(1.,.86,.66);`,
+      water: `sTint=vec3(.92+.1*rNoise(P*2.));`,
+    };
+    const NORMALS = {
+      water: `vec2 wp=vSurf.xz*2.6;float h0=rFbm(vec3(wp,0.)),hx=rFbm(vec3(wp+vec2(.06,0.),0.)),hz=rFbm(vec3(wp+vec2(0.,.06),0.));
+        normal=normalize(normal+(viewMatrix*vec4(-(hx-h0)*.7,0.,-(hz-h0)*.7,0.)).xyz);`,
+    };
+    function detail(m, kind) {
+      m.userData.surface = kind;
+      m.customProgramCacheKey = () => 'surface:' + kind;
+      m.onBeforeCompile = s => {
+        s.vertexShader = s.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vSurf;varying vec3 vSurfN;')
+          .replace('#include <begin_vertex>', '#include <begin_vertex>\nvSurf=position;vSurfN=normal;');
+        s.fragmentShader = s.fragmentShader
+          .replace('#include <common>', `#include <common>\nvarying vec3 vSurf;varying vec3 vSurfN;${NOISE}
+            vec3 sTint=vec3(1.),sLit=vec3(1.);float sRough=1.,sMetal=1.;void surfaceDetail(){vec3 P=vSurf,N=normalize(vSurfN);${SURFACES[kind]}}`)
+          .replace('#include <color_fragment>', '#include <color_fragment>\nsurfaceDetail();diffuseColor.rgb*=sTint;')
+          .replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\nroughnessFactor=clamp(roughnessFactor*sRough,.04,1.);')
+          .replace('#include <metalnessmap_fragment>', '#include <metalnessmap_fragment>\nmetalnessFactor=clamp(metalnessFactor*sMetal,0.,1.);')
+          .replace('#include <normal_fragment_maps>', '#include <normal_fragment_maps>\n' + (NORMALS[kind] || ''))
+          .replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\ntotalEmissiveRadiance*=sLit;');
+      };
+      return m;
+    }
+    const stone = mat('stone', '#d8cdb4', {surface: 'plaster'}), lightStone = mat('lightStone', '#e2dacb', {surface: 'plaster'});
+    const wood = mat('wood', '#8f6844', {surface: 'wood'}), oak = mat('oak', '#bd9567', {surface: 'wood', roughness: .55});
+    const dark = mat('dark', '#37443c'), metal = mat('metal', '#3d433f', {metalness: .8, roughness: .32});
+    // Railings and screens: clear, reflective glass whose sheen comes from the sky.
+    const glass = mat('glass', '#b9cfcc', {metalness: .1, roughness: .04, transparent: true, opacity: .32, depthWrite: false, noShadow: true, envMapIntensity: 1.6});
+    const leaf = mat('leaf', '#4b6640', {surface: 'leaf'}), leaf2 = mat('leaf2', '#6f8550', {surface: 'leaf'}), leaf3 = mat('leaf3', '#3f5a3a', {surface: 'leaf'});
+    const water = mat('water', '#1d6b74', {metalness: .1, roughness: .04, envMapIntensity: 1.3, surface: 'water'});
+    const fabric = mat('fabric', '#e9dfc9', {roughness: 1}), cushion = mat('cushion', '#9b9f82', {roughness: 1}), brass = mat('brass', '#bb985b', {metalness: .85, roughness: .28});
     const glow = mat('glow', '#fff1c7', {emissive: '#ffb563', emissiveIntensity: .8});
     const led = mat('led', '#f4ead2', {emissive: '#ffcf8a', emissiveIntensity: .3});
-    const lobbyGlass = mat('lobbyGlass', '#829d9b', {metalness: .55, roughness: .12, transparent: true, opacity: .62, depthWrite: false, emissive: '#ffcf96', emissiveIntensity: 0, noShadow: true});
-    const cityLit = mat('cityLit', '#a7b2b0', {metalness: .2, roughness: .4, emissive: '#ff9f45', emissiveIntensity: 0});
-    const cityDark = mat('cityDark', '#9da9a8', {metalness: .2, roughness: .4});
+    const lobbyGlass = mat('lobbyGlass', '#9fb9b6', {metalness: .2, roughness: .05, transparent: true, opacity: .5, depthWrite: false, emissive: '#ffcf96', emissiveIntensity: 0, noShadow: true, envMapIntensity: 1.5});
+    // Neighbouring blocks draw their own windows; a share of them light up at night.
+    const cityLit = mat('cityLit', '#cfd1ca', {roughness: .9, emissive: '#ff9f45', emissiveIntensity: 0, surface: 'city'});
     // Four glazing variants look identical by day and light up differently at night.
     const unitLit = [['#ffa44a', .8], ['#f08f3c', .55], ['#8fb4f0', .4], ['#000000', 0]].map(([emissive, peak], i) => {
-      const m = mat(`unitGlass${i}`, '#587b79', {roughness: .18, metalness: .5, emissive});
+      const m = mat(`unitGlass${i}`, '#33495a', {roughness: .06, metalness: .55, emissive, envMapIntensity: 1.4, surface: 'unit'});
       m.userData.peak = peak;
       return m;
     });
@@ -147,11 +219,38 @@ window.Architecture = (() => {
         sphere(p, .27 * s, x + Math.cos(a) * .22 * s, y + (.8 + (i % 3) * .16) * s, z + Math.sin(a) * .22 * s, i % 2 ? leaf : leaf2, .55, 1.8, .8).rotation.z = Math.cos(a) * .6;
       }
     }
+    // Canopy clumps: lumpy, flat-bottomed blobs in three shapes with smooth, outward normals.
+    const clumps = [0, 1, 2].map(k => {
+      const g = new T.IcosahedronGeometry(1, 1), pos = g.attributes.position, nor = g.attributes.normal, d = new T.Vector3(), n = new T.Vector3();
+      for (let i = 0; i < pos.count; i++) {
+        d.fromBufferAttribute(pos, i).normalize();
+        const r = 1 + .16 * Math.sin(d.x * 5 + k * 2) * Math.sin(d.y * 4 + k) * Math.sin(d.z * 6 + k * 3) + .08 * Math.sin(d.x * 13 + d.z * 11 + k * 5), y = d.y * r;
+        pos.setXYZ(i, d.x * r, y < -.25 ? -.25 + (y + .25) * .35 : y, d.z * r);
+        n.set(d.x, d.y * 1.2 + .15, d.z).normalize();
+        nor.setXYZ(i, n.x, n.y, n.z);
+      }
+      return g;
+    });
+    const treeRnd = seeded(808);
     function tree(p, x, z, s = 1) {
-      cyl(p, .19 * s, 3 * s, x, 1.5 * s, z, wood, .1 * s);
-      for (let i = 0; i < 7; i++) {
-        const a = i * 2.4;
-        sphere(p, 1.05 * s, x + Math.cos(a) * .65 * s, (3.3 + (i % 3) * .45) * s, z + Math.sin(a) * .65 * s, i % 2 ? leaf : leaf2, 1, 1.1, 1);
+      const r = treeRnd, h = (2.1 + r() * .7) * s, lean = (r() - .5) * .12;
+      const trunk = cyl(p, .2 * s, h, x, h / 2, z, wood, .1 * s); trunk.rotation.z = lean;
+      // Two or three limbs fork from the trunk into the crown.
+      const limbs = 2 + (r() < .5);
+      for (let i = 0; i < limbs; i++) {
+        const a = r() * Math.PI * 2, limb = cyl(p, .085 * s, 1.3 * s, x + Math.cos(a) * .3 * s, h + .3 * s, z + Math.sin(a) * .3 * s, wood, .05 * s);
+        limb.rotation.set(Math.sin(a) * .7, 0, -Math.cos(a) * .7);
+      }
+      const tones = [leaf, leaf2, leaf3], tone = tones[Math.floor(r() * 3)], crown = h + .9 * s;
+      for (let i = 0; i < 9; i++) {
+        const a = i * 2.4 + r(), ring = i === 0 ? 0 : (i < 6 ? 1.05 : .55) + r() * .35, y = crown + (i === 0 ? .7 : i < 6 ? (r() - .45) * .7 : .9 + r() * .5) * s;
+        const o = new T.Mesh(clumps[i % 3], i % 3 === 2 ? tones[(tones.indexOf(tone) + 1) % 3] : tone);
+        const size = (i === 0 ? 1.3 : .82 + r() * .35) * s;
+        o.position.set(x + Math.cos(a) * ring * s, y, z + Math.sin(a) * ring * s);
+        o.scale.set(size, size * (.85 + r() * .2), size);
+        o.rotation.y = r() * 6.28;
+        o.castShadow = o.receiveShadow = true;
+        p.add(o);
       }
     }
     // Static meshes are merged per material, so the whole scene costs a couple of hundred draw calls.
@@ -207,13 +306,48 @@ window.Architecture = (() => {
     }
 
     /* ---------- Shared surroundings: sky, mountains, city and site ---------- */
-    const sky = new T.Mesh(new T.SphereGeometry(1500, 32, 16), shader(
-      {top: {value: new T.Color()}, horizon: {value: new T.Color()}, sunColor: {value: new T.Color()}, sunDir: {value: new T.Vector3(0, 1, 0)}, night: {value: 0}},
-      `uniform vec3 top,horizon,sunColor,sunDir;uniform float night;varying vec3 vDir;
-       void main(){vec3 d=normalize(vDir);float h=max(d.y,0.);vec3 c=mix(horizon,top,pow(smoothstep(0.,1.,h),.55));
-       float s=max(dot(d,normalize(sunDir)),0.);float disc=smoothstep(.9994-night*.0004,.9998,s);
-       c+=sunColor*(disc*(1.-night*.4)+pow(s,10.)*.22*(1.-night)+pow(s,60.)*.25)*step(0.,d.y);gl_FragColor=vec4(c,1.);}`,
-      {side: T.BackSide, transparent: false}));
+    // Sky with a bright haze band at the horizon, a sun halo and drifting fair-weather clouds.
+    // The same shader, seen from inside a small sphere, also lights and reflects in every material.
+    const skyUniforms = {top: {value: new T.Color()}, horizon: {value: new T.Color()}, sunColor: {value: new T.Color()}, sunDir: {value: new T.Vector3(0, 1, 0)},
+      night: {value: 0}, ground: {value: new T.Color()}};
+    const skyShader = below => shader({...skyUniforms, below: {value: below}},
+      `uniform vec3 top,horizon,sunColor,sunDir,ground;uniform float night,below;varying vec3 vDir;
+       float h2(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+       float n2(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(h2(i),h2(i+vec2(1,0)),f.x),mix(h2(i+vec2(0,1)),h2(i+vec2(1,1)),f.x),f.y);}
+       float fbm(vec2 p){float a=.5,s=0.;for(int i=0;i<5;i++){s+=a*n2(p);p=p*2.03+vec2(1.7,9.2);a*=.5;}return s;}
+       void main(){vec3 d=normalize(vDir);float h=max(d.y,0.);
+       vec3 c=mix(horizon,top,pow(smoothstep(0.,1.,h),.5));
+       c=mix(c,horizon*vec3(1.05,1.04,1.02),exp(-h*14.)*.55*(1.-night*.6));
+       vec3 sd=normalize(sunDir);float s=max(dot(d,sd),0.);
+       vec2 uv=d.xz/(h+.1)*.8;float cl=fbm(uv+vec2(4.,1.)),sh=fbm(uv+vec2(4.,1.)+sd.xz*.08);
+       float cover=smoothstep(.5,.78,cl)*smoothstep(.0,.16,d.y);
+       vec3 lit=mix(vec3(1.),sunColor,.4)*(.92+.35*pow(s,6.));vec3 shade=mix(horizon,top,.35)*.92;
+       vec3 cc=mix(mix(shade,lit,smoothstep(.35,.75,cl-sh+.55)),top*1.5+vec3(.02,.025,.035),night);
+       c=mix(c,cc,cover*(.8-.45*night));
+       float disc=smoothstep(.9994-night*.0004,.9998,s);
+       c+=sunColor*(disc*(1.-night*.4)*(1.-cover)+pow(s,8.)*.2*(1.-night)+pow(s,64.)*.3)*step(0.,d.y);
+       c=mix(c,ground,(1.-smoothstep(-.3,-.02,d.y))*below);
+       ${below ? 'gl_FragColor=linearToOutputTexel(vec4(pow(c,vec3(2.2)),1.));' : 'gl_FragColor=vec4(c,1.);'}}`,
+      {side: T.BackSide, transparent: false});
+    const sky = new T.Mesh(new T.SphereGeometry(1500, 32, 16), skyShader(0));
+    // Image-based lighting: the sky is rendered into a prefiltered environment map that gives every
+    // material soft sky light and glass, water and metal their reflections. Rebuilt when the light changes.
+    const pmrem = typeof renderer.getContext === 'function' && T.PMREMGenerator ? new T.PMREMGenerator(renderer) : null;
+    const envScene = new T.Scene();
+    envScene.add(new T.Mesh(new T.SphereGeometry(50, 32, 16), skyShader(1)));
+    let envTarget = null, envDirty = true, envFrame = 0;
+    const envReady = !!pmrem;
+    function refreshEnvironment(force) {
+      if (!pmrem || !envDirty || (!force && blend && envFrame++ % 5)) return;
+      envDirty = false;
+      const auto = renderer.shadowMap.autoUpdate;
+      renderer.shadowMap.autoUpdate = false;
+      const next = pmrem.fromScene(envScene, .015, .1, 100);
+      renderer.shadowMap.autoUpdate = auto;
+      scene.environment = next.texture;
+      if (envTarget) envTarget.dispose();
+      envTarget = next;
+    }
     sky.userData.keep = true;
     sky.renderOrder = -2;
     const starGeo = new T.BufferGeometry(), starPos = [], rnd = seeded(7);
@@ -240,27 +374,38 @@ window.Architecture = (() => {
       const g = new T.BufferGeometry();
       g.setAttribute('position', new T.Float32BufferAttribute(pos, 3));
       g.setIndex(idx);
-      return peak(new T.Mesh(g, null), base, haze);
+      return peak(new T.Mesh(g, null), base, haze, [0, high], 1);
     }
-    function peak(mesh, base, haze) {
+    // Mountains carry gullies and ridgelines, and sink into the haze at their feet.
+    const hazeColor = {value: new T.Color()};
+    function peak(mesh, base, haze, span = [0, 140], rock = 1) {
       mesh.material = new T.MeshBasicMaterial({side: T.DoubleSide, fog: false, toneMapped: false});
+      mesh.material.customProgramCacheKey = () => 'peak';
+      mesh.material.onBeforeCompile = s => {
+        Object.assign(s.uniforms, {haze: hazeColor, span: {value: new T.Vector2(...span)}, rock: {value: rock}});
+        s.vertexShader = s.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vSurf;').replace('#include <begin_vertex>', '#include <begin_vertex>\nvSurf=position;');
+        s.fragmentShader = s.fragmentShader.replace('#include <common>', `#include <common>\nvarying vec3 vSurf;uniform vec3 haze;uniform vec2 span;uniform float rock;${NOISE}`)
+          .replace('#include <color_fragment>', `#include <color_fragment>
+            float hk=smoothstep(span.x,span.y,vSurf.y),g=rFbm(vec3(vSurf.x*.035,vSurf.y*.007,vSurf.z*.035)),r=rNoise(vSurf*.12);
+            diffuseColor.rgb*=1.+rock*((g-.5)*.5+(r-.5)*.12);diffuseColor.rgb=mix(haze,diffuseColor.rgb,.25+.75*hk);`);
+      };
       mesh.userData = {keep: true, base: new T.Color(base), haze};
       peaks.push(mesh);
       env.add(mesh);
       return mesh;
     }
     ridge(640, 55, 140, 11, '#8e9cab', .3);
-    const volcano = peak(new T.Mesh(new T.CylinderGeometry(9, 230, 200, 32, 1, true), null), '#7f8d9c', .4);
+    const volcano = peak(new T.Mesh(new T.CylinderGeometry(9, 230, 200, 48, 1, true), null), '#7f8d9c', .4, [-100, 100], 1.2);
     volcano.position.set(Math.cos(-2) * 760, 86, Math.sin(-2) * 760);
     const capGeo = new T.CylinderGeometry(11, 76, 56, 32, 1, true), capPos = capGeo.attributes.position, capRnd = seeded(3);
     for (let i = 0; i < capPos.count; i++) if (capPos.getY(i) < 0) {
       const lift = capRnd() * 18, k = (lift / 56);
       capPos.setXYZ(i, capPos.getX(i) * (1 - k * .8), capPos.getY(i) + lift, capPos.getZ(i) * (1 - k * .8));
     }
-    peak(new T.Mesh(capGeo, null), '#f4f3ef', .55).position.set(volcano.position.x, 86 + 100 - 28, volcano.position.z);
+    peak(new T.Mesh(capGeo, null), '#f4f3ef', .55, [-40, 28], .7).position.set(volcano.position.x, 86 + 100 - 28, volcano.position.z);
     ridge(470, 24, 70, 5, '#76858f', .52);
 
-    const ground = new T.Mesh(new T.CircleGeometry(900, 72), mat('ground', '#c4c7b5'));
+    const ground = new T.Mesh(new T.CircleGeometry(900, 72), mat('ground', '#b4b5a8', {roughness: 1, surface: 'fields'}));
     ground.rotation.x = -Math.PI / 2;
     ground.position.y = -.2;
     ground.receiveShadow = true;
@@ -269,25 +414,30 @@ window.Architecture = (() => {
 
     // A fictional neighbourhood gives scale without pretending to be a real location.
     const city = new T.Group(), cityRnd = seeded(20261027);
-    const bodies = [mat('context', '#d6d8cf'), mat('contextWarm', '#dcd4c5'), mat('contextCool', '#cbd2cf')];
+    const bodies = [cityLit, mat('cityLitWarm', '#d9cfbe', {roughness: .9, emissive: '#ff9f45', emissiveIntensity: 0, surface: 'city'}),
+      mat('cityLitCool', '#c3c9c6', {roughness: .9, emissive: '#ff9f45', emissiveIntensity: 0, surface: 'city'})];
+    const rooftop = mat('rooftop', '#8e8f8a', {roughness: .95, surface: 'plaster'});
     for (let gx = -8; gx <= 8; gx++) for (let gz = -9; gz <= 9; gz++) {
-      const x = gx * 24 + (cityRnd() - .5) * 6, z = gz * 22 + (cityRnd() - .5) * 5, d = Math.hypot(x, z);
+      const x = gx * 24 + (cityRnd() - .5) * 2.4, z = gz * 22 + (cityRnd() - .5) * 2.4, d = Math.hypot(x, z);
       if (d < 90 || (z > -25 && Math.abs(x) < 110) || d > 205 || (Math.abs(x) < 38 && z > -34 && z < 40) || (z > 9 && z < 38) || cityRnd() < .1) continue;
-      const w = 9 + cityRnd() * 9, depth = 8 + cityRnd() * 8, cap = d < 140 ? 10 : d < 170 ? 15 : 22;
+      const w = 9 + cityRnd() * 6.5, depth = 8 + cityRnd() * 6, cap = d < 140 ? 10 : d < 170 ? 15 : 22;
       const levels = Math.max(1, Math.floor((5 + Math.pow(cityRnd(), 1.7) * (cap - 5)) / FH)), top = levels * FH + .6;
       box(city, w, top, depth, x, top / 2 - .2, z, bodies[Math.floor(cityRnd() * 3)]);
-      for (let k = 0; k < levels; k++) box(city, w + .16, 1.05, depth + .16, x, k * FH + 1.7, z, cityRnd() < .55 ? cityLit : cityDark);
-      box(city, w + .3, .25, depth + .3, x, top - .15, z, lightStone);
+      // Parapet, roof membrane and a plant room or water tank break up each skyline.
+      box(city, w + .3, .45, depth + .3, x, top + .02, z, lightStone);
+      box(city, w - .5, .1, depth - .5, x, top + .2, z, rooftop);
+      if (cityRnd() < .7) box(city, 2 + cityRnd() * 3, 1.6, 2 + cityRnd() * 2, x + (cityRnd() - .5) * w * .4, top + 1, z + (cityRnd() - .5) * depth * .4, rooftop);
+      else cyl(city, .9, 1.8, x + w * .25, top + 1.1, z - depth * .2, metal);
     }
     merge(city);
     env.add(city);
 
-    const site = new T.Group(), lawn = mat('lawn', '#a3ad86'), lamps = [];
-    box(site, 420, .06, 12, 0, -.14, 23, mat('road', '#6b716b'));
+    const site = new T.Group(), lawn = mat('lawn', '#8f9e6c', {roughness: 1, surface: 'grass'}), lamps = [];
+    box(site, 420, .06, 12, 0, -.14, 23, mat('road', '#5d615e', {roughness: .9, surface: 'asphalt'}));
     for (let x = -196; x < 200; x += 7) if (Math.abs(x) > 5) box(site, 3, .02, .13, x, -.09, 23, lightStone);
     for (let i = 0; i < 9; i++) box(site, 4.2, .02, .55, 0, -.09, 18.2 + i * 1.2, lightStone);
     for (const z of [15.6, 30.4]) box(site, 420, .14, 3.4, 0, -.1, z, stone);
-    box(site, 32, .35, 29, 0, .02, 1, lightStone);
+    box(site, 32, .35, 29, 0, .02, 1, mat('paving', '#e8e1d2', {roughness: .8, surface: 'paving'}));
     for (let x = -15; x < 16; x += 1.1) box(site, .025, .01, 27, x, .203, 1, stone);
     for (let z = -12; z < 15; z += 1.1) box(site, 30, .01, .025, 0, .204, z, stone);
     for (const x of [-23, 23]) box(site, 14, .2, 29, x, -.1, 1, lawn);
@@ -296,6 +446,13 @@ window.Architecture = (() => {
     for (const x of [-12, 12]) for (const z of [-9, 0, 10]) tree(site, x, z, 1.1);
     for (const [x, z, s] of [[-22, -8, 1.2], [23, -4, 1], [-24, 8, 1.1], [21, 9, 1.3], [-18, -19, 1], [8, -21, 1.2], [-6, -20, .9], [26, -18, 1.1]]) tree(site, x, z, s);
     for (let x = -84; x <= 84; x += 12) if (Math.abs(x) > 20) { tree(site, x, 15.6, .95); tree(site, x + 6, 30.4, .95); }
+    // Loose groves in the open park land around the site.
+    const parkRnd = seeded(61);
+    for (let i = 0; i < 90; i++) {
+      const x = (parkRnd() - .5) * 200, z = -22 + parkRnd() * 110;
+      if ((z > 10 && z < 36) || (Math.abs(x) < 32 && z < 18) || Math.hypot(x, z) > 105) continue;
+      tree(site, x, z, .85 + parkRnd() * .5);
+    }
     for (const x of [-10, 10]) { box(site, 3, .5, 1, x, .5, 13, stone); for (let k = 0; k < 6; k++) box(site, 3, .07, .1, x, .8, 12.6 + k * .15, wood); }
     const lamp = (x, y, z) => { cyl(site, .065, 4, x, y + 2, z, metal); sphere(site, .28, x, y + 4, z, glow); lamps.push([x, y + .03, z]); };
     for (const x of [-14, 14]) lamp(x, .2, 14);
@@ -326,7 +483,16 @@ window.Architecture = (() => {
       'uniform float glow;varying vec2 vUv;void main(){float d=length(vUv-.5)*2.;float a=pow(clamp(1.-d,0.,1.),2.)*glow*.55;gl_FragColor=vec4(1.,.72,.4,a);}',
       {blending: T.AdditiveBlending, side: T.DoubleSide, polygonOffset: true, polygonOffsetFactor: -3}));
     pools.userData.keep = true;
-    env.add(ao, pools);
+    // Soft halos around each lamp head; they read as glare at night and vanish by day.
+    const haloGeo = new T.BufferGeometry();
+    haloGeo.setAttribute('position', new T.Float32BufferAttribute(lamps.flatMap(([x, y, z]) => [x, y + 3.97, z]), 3));
+    const lampHalos = new T.Points(haloGeo, new T.ShaderMaterial({uniforms: {glow: {value: 0}, scale: {value: 600}},
+      vertexShader: 'uniform float scale;void main(){vec4 mv=modelViewMatrix*vec4(position,1.);gl_PointSize=clamp(scale*2.4/-mv.z,2.,90.);gl_Position=projectionMatrix*mv;}',
+      fragmentShader: 'uniform float glow;void main(){float d=length(gl_PointCoord-.5)*2.;float a=(exp(-d*d*9.)*.9+exp(-d*3.5)*.25)*(1.-smoothstep(.8,1.,d))*glow;gl_FragColor=vec4(vec3(1.,.78,.5)*a,a);}',
+      transparent: true, depthWrite: false, blending: T.AdditiveBlending, toneMapped: false}));
+    lampHalos.userData.keep = true;
+    lampHalos.renderOrder = 5;
+    env.add(ao, pools, lampHalos);
 
     /* ---------- The tower, split into levels that can lift apart ---------- */
     const building = new T.Group(), levels = [], floors = [], units = [];
@@ -367,7 +533,6 @@ window.Architecture = (() => {
     for (const z of [-8.53, 8.53]) box(roof, 16.1, .07, .07, 0, ROOF - .08, z, led);
     for (const x of [-8.03, 8.03]) box(roof, .07, .07, 17.1, x, ROOF - .08, 0, led);
     box(roof, 6, .4, 9, -3.7, ROOF + .2, 0, stone); box(roof, 5.6, .08, 8.6, -3.7, ROOF + .44, 0, water);
-    for (let i = 0; i < 10; i++) box(roof, .018, .012, 8, -6 + i * .5, ROOF + .49, 0, mat('ripple', '#a1d2c5', {roughness: .2}));
     for (let i = 0; i < 4; i++) { box(roof, .12, 2.6, .12, 1.4 + i * 1.7, ROOF + 1.3, -5, wood); box(roof, .12, 2.6, .12, 1.4 + i * 1.7, ROOF + 1.3, 4, wood); }
     for (let i = 0; i < 17; i++) box(roof, 5.8, .13, .13, 4, ROOF + 2.7, -5 + i * .56, wood);
     for (const z of [-7.8, 7.8]) { box(roof, 15, 1, .07, 0, ROOF + .6, z, glass); box(roof, 15, .07, .09, 0, ROOF + 1.15, z, metal); }
@@ -379,16 +544,16 @@ window.Architecture = (() => {
     halo.userData.keep = true;
 
     /* ---------- Four furnished plans, each with its own circulation and room views ---------- */
-    const homeGlass = mat('homeglass', '#bdd6d2', {transparent: true, opacity: .12, roughness: .1, metalness: .15, depthWrite: false, noShadow: true});
+    const homeGlass = mat('homeglass', '#bdd6d2', {transparent: true, opacity: .14, roughness: .03, metalness: .1, depthWrite: false, noShadow: true, envMapIntensity: 1.4});
     const linen = mat('linen', '#b5ad93'), rug = mat('rug', '#d1c8b2', {roughness: 1});
     const curtain = mat('curtain', '#e9e3d3', {transparent: true, opacity: .8});
-    const tile = mat('tile', '#c3c5ba', {roughness: .4});
+    const tile = mat('tile', '#c3c5ba', {roughness: .3, surface: 'paving'});
     // Interior-only finishes: warm oak, honed limestone and muted clay. All detail
     // stays in geometry and is merged with the plan; no image textures or lights per object.
-    const smokedOak = mat('interiorOak', '#81634c', {roughness: .48});
-    const limestone = mat('limestone', '#e0d6c5', {roughness: .37});
+    const smokedOak = mat('interiorOak', '#81634c', {roughness: .48, surface: 'wood'});
+    const limestone = mat('limestone', '#e0d6c5', {roughness: .37, surface: 'plaster'});
     const clay = mat('clay', '#a66e57', {roughness: .86});
-    const floorTones = ['#b39a78', '#bca17f', '#c4a987'].map((c, i) => mat('floorOak' + i, c, {roughness: .52}));
+    const floorTones = ['#b39a78', '#bca17f', '#c4a987'].map((c, i) => mat('floorOak' + i, c, {roughness: .42, surface: 'plank', envMapIntensity: .8}));
     const interiorLed = mat('interiorLed', '#fff2dc', {emissive: '#ffd3a1', emissiveIntensity: .65});
     function group(parent, x, z, angle = 0) {
       const g = new T.Group(); g.position.set(x, 0, z); g.rotation.y = angle; parent.add(g); return g;
@@ -605,6 +770,125 @@ window.Architecture = (() => {
     fade.visible = false;
     scene.add(fade);
 
+    /* ---------- Post-processing on capable screens: ambient occlusion and bloom ----------
+       The scene renders into a 4× multisampled buffer. A half-resolution depth pre-pass feeds
+       screen-space ambient occlusion (contact shadows in corners, under furniture and between
+       buildings); bright lamps, windows and the sun bloom softly. Phones, WebGL1 and slow GPUs
+       keep the direct render, which already has sky lighting, reflections and surface detail. */
+    function makePipeline() {
+      const caps = renderer.capabilities;
+      if (!caps || !caps.isWebGL2 || !T.WebGLMultisampleRenderTarget || options.quality === 'low' || (compact && options.quality !== 'high')) return null;
+      const quadScene = new T.Scene(), quadCam = new T.OrthographicCamera(-1, 1, 1, -1, 0, 1), quad = new T.Mesh(new T.PlaneGeometry(2, 2));
+      quad.frustumCulled = false;
+      quadScene.add(quad);
+      const VS = 'varying vec2 vUv;void main(){vUv=uv;gl_Position=vec4(position.xy,0.,1.);}';
+      const pass = (uniforms, fs) => new T.ShaderMaterial({uniforms, vertexShader: VS, fragmentShader: fs, depthTest: false, depthWrite: false, toneMapped: false});
+      const linear = {minFilter: T.LinearFilter, magFilter: T.LinearFilter, depthBuffer: false};
+      const color = new T.WebGLMultisampleRenderTarget(1, 1, {minFilter: T.LinearFilter, magFilter: T.LinearFilter});
+      color.samples = 4;
+      color.texture.encoding = T.sRGBEncoding;
+      const depth = new T.WebGLRenderTarget(1, 1, {minFilter: T.NearestFilter, magFilter: T.NearestFilter});
+      depth.depthTexture = new T.DepthTexture(1, 1, T.UnsignedIntType);
+      const aoRaw = new T.WebGLRenderTarget(1, 1, linear), aoBlur = new T.WebGLRenderTarget(1, 1, linear);
+      const mips = [2, 4, 8, 16, 32].map(() => new T.WebGLRenderTarget(1, 1, linear));
+      const depthOnly = new T.MeshBasicMaterial({colorWrite: false});
+      const projInv = new T.Matrix4();
+      const aoMat = pass({tDepth: {value: depth.depthTexture}, projInv: {value: projInv}, proj: {value: camera.projectionMatrix}, radius: {value: 2}, texel: {value: new T.Vector2()}, reach: {value: 220}},
+        `uniform sampler2D tDepth;uniform mat4 projInv,proj;uniform float radius,reach;uniform vec2 texel;varying vec2 vUv;
+         vec3 pos(vec2 uv){float d=texture2D(tDepth,uv).x;vec4 v=projInv*vec4(uv*2.-1.,d*2.-1.,1.);return v.xyz/v.w;}
+         void main(){float d=texture2D(tDepth,vUv).x;if(d>=1.){gl_FragColor=vec4(1.);return;}
+          vec3 p=pos(vUv),px=pos(vUv+vec2(texel.x,0.))-p,nx=p-pos(vUv-vec2(texel.x,0.)),py=pos(vUv+vec2(0.,texel.y))-p,ny=p-pos(vUv-vec2(0.,texel.y));
+          vec3 n=normalize(cross(abs(px.z)<abs(nx.z)?px:nx,abs(py.z)<abs(ny.z)?py:ny));
+          float rs=clamp(radius*proj[1][1]*.5/-p.z,texel.y*3.,.12),ang=fract(52.9829189*fract(dot(gl_FragCoord.xy,vec2(.06711056,.00583715))))*6.2832,occ=0.;
+          for(int i=0;i<12;i++){float f=(float(i)+.5)/12.;float a=ang+float(i)*2.3998;vec2 o=vec2(cos(a),sin(a)*texel.y/texel.x)*rs*sqrt(f);
+           vec3 v=pos(vUv+o)-p;float l=length(v);occ+=max(dot(n,v/l)-.08,0.)*clamp(1.-l/radius,0.,1.);}
+          float ao=pow(clamp(1.-occ/12.*3.2,0.,1.),1.6);gl_FragColor=vec4(mix(ao,1.,smoothstep(reach*.6,reach,-p.z)),0.,0.,1.);}`);
+      const blurMat = pass({tAO: {value: aoRaw.texture}, tDepth: {value: depth.depthTexture}, texel: {value: new T.Vector2()}, near: {value: .5}, far: {value: 4000}},
+        `uniform sampler2D tAO,tDepth;uniform vec2 texel;uniform float near,far;varying vec2 vUv;
+         float lin(float d){float z=d*2.-1.;return 2.*near*far/(far+near-z*(far-near));}
+         void main(){float c=lin(texture2D(tDepth,vUv).x),s=0.,w=0.;
+          for(int x=-2;x<=2;x++)for(int y=-2;y<=2;y++){vec2 uv=vUv+vec2(float(x),float(y))*texel;float k=1./(1.+abs(lin(texture2D(tDepth,uv).x)-c)*8./max(c*.02,.05));s+=texture2D(tAO,uv).x*k;w+=k;}
+          gl_FragColor=vec4(s/w,0.,0.,1.);}`);
+      const brightMat = pass({tColor: {value: color.texture}, threshold: {value: .9}, texel: {value: new T.Vector2()}},
+        `uniform sampler2D tColor;uniform float threshold;uniform vec2 texel;varying vec2 vUv;
+         void main(){vec3 c=vec3(0.);for(int i=0;i<4;i++){vec2 o=vec2(i==1||i==3?1.:-1.,i>1?1.:-1.)*texel;c+=texture2D(tColor,vUv+o).rgb;}c*=.25;
+          float l=max(c.r,max(c.g,c.b));gl_FragColor=vec4(c*smoothstep(threshold,threshold+.18,l),1.);}`);
+      const downMat = pass({tSrc: {value: null}, texel: {value: new T.Vector2()}},
+        `uniform sampler2D tSrc;uniform vec2 texel;varying vec2 vUv;
+         void main(){vec3 c=texture2D(tSrc,vUv).rgb*.5;c+=(texture2D(tSrc,vUv+texel).rgb+texture2D(tSrc,vUv-texel).rgb+texture2D(tSrc,vUv+vec2(texel.x,-texel.y)).rgb+texture2D(tSrc,vUv+vec2(-texel.x,texel.y)).rgb)*.125;gl_FragColor=vec4(c,1.);}`);
+      const upMat = pass({tSrc: {value: null}, texel: {value: new T.Vector2()}, weight: {value: 1}},
+        `uniform sampler2D tSrc;uniform vec2 texel;uniform float weight;varying vec2 vUv;
+         void main(){vec3 c=texture2D(tSrc,vUv).rgb*.25;c+=(texture2D(tSrc,vUv+vec2(texel.x,0.)).rgb+texture2D(tSrc,vUv-vec2(texel.x,0.)).rgb+texture2D(tSrc,vUv+vec2(0.,texel.y)).rgb+texture2D(tSrc,vUv-vec2(0.,texel.y)).rgb)*.1875;gl_FragColor=vec4(c*weight,1.);}`);
+      upMat.blending = T.AdditiveBlending;
+      upMat.transparent = true;
+      const finalMat = pass({tColor: {value: color.texture}, tAO: {value: aoBlur.texture}, tBloom: {value: mips[0].texture}, aoStrength: {value: .8}, bloom: {value: .3}, useAO: {value: 1}},
+        `uniform sampler2D tColor,tAO,tBloom;uniform float aoStrength,bloom,useAO;varying vec2 vUv;
+         void main(){vec3 c=texture2D(tColor,vUv).rgb;float ao=mix(1.,texture2D(tAO,vUv).x,aoStrength*useAO);
+          c=c*ao+texture2D(tBloom,vUv).rgb*bloom;c=1.-(1.-c)*(1.-max(c-1.,0.));
+          vec2 q=vUv-.5;c*=1.-dot(q,q)*.22;
+          c+=(fract(sin(dot(gl_FragCoord.xy,vec2(12.9898,78.233)))*43758.5453)-.5)/255.;gl_FragColor=vec4(c,1.);}`);
+      const hidden = [];
+      const run = (material, out) => { quad.material = material; renderer.setRenderTarget(out); renderer.render(quadScene, quadCam); };
+      let w = 0, h = 0, slow = 0, frames = 0, aoOn = true;
+      return {
+        resize(bw, bh) {
+          w = bw; h = bh;
+          color.setSize(w, h);
+          const hw = Math.max(1, w >> 1), hh = Math.max(1, h >> 1);
+          depth.setSize(hw, hh); aoRaw.setSize(hw, hh); aoBlur.setSize(hw, hh);
+          aoMat.uniforms.texel.value.set(1 / hw, 1 / hh);
+          blurMat.uniforms.texel.value.set(1 / hw, 1 / hh);
+          mips.forEach((m, i) => m.setSize(Math.max(1, Math.round(w / (2 << i))), Math.max(1, Math.round(h / (2 << i)))));
+          brightMat.uniforms.texel.value.set(.5 / w, .5 / h);
+        },
+        // Frames that take longer than about 30 fps drop ambient occlusion, then the whole pipeline.
+        measure(ms) {
+          if (++frames < 40 || options.quality === 'high') return true;
+          slow = ms > 36 ? slow + 1 : Math.max(0, slow - 2);
+          if (slow > 45) { slow = 0; frames = 0; if (aoOn) aoOn = false; else return false; }
+          return true;
+        },
+        render(look) {
+          const inside = shown === 'interior', autoShadow = renderer.shadowMap.autoUpdate;
+          renderer.setRenderTarget(color);
+          renderer.render(scene, camera);
+          const calls = renderer.info.render.calls, triangles = renderer.info.render.triangles;
+          renderer.shadowMap.autoUpdate = false;
+          if (aoOn && look.ao > .01) {
+            // Depth of opaque surfaces only; glass, ghosts, sky and effects are skipped.
+            scene.traverseVisible(o => { if ((o.isMesh || o.isPoints) && (o.material.transparent || o.material.isShaderMaterial || o.isPoints)) hidden.push(o); });
+            hidden.forEach(o => { o.visible = false; });
+            scene.overrideMaterial = depthOnly;
+            const background = scene.background; scene.background = null;
+            renderer.setRenderTarget(depth);
+            renderer.render(scene, camera);
+            scene.overrideMaterial = null; scene.background = background;
+            hidden.forEach(o => { o.visible = true; });
+            hidden.length = 0;
+            projInv.copy(camera.projectionMatrixInverse);
+            aoMat.uniforms.radius.value = inside ? .7 : 2.6;
+            aoMat.uniforms.reach.value = inside ? 40 : 260;
+            blurMat.uniforms.near.value = camera.near; blurMat.uniforms.far.value = camera.far;
+            run(aoMat, aoRaw);
+            run(blurMat, aoBlur);
+          }
+          run(brightMat, mips[0]);
+          for (let i = 1; i < mips.length; i++) { downMat.uniforms.tSrc.value = mips[i - 1].texture; downMat.uniforms.texel.value.set(1 / mips[i - 1].width, 1 / mips[i - 1].height); run(downMat, mips[i]); }
+          renderer.autoClear = false;
+          for (let i = mips.length - 1; i > 0; i--) { upMat.uniforms.tSrc.value = mips[i].texture; upMat.uniforms.texel.value.set(1 / mips[i].width, 1 / mips[i].height); upMat.uniforms.weight.value = .9; run(upMat, mips[i - 1]); }
+          renderer.autoClear = true;
+          finalMat.uniforms.aoStrength.value = look.ao;
+          finalMat.uniforms.useAO.value = aoOn ? 1 : 0;
+          finalMat.uniforms.bloom.value = look.bloom;
+          run(finalMat, null);
+          renderer.shadowMap.autoUpdate = autoShadow;
+          return {calls, triangles};
+        },
+        dispose() { [color, depth, aoRaw, aoBlur, ...mips].forEach(t => t.dispose()); [aoMat, blurMat, brightMat, downMat, upMat, finalMat, depthOnly].forEach(m => m.dispose()); quad.geometry.dispose(); },
+      };
+    }
+    let pipeline = makePipeline(), sceneStats = null, lastFrame = 0;
+
     /* ---------- State ---------- */
     const ray = new T.Raycaster(), pointer = new T.Vector2(), v = new T.Vector3(), w = new T.Vector3();
     let mode = 'building', shown = 'building', room = 'overview', lastRoom = 'overview', focus = null, lastFloor = 7, selected = null, hovered = null, paintMap = null;
@@ -705,17 +989,23 @@ window.Architecture = (() => {
     function applyLight() {
       const L = light, n = L.night;
       scene.background.copy(L.horizon);
-      scene.fog.color.copy(L.horizon);
-      const u = sky.material.uniforms;
+      scene.fog.color.copy(L.horizon).convertSRGBToLinear();
+      const u = skyUniforms;
       u.top.value.copy(L.top); u.horizon.value.copy(L.horizon); u.sunColor.value.copy(L.sun); u.sunDir.value.copy(L.sunAt); u.night.value = n;
+      u.ground.value.copy(L.ground).lerp(L.horizon, .35);
+      hazeColor.value.copy(L.horizon).convertSRGBToLinear();
       sun.color.copy(L.sun); sun.intensity = L.sunI;
-      hemi.color.copy(L.sky); hemi.groundColor.copy(L.ground); hemi.intensity = L.hemiI;
-      fill.intensity = L.fill;
-      renderer.toneMappingExposure = L.exposure;
+      // With sky lighting from the environment map, the hemisphere light only adds a little bounce.
+      hemi.color.copy(L.sky); hemi.groundColor.copy(L.ground); hemi.intensity = L.hemiI * (envReady ? .3 : 1);
+      fill.intensity = L.fill * (envReady ? .5 : 1);
+      renderer.toneMappingExposure = L.exposure * (shown === 'interior' ? .84 : 1);
       positionSun();
       for (const p of peaks) p.material.color.copy(p.userData.base).multiplyScalar(1 - .72 * n).lerp(L.horizon, 1 - p.userData.haze).convertSRGBToLinear();
       unitLit.forEach((m, i) => { m.emissiveIntensity = smooth(.1 + i * .16, .55 + i * .16, n) * m.userData.peak; });
-      cityLit.emissiveIntensity = smooth(.15, 1, n) * .42;
+      for (const m of bodies) m.emissiveIntensity = smooth(.15, 1, n) * .9;
+      lampHalos.material.uniforms.glow.value = smooth(.3, 1, n);
+      lampHalos.visible = n > .3;
+      envDirty = true;
       lobbyGlass.emissiveIntensity = smooth(.1, 1, n) * .7;
       led.emissiveIntensity = .3 + n * 2.4;
       glow.emissiveIntensity = .6 + n * 2.2;
@@ -866,7 +1156,17 @@ window.Architecture = (() => {
       camera.updateMatrixWorld();
       sky.position.copy(camera.position);
       stars.position.copy(camera.position);
-      renderer.render(scene, camera);
+      refreshEnvironment(false);
+      if (pipeline) {
+        const fading = fade.visible ? fade.material.uniforms.opacity.value : 0, n = light.night;
+        sceneStats = pipeline.render({ao: (shown === 'interior' ? .9 : .8) * (1 - fading), bloom: lerp(.07, .85, n) * (1 - fading)});
+        // Continuous animation measures real frame time; a struggling GPU steps quality down.
+        if (lastFrame && t - lastFrame < 200 && !pipeline.measure(t - lastFrame)) { pipeline.dispose(); pipeline = null; renderer.setRenderTarget(null); }
+      } else {
+        renderer.render(scene, camera);
+        sceneStats = null;
+      }
+      lastFrame = active ? t : 0;
       if (!ready) { ready = true; options.onReady?.(); }
       options.onRender?.(anchors());
       if (active) wake();
@@ -884,6 +1184,10 @@ window.Architecture = (() => {
       canvas.dataset.room = room;
       camera.near = inside ? .08 : .5;
       camera.updateProjectionMatrix();
+      // The apartment is roofless for the cut-away view, so it would see the whole sky: damp sky
+      // light inside to what windows and a ceiling would let through.
+      for (const m of Object.values(materials)) m.envMapIntensity = (m.userData.env ??= m.envMapIntensity) * (inside ? .5 : 1);
+      renderer.toneMappingExposure = light.exposure * (inside ? .84 : 1);
       positionSun();
     }
     function frontUnit() {
@@ -969,6 +1273,11 @@ window.Architecture = (() => {
       const b = canvas.parentElement.getBoundingClientRect();
       width = b.width || 1; height = b.height || 1;
       renderer.setSize(width, height, false);
+      if (renderer.getPixelRatio) {
+        const ratio = renderer.getPixelRatio();
+        pipeline?.resize(Math.round(width * ratio), Math.round(height * ratio));
+        lampHalos.material.uniforms.scale.value = height * ratio / (2 * Math.tan(Math.PI * 40 / 360));
+      }
       camera.aspect = width / height;
       camera.updateProjectionMatrix();
       if (!userMoved && !flight && !seq && !intro) travel({...currentView(), theta: pose.theta}, 0);
@@ -1034,10 +1343,14 @@ window.Architecture = (() => {
         boxGeo.dispose();
         Object.values(geometries).forEach(g => g.dispose());
         Object.values(materials).forEach(m => m.dispose());
+        clumps.forEach(g => g.dispose());
+        pipeline?.dispose();
+        envTarget?.dispose();
+        pmrem?.dispose();
         renderer.dispose();
       },
       state() { return {mode: shown, room, typology, rooms: Object.keys(activeInterior.views), bedrooms: activeInterior.beds, focus, selected: selected?.userData.unitId ?? null, aim, home: home.position.y, transitioning: !!(seq || flight || intro)}; },
-      stats() { return {drawCalls: renderer.info.render.calls, triangles: renderer.info.render.triangles}; },
+      stats() { const s = sceneStats || renderer.info.render; return {drawCalls: s.calls, triangles: s.triangles, post: !!pipeline}; },
     };
   }
   return {create, floorY};
