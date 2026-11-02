@@ -5,7 +5,7 @@
   const L = (es, en) => lang === 'es' ? es : en;
   const copy = [
     ['01 / LA ARQUITECTURA', '01 / THE ARCHITECTURE', 'La primera mirada.', 'The first look.', 'Gira el edificio y toca los puntos de interés para acercarte a la piscina, las terrazas y el lobby. Después, elige tu hogar.', 'Rotate the building and tap the points of interest to move closer to the pool, terraces and lobby. Then choose your home.'],
-    ['02 / TU DEPARTAMENTO', '02 / YOUR APARTMENT', 'Un espacio para ti.', 'A space for you.', 'Elige un piso y el edificio se abre para mostrarlo. Los colores indican disponibilidad; toca una unidad en el modelo o en la lista.', 'Choose a floor and the building opens to reveal it. Colours show availability; tap a unit on the model or in the list.'],
+    ['02 / TU DEPARTAMENTO', '02 / YOUR APARTMENT', 'Un espacio para ti.', 'A space for you.', 'Elige un piso y el edificio se abre para mostrarlo. Los colores indican disponibilidad; toca una unidad en el modelo para entrar o elígela en la lista.', 'Choose a floor and the building opens to reveal it. Colours show availability; tap a unit on the model to step inside, or pick it from the list.'],
     ['03 / LA VIDA DENTRO', '03 / LIFE INSIDE', 'Imagina lo cotidiano.', 'Imagine the everyday.', 'Entra a tu unidad y descubre la distribución de su tipología, espacio por espacio. La vista exterior cambia con la altura del piso elegido.', 'Step inside and discover the layout for your apartment type, space by space. The outside view changes with your floor’s height.'],
     ['04 / EL SIGUIENTE PASO', '04 / YOUR NEXT STEP', 'Hablemos de tu hogar.', 'Let’s talk about your home.', 'Tu selección acompaña la conversación. Una experiencia conectada de principio a fin.', 'Your selection travels with the conversation. A connected experience from start to finish.'],
   ];
@@ -123,16 +123,25 @@
   }
   function choose(id) {
     const unit = unitById(id);
-    if (!unit || ($('#available').checked && unit.status !== 'disponible') || ($('#bedrooms').value !== 'all' && feed.typologies[unit.type].beds !== +$('#bedrooms').value)) return;
+    if (!unit || ($('#available').checked && unit.status !== 'disponible') || ($('#bedrooms').value !== 'all' && feed.typologies[unit.type].beds !== +$('#bedrooms').value)) return false;
     if (unit.type !== currentType()) { room = 'overview'; clearHotspots(); }
     selected = unit;
     $('#floor').value = String(unit.floor);
     list();
     selection();
     renderStep();
-    if (!engine) return;
+    if (!engine) return true;
     if (step === 1) { engine.paint(states()); engine.focusFloor(unit.floor); }
     engine.select(id, step === 1 || step === 3);
+    return true;
+  }
+  // In step 02, tapping a unit in the model (its number, its dot or the unit itself) flies straight inside it.
+  function enterUnit(id) {
+    if (step !== 1) return choose(id);
+    if (!choose(id)) return;
+    room = 'overview';
+    go(2);
+    showScene();
   }
   function selection() {
     const e = $('#selected-home');
@@ -209,7 +218,7 @@
     el.innerHTML = `<i aria-hidden="true"></i><span>${label}</span>`;
     el.onclick = () => {
       if (kind === 'amenity') engine?.focus(id);
-      if (kind === 'unit') choose(id);
+      if (kind === 'unit') enterUnit(id);
       if (kind === 'room') enterRoom(id);
       if (kind === 'selected') engine?.select(id, true);
     };
@@ -235,7 +244,7 @@
     if (!u) return clearTip();
     canvas.style.cursor = 'pointer';
     const b = wrap.getBoundingClientRect();
-    tip.innerHTML = `<b>${L('Unidad', 'Unit')} ${u.id} · ${L('Piso', 'Floor')} ${u.floor}</b><span>${typeName(u)} · ${u.m2} m²</span><em data-state="${STATUS[u.status][2]}">${status(u)}</em><small>${L('Toca para elegir', 'Tap to choose')}</small>`;
+    tip.innerHTML = `<b>${L('Unidad', 'Unit')} ${u.id} · ${L('Piso', 'Floor')} ${u.floor}</b><span>${typeName(u)} · ${u.m2} m²</span><em data-state="${STATUS[u.status][2]}">${status(u)}</em><small>${L('Toca para entrar', 'Tap to step inside')}</small>`;
     tip.hidden = false;
     const left = Math.min(x - b.left + 16, b.width - tip.offsetWidth - 12), top = Math.min(y - b.top + 16, b.height - tip.offsetHeight - 12);
     tip.style.transform = `translate3d(${left}px,${top}px,0)`;
@@ -256,7 +265,7 @@
   canvas.addEventListener('webglcontextlost', e => { e.preventDefault(); fallback(); });
   canvas.addEventListener('webglcontextrestored', () => location.reload());
   AlphaAssets.whenVisible(canvas, () => AlphaAssets.three().then(() => {
-    engine = Architecture.create(THREE, canvas, p ? id => { if (step !== 1) go(1); choose(id); } : null, {
+    engine = Architecture.create(THREE, canvas, p ? id => { if (step === 1) enterUnit(id); else { go(1); choose(id); } } : null, {
       intro: !!p, orbit: !!p,
       units: p?.units,
       onReady: () => { $('#scene-status').hidden = true; canvas.dataset.ready = 'true'; },
