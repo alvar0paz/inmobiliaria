@@ -742,7 +742,7 @@ window.Architecture = (() => {
       }
       merge(g);
       const view = (x, z, r = 4.3, theta = .3) => ({x, y: .7, z, r, theta, phi: 1.04});
-      const views = {overview: {x: 0, y: .3, z: .6, r: Math.max(w, d) * 1.9 + 2, theta: .4, phi: .65},
+      const views = {overview: {x: 0, y: -.6, z: .6, r: Math.max(w, d) * 2.2 + 3, theta: .4, phi: .8},
         living: view(lx, lz + .35, 2.35, .05), kitchen: view(kx + .3, kz, 4, 1.1)};
       bedrooms.forEach(([x, z], i) => views[i ? 'bedroom' + (i + 1) : 'bedroom'] = view(x, z, 4.2));
       views.bathroom = view(bath[0], bath[1], 3.4, .5);
@@ -754,10 +754,14 @@ window.Architecture = (() => {
     const inventoryTypes = new Map((options.units || []).map(u => [String(u.id), u.type]));
     let typology = 'suite', activeInterior = interiors.suite;
     activeInterior.group.visible = true;
-    // The tower continues below the apartment; its dimensions follow the concept plan.
-    const shaft = new T.Group(); home.add(shaft);
-    const shaftBody = box(shaft, 1, 1, 1, 0, 0, 0, unitLit[3]);
-    const shaftSlabs = Array.from({length: 12}, () => box(shaft, 1, .27, 1, 0, 0, 0, lightStone));
+    // Inside, the apartment sits on a full floor plate of the real tower: the levels below stay
+    // visible (same façade, balconies and units as the exterior) and everything above is cut away.
+    const plate = new T.Group(); home.add(plate);
+    box(plate, 16, .27, 16, 0, -.145, 0, stone);
+    function cutaway(n) {
+      for (const l of levels) l.group.visible = n === null || l.n < n;
+      halo.visible = n === null;
+    }
     const homeLights = Array.from({length: 4}, () => { const l = new T.PointLight('#ffe0b8', 0, 8, 2); home.add(l); return l; });
 
     // Full-screen fade used when the camera passes between the tower and the apartment.
@@ -919,14 +923,11 @@ window.Architecture = (() => {
 
     function placeHome() {
       const n = selected ? selected.userData.floor : (focus ?? lastFloor);
-      const y = floorY(n) + .135, h = y - .5;
+      const y = floorY(n) + .135;
       home.position.set(0, y, 0);
-      shaftBody.scale.set(activeInterior.w - .2, h, activeInterior.d - .2);
-      shaftSlabs.forEach(s => s.scale.set(activeInterior.w + .3, 1, activeInterior.d + .3));
+      cutaway(n);
       const lamps = ['living', 'kitchen', 'bedroom', 'terrace'];
       homeLights.forEach((l, i) => { const v = activeInterior.views[lamps[i]]; l.position.set(v.x, 2.2, v.z); });
-      shaftBody.position.y = -.3 - h / 2;
-      shaftSlabs.forEach((s, k) => { const m = n - 1 - k; s.visible = m >= 2; s.position.y = floorY(m) - y + .1; });
     }
     function positionSun() {
       const inside = shown === 'interior', c = sun.shadow.camera, span = inside ? 16 : 62;
@@ -1126,9 +1127,8 @@ window.Architecture = (() => {
     function swap() {
       shown = mode;
       const inside = shown === 'interior';
-      world.visible = !inside;
       home.visible = inside;
-      if (inside) placeHome();
+      if (inside) placeHome(); else cutaway(null);
       if (hovered) { hovered = null; repaint(); options.onHover?.(null); }
       canvas.dataset.mode = shown;
       canvas.dataset.room = room;
