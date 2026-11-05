@@ -110,3 +110,18 @@ test('portrait overview keeps each furnished plan inside the mobile canvas',()=>
  }
  f.api.dispose();
 });
+test('the furnished apartment opens in its own slot on a complete floor',()=>{
+ const L=['suite','depa2','estudio','estudio','depa3','suite'],units=L.map((type,i)=>({id:`70${i+1}`,type}));
+ const f=fixture({units});
+ const expected={'702':[-1.4,5.3,0],'705':[-1.8,-4.8,Math.PI]};
+ for(const [id,[x,z,ry]] of Object.entries(expected)){
+  f.api.select(id,false);f.api.setMode('interior');f.flush();
+  const home=f.scene().children[1],plan=home.children.find(g=>g.userData.typology&&g.visible);
+  assert.ok(Math.abs(plan.position.x-x)<1e-6&&Math.abs(plan.position.z-z)<1e-6,`${id} at ${plan.position.x},${plan.position.z}`);
+  assert.ok(Math.abs(plan.rotation.y-ry)<1e-6,'back-row homes face the back façade');
+  let floorMeshes=0;home.traverse(o=>{if(o.isMesh&&!plan.getObjectById(o.id))floorMeshes++});
+  assert.ok(floorMeshes>=10,'corridor, core, stair and neighbouring homes surround it');
+  f.api.setMode('building');f.flush();
+ }
+ f.api.dispose();
+});

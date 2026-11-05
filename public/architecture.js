@@ -18,19 +18,31 @@ window.Architecture = (() => {
     {top: '#5d74a6', horizon: '#f0cda4', sun: '#ffb36b', sunI: 2.5, sky: '#f2dcc6', ground: '#5c4c3a', hemiI: .55, fill: .18, exposure: .86, sunAt: [-62, 26, 44], night: .22},
     {top: '#07111d', horizon: '#243548', sun: '#a9c2e0', sunI: .28, sky: '#3f5878', ground: '#14181d', hemiI: .26, fill: .08, exposure: 1.05, sunAt: [-30, 70, -25], night: 1},
   ];
+  // Concept plans in metres; +z is the glazed façade and terrace, -z the corridor wall with the
+  // entry door. Inventory metadata selects a plan; no unit-ID inference.
+  const PLANS = {
+    estudio: {w: 6.2, d: 5.8, beds: 0, bedrooms: [[1.35, -1.5, 1.5]], social: .2, bath: [-2.1, -1.85], door: -.6},
+    suite: {w: 7.6, d: 7, beds: 1, bedrooms: [[1.9, -1.9, 1.6]], social: .3, bath: [-2.65, -2.3], door: -.85, left: .05},
+    depa2: {w: 10, d: 7.6, beds: 2, bedrooms: [[-.5, -2.2, 1.6], [2.95, -2.2, 1.2]], social: .35, bath: [-4, -2.6], door: -2.6, left: -2.1},
+    depa3: {w: 12, d: 8.6, beds: 3, bedrooms: [[-1.72, -2.7, 1.6], [1.3, -2.7, 1.2], [4.3, -2.7, 1.2]], social: -.15, bath: [-5, -3.1], door: -3.6, left: -3.1},
+  };
+  /* The typical floor, sized so the real plans fit: 28 × 18.2 m with a central corridor.
+     Front row (+z): 01 suite · 02 two-bed · lift core · 03 studio. Back row (-z): 04 studio ·
+     05 three-bed · 06 suite · stair. Each façade carries 1.95 m terraces. */
+  const FLOOR = {w: 28, d: 18.2, front: 9.1, back: -9.1, corridor: [-.5, 1.5], core: [3.6, 7.8], stair: [11.8, 14]};
+  const SLOTS = [
+    {pos: 0, type: 'suite', side: 1, x0: -14}, {pos: 1, type: 'depa2', side: 1, x0: -6.4}, {pos: 2, type: 'estudio', side: 1, x0: 7.8},
+    {pos: 3, type: 'estudio', side: -1, x0: -14}, {pos: 4, type: 'depa3', side: -1, x0: -7.8}, {pos: 5, type: 'suite', side: -1, x0: 4.2},
+  ].map(s => {
+    const {w, d} = PLANS[s.type], facade = s.side > 0 ? FLOOR.front : FLOOR.back;
+    return {...s, w, d, x: s.x0 + w / 2, facade, z: facade - s.side * d / 2};
+  });
   // Points of interest on the exterior, with the camera that frames each one.
   const AMENITIES = {
-    pool: {at: [-3.7, ROOF + .9, 0], view: {theta: .95, phi: .82, r: 30, x: -2.5, y: ROOF, z: 0}},
-    garden: {at: [4.2, ROOF + 3, 0], view: {theta: -.6, phi: 1, r: 27, x: 3.5, y: ROOF + 1.2, z: 0}},
-    terraces: {at: [5, floorY(9) + 1.5, 8.7], normal: [0, 0, 1], view: {theta: .42, phi: 1.33, r: 22, x: 4.5, y: floorY(9) + 1, z: 7.5}},
-    lobby: {at: [0, 2.6, 10.4], normal: [0, 0, 1], view: {theta: .25, phi: 1.43, r: 24, x: 0, y: 2.8, z: 6}},
-  };
-  // Concept plans in metres. Inventory metadata selects a plan; no unit-ID inference.
-  const PLANS = {
-    estudio: {w: 6.2, d: 5.8, beds: 0, bedrooms: [[1.35, -1.5, 1.5]], social: .2, bath: [-2.1, -1.85]},
-    suite: {w: 7.6, d: 7, beds: 1, bedrooms: [[1.9, -1.9, 1.6]], social: .3, bath: [-2.65, -2.3]},
-    depa2: {w: 10, d: 7.6, beds: 2, bedrooms: [[-1.15, -2.2, 1.6], [2.95, -2.2, 1.2]], social: .35, bath: [-4, -2.6]},
-    depa3: {w: 12, d: 8.6, beds: 3, bedrooms: [[-2.45, -2.7, 1.6], [.95, -2.7, 1.2], [4.3, -2.7, 1.2]], social: -.15, bath: [-5, -3.1]},
+    pool: {at: [3.75, ROOF + .9, -5], view: {theta: .95, phi: .82, r: 34, x: 3, y: ROOF, z: -4}},
+    garden: {at: [-8, ROOF + 3, -2.5], view: {theta: -.6, phi: 1, r: 30, x: -7.5, y: ROOF + 1.2, z: -2.5}},
+    terraces: {at: [-1.4, floorY(9) + 1.5, 10.6], normal: [0, 0, 1], view: {theta: .42, phi: 1.33, r: 24, x: -1.4, y: floorY(9) + 1, z: 9.5}},
+    lobby: {at: [0, 2.6, 12.6], normal: [0, 0, 1], view: {theta: .25, phi: 1.43, r: 28, x: 0, y: 2.8, z: 8}},
   };
 
   function create(T, canvas, onUnit, options = {}) {
@@ -166,7 +178,7 @@ window.Architecture = (() => {
     };
     const hoverMat = mat('hover', '#f6ebcd', {roughness: .3, emissive: '#c79a52', emissiveIntensity: .45});
     const selectedMat = mat('selected', '#dcae58', {roughness: .3, emissive: '#b8781a', emissiveIntensity: .45});
-    const ghost = mat('ghost', '#f6f3ec', {roughness: .3, transparent: true, opacity: .13, depthWrite: false, noShadow: true});
+    const ghost = mat('ghost', '#e9e6de', {roughness: .6, transparent: true, opacity: .055, depthWrite: false, noShadow: true, envMapIntensity: .3});
 
     const boxGeo = new T.BoxGeometry(1, 1, 1);
     function box(p, w, h, d, x, y, z, m = stone) {
@@ -437,25 +449,25 @@ window.Architecture = (() => {
     for (let x = -196; x < 200; x += 7) if (Math.abs(x) > 5) box(site, 3, .02, .13, x, -.09, 23, lightStone);
     for (let i = 0; i < 9; i++) box(site, 4.2, .02, .55, 0, -.09, 18.2 + i * 1.2, lightStone);
     for (const z of [15.6, 30.4]) box(site, 420, .14, 3.4, 0, -.1, z, stone);
-    box(site, 32, .35, 29, 0, .02, 1, mat('paving', '#e8e1d2', {roughness: .8, surface: 'paving'}));
-    for (let x = -15; x < 16; x += 1.1) box(site, .025, .01, 27, x, .203, 1, stone);
-    for (let z = -12; z < 15; z += 1.1) box(site, 30, .01, .025, 0, .204, z, stone);
-    for (const x of [-23, 23]) box(site, 14, .2, 29, x, -.1, 1, lawn);
-    box(site, 60, .2, 12, 0, -.1, -19.5, lawn);
-    box(site, 30, .7, .8, 0, .55, -13.1, leaf);
-    for (const x of [-12, 12]) for (const z of [-9, 0, 10]) tree(site, x, z, 1.1);
-    for (const [x, z, s] of [[-22, -8, 1.2], [23, -4, 1], [-24, 8, 1.1], [21, 9, 1.3], [-18, -19, 1], [8, -21, 1.2], [-6, -20, .9], [26, -18, 1.1]]) tree(site, x, z, s);
+    box(site, 40, .35, 31.5, 0, .02, -.25, mat('paving', '#e8e1d2', {roughness: .8, surface: 'paving'}));
+    for (let x = -18.7; x < 19.5; x += 1.1) box(site, .025, .01, 29.5, x, .203, -.25, stone);
+    for (let z = -15.4; z < 15; z += 1.1) box(site, 38, .01, .025, 0, .204, z, stone);
+    for (const x of [-27, 27]) box(site, 14, .2, 31.5, x, -.1, -.25, lawn);
+    box(site, 68, .2, 12, 0, -.1, -22, lawn);
+    box(site, 38, .7, .8, 0, .55, -15.6, leaf);
+    for (const x of [-17.5, 17.5]) for (const z of [-12, -2, 9]) tree(site, x, z, 1.1);
+    for (const [x, z, s] of [[-26, -8, 1.2], [27, -4, 1], [-28, 8, 1.1], [25, 9, 1.3], [-18, -22, 1], [8, -24, 1.2], [-6, -23, .9], [26, -21, 1.1]]) tree(site, x, z, s);
     for (let x = -84; x <= 84; x += 12) if (Math.abs(x) > 20) { tree(site, x, 15.6, .95); tree(site, x + 6, 30.4, .95); }
     // Loose groves in the open park land around the site.
     const parkRnd = seeded(61);
     for (let i = 0; i < 90; i++) {
       const x = (parkRnd() - .5) * 200, z = -22 + parkRnd() * 110;
-      if ((z > 10 && z < 36) || (Math.abs(x) < 32 && z < 18) || Math.hypot(x, z) > 105) continue;
+      if ((z > 10 && z < 36) || (Math.abs(x) < 37 && z < 18) || Math.hypot(x, z) > 105) continue;
       tree(site, x, z, .85 + parkRnd() * .5);
     }
-    for (const x of [-10, 10]) { box(site, 3, .5, 1, x, .5, 13, stone); for (let k = 0; k < 6; k++) box(site, 3, .07, .1, x, .8, 12.6 + k * .15, wood); }
+    for (const x of [-11, 11]) { box(site, 3, .5, 1, x, .5, 13.6, stone); for (let k = 0; k < 6; k++) box(site, 3, .07, .1, x, .8, 13.2 + k * .15, wood); }
     const lamp = (x, y, z) => { cyl(site, .065, 4, x, y + 2, z, metal); sphere(site, .28, x, y + 4, z, glow); lamps.push([x, y + .03, z]); };
-    for (const x of [-14, 14]) lamp(x, .2, 14);
+    for (const x of [-17, 17]) lamp(x, .2, 14);
     // Street lamps sit between the street trees.
     for (const x of [-72, -36, 0, 36, 72]) lamp(x, -.04, 30.4);
     for (const x of [-78, -42, 42, 78]) lamp(x, -.04, 15.6);
@@ -463,8 +475,8 @@ window.Architecture = (() => {
     env.add(site);
 
     // Soft ground contact under the tower and warm pools of light under lamps at night.
-    const ao = new T.Mesh(new T.PlaneGeometry(44, 44), shader({},
-      'varying vec2 vUv;void main(){vec2 p=(vUv-.5)*44.;vec2 q=abs(p-vec2(0.,.8))-vec2(8.2,8.6);float d=length(max(q,0.));gl_FragColor=vec4(.17,.16,.12,(1.-smoothstep(0.,5.,d))*.42);}',
+    const ao = new T.Mesh(new T.PlaneGeometry(60, 60), shader({},
+      'varying vec2 vUv;void main(){vec2 p=(vUv-.5)*60.;vec2 q=abs(p)-vec2(14.3,9.4);float d=length(max(q,0.));gl_FragColor=vec4(.17,.16,.12,(1.-smoothstep(0.,5.,d))*.42);}',
       {polygonOffset: true, polygonOffsetFactor: -2}));
     ao.rotation.x = -Math.PI / 2;
     ao.position.y = .21;
@@ -498,45 +510,64 @@ window.Architecture = (() => {
     const building = new T.Group(), levels = [], floors = [], units = [];
     world.add(building);
     const level = (n, delay) => { const group = new T.Group(); building.add(group); const l = {group, n, lift: 0, target: 0, ghost: false, delay}; levels.push(l); return l; };
-    const base = level(1, .2).group;
-    box(base, 15, 3.15, 14, 0, 1.8, 0, lobbyGlass);
-    for (let x = -7.5; x <= 7.5; x += 1.5) box(base, .11, 3.5, .14, x, 1.8, 7.1, metal);
-    box(base, 6, .35, 4, 0, 3.2, 8.5, stone); box(base, 5, .1, 3.9, 0, 2.98, 8.4, wood);
-    box(base, .3, 3.1, .3, -2.7, 1.5, 10.2, metal); box(base, .3, 3.1, .3, 2.7, 1.5, 10.2, metal);
-    box(base, 5, .05, .05, 0, 3.02, 10.3, led);
-    box(base, 14, 3, .3, 0, 1.65, -6.8, wood); box(base, 4, .85, 1, 0, .85, 2, stone);
-    for (let x = -6; x < 7; x += .23) box(base, .09, 2.8, .1, x, 1.6, -6.56, oak);
+    const base = level(1, .2).group, [cx0, cx1] = FLOOR.core, [sx0, sx1] = FLOOR.stair, coreX = (cx0 + cx1) / 2, stairX = (sx0 + sx1) / 2;
+    box(base, 26.4, 3.15, 16.6, 0, 1.8, 0, lobbyGlass);
+    for (let x = -13; x <= 13; x += 1.625) box(base, .11, 3.5, .14, x, 1.8, 8.35, metal);
+    box(base, 7, .35, 4, 0, 3.2, 10.4, stone); box(base, 6, .1, 3.9, 0, 2.98, 10.3, wood);
+    box(base, .3, 3.1, .3, -3.2, 1.5, 12.1, metal); box(base, .3, 3.1, .3, 3.2, 1.5, 12.1, metal);
+    box(base, 6, .05, .05, 0, 3.02, 12.2, led);
+    box(base, 26, 3, .3, 0, 1.65, -8.15, wood); box(base, 4, .85, 1, -2, .85, 3, stone);
+    for (let x = -12.5; x < 12.6; x += .25) box(base, .09, 2.8, .1, x, 1.6, -7.92, oak);
+    // The lift core and stair rise from the lobby through every floor.
+    box(base, cx1 - cx0, 3.3, 7.6, coreX, 1.75, 5.3, stone); box(base, sx1 - sx0, 3.3, 8.6, stairX, 1.75, -4.8, stone);
+    for (const x of [coreX - 1, coreX + 1]) box(base, 1, 2.1, .04, x, 1.05, 1.48, brass);
     const unitRnd = seeded(42);
     for (let f = 0; f < 12; f++) {
       const n = f + 2, y = floorY(n), l = level(n, .45 + f * .085), fl = l.group;
       floors.push(l);
-      box(fl, 16, .27, 16, 0, y, 0, lightStone);
-      box(fl, 2, 3, 14, 0, y + 1.6, 0, stone);
-      for (const side of [-1, 1]) for (let col = 0; col < 3; col++) {
-        const x = (col - 1) * 5, z = side * 5.7, roll = unitRnd();
-        const unit = box(fl, 4.75, 2.85, 3.9, x, y + 1.55, z, unitLit[0]);
-        Object.assign(unit.userData, {unitId: `${n}0${side === 1 ? col + 1 : col + 4}`, floor: n, side, variant: roll < .36 ? 0 : roll < .64 ? 1 : roll < .8 ? 2 : 3});
+      box(fl, FLOOR.w, .27, FLOOR.d, 0, y, 0, lightStone);
+      // Solid core: lifts and services face the street; the stair has a slit window at the back.
+      box(fl, cx1 - cx0, 2.95, 7.6, coreX, y + 1.6, 5.3, stone);
+      box(fl, sx1 - sx0, 2.95, 8.6, stairX, y + 1.6, -4.8, stone);
+      box(fl, .5, 2.4, .05, stairX, y + 1.6, FLOOR.back - .01, glass);
+      for (const sl of SLOTS) {
+        const {side, w, d, x, x0, facade, pos} = sl, roll = unitRnd(), out = facade + side * .975, bays = Math.ceil(w / 1.5), bay = w / bays;
+        const unit = box(fl, w - .3, 2.85, d - .4, x, y + 1.55, facade - side * (d / 2 - .05), unitLit[0]);
+        Object.assign(unit.userData, {unitId: `${n}0${pos + 1}`, floor: n, side, pos, variant: roll < .36 ? 0 : roll < .64 ? 1 : roll < .8 ? 2 : 3});
         units.push(unit);
-        box(fl, .18, 2.9, 4.1, x - 2.4, y + 1.6, z, stone);
-        box(fl, 4.6, .16, 1.6, x, y + .18, side * 8.1, stone);
-        box(fl, 4.6, 1, .06, x, y + .78, side * 8.82, glass);
-        box(fl, 4.8, .06, .09, x, y + 1.32, side * 8.82, metal);
-        for (const a of [-2.25, 0, 2.25]) { box(fl, .065, 2.7, .1, x + a, y + 1.6, side * 7.71, metal); box(fl, .05, 1.1, .06, x + a, y + .77, side * 8.82, metal); }
-        if ((f + col) % 3 === 0) { box(fl, 1.5, .45, .55, x + 1.4, y + .4, side * 8.38, stone); for (let i = 0; i < 4; i++) sphere(fl, .25, x + .9 + i * .3, y + .85, side * 8.38, leaf, 1, 1.35, 1); }
-        if ((col + f) % 4 === 0) box(fl, 1.7, .14, .7, x - .5, y + .8, side * 6.5, glow);
-        if (col === 0) for (let k = 0; k < 4; k++) box(fl, .12, 2.8, .18, x - 1.9 + k * .24, y + 1.6, side * 7.88, wood);
+        // Party-wall fins frame each home; terrace slab, glass balustrade and façade mullions.
+        box(fl, .2, 2.95, 2.25, x0, y + 1.6, facade + side * .95, stone);
+        box(fl, w - .1, .16, 1.95, x, y + .1, out, stone);
+        box(fl, w - .2, 1, .06, x, y + .78, facade + side * 1.92, glass);
+        box(fl, w - .1, .06, .09, x, y + 1.32, facade + side * 1.92, metal);
+        for (let k = 0; k <= bays; k++) box(fl, .065, 2.7, .1, x0 + k * bay, y + 1.6, facade + side * .02, metal);
+        for (let k = 1; k < bays; k++) box(fl, .05, 1.1, .06, x0 + k * bay, y + .77, facade + side * 1.92, metal);
+        if ((f + pos) % 3 === 0) { box(fl, 1.5, .45, .55, x + w / 2 - 1.2, y + .4, facade + side * 1.65, stone); for (let i = 0; i < 4; i++) sphere(fl, .25, x + w / 2 - 1.7 + i * .3, y + .85, facade + side * 1.65, leaf, 1, 1.35, 1); }
+        if ((pos + f) % 4 === 0) box(fl, 1.7, .14, .7, x - .5, y + .8, facade - side * 1.2, glow);
+        if (pos === 0 || pos === 3) for (let k = 0; k < 4; k++) box(fl, .12, 2.8, .18, x0 + .5 + k * .24, y + 1.6, facade + side * .2, wood);
       }
-      for (const side of [-1, 1]) { box(fl, .32, 3.1, 14.5, side * 7.65, y + 1.58, 0, stone); for (let k = -4; k <= 4; k += 2) box(fl, .35, 2.2, 1.35, side * 7.84, y + 1.65, k, glass); }
+      for (const x of [cx0, 14]) box(fl, .2, 2.95, 2.25, x, y + 1.6, FLOOR.front + .95, stone);
+      box(fl, .2, 2.95, 2.25, sx0, y + 1.6, FLOOR.back - .95, stone);
+      // Side façades with windows; the corridor ends in full-height glazing.
+      for (const sx of [-1, 1]) {
+        box(fl, .32, 3.1, FLOOR.d, sx * 13.9, y + 1.58, 0, stone);
+        for (const k of [-7.2, -4.6, 4.6, 7.2]) box(fl, .35, 2.2, 1.35, sx * 14.07, y + 1.65, k, glass);
+        box(fl, .35, 2.7, 1.8, sx * 14.07, y + 1.5, .5, glass);
+      }
     }
     const roof = level(14, .45 + 12 * .085 + .05).group;
-    box(roof, 16, .35, 17, 0, ROOF, 0, lightStone);
-    for (const z of [-8.53, 8.53]) box(roof, 16.1, .07, .07, 0, ROOF - .08, z, led);
-    for (const x of [-8.03, 8.03]) box(roof, .07, .07, 17.1, x, ROOF - .08, 0, led);
-    box(roof, 6, .4, 9, -3.7, ROOF + .2, 0, stone); box(roof, 5.6, .08, 8.6, -3.7, ROOF + .44, 0, water);
-    for (let i = 0; i < 4; i++) { box(roof, .12, 2.6, .12, 1.4 + i * 1.7, ROOF + 1.3, -5, wood); box(roof, .12, 2.6, .12, 1.4 + i * 1.7, ROOF + 1.3, 4, wood); }
-    for (let i = 0; i < 17; i++) box(roof, 5.8, .13, .13, 4, ROOF + 2.7, -5 + i * .56, wood);
-    for (const z of [-7.8, 7.8]) { box(roof, 15, 1, .07, 0, ROOF + .6, z, glass); box(roof, 15, .07, .09, 0, ROOF + 1.15, z, metal); }
-    for (let i = 0; i < 4; i++) { box(roof, 1.1, .2, 2.5, 3.4, ROOF + .45, -3 + i * 2.4, fabric); plant(roof, 6.5, ROOF + .2, -5 + i * 3, .8); }
+    box(roof, FLOOR.w + .4, .35, FLOOR.d + .4, 0, ROOF, 0, lightStone);
+    for (const z of [-(FLOOR.d / 2 + .23), FLOOR.d / 2 + .23]) box(roof, FLOOR.w + .5, .07, .07, 0, ROOF - .08, z, led);
+    for (const x of [-(FLOOR.w / 2 + .23), FLOOR.w / 2 + .23]) box(roof, .07, .07, FLOOR.d + .5, x, ROOF - .08, 0, led);
+    // Pool deck, pergola garden, lift overrun and stair bulkhead.
+    box(roof, 12, .4, 5.6, 3.75, ROOF + .2, -5, stone); box(roof, 11.6, .08, 5.2, 3.75, ROOF + .44, -5, water);
+    for (let i = 0; i < 4; i++) for (const z of [-7, 2]) box(roof, .12, 2.6, .12, -11.5 + i * 2.5, ROOF + 1.3, z, wood);
+    for (let i = 0; i < 17; i++) box(roof, 8, .13, .13, -7.75, ROOF + 2.7, -7 + i * .56, wood);
+    box(roof, cx1 - cx0, 2.6, 2.4, coreX, ROOF + 1.3, 2.7, stone); box(roof, sx1 - sx0, 2.6, 3, stairX, ROOF + 1.3, -2, stone);
+    for (const z of [-(FLOOR.d / 2 - .3), FLOOR.d / 2 - .3]) { box(roof, FLOOR.w - .8, 1, .07, 0, ROOF + .6, z, glass); box(roof, FLOOR.w - .8, .07, .09, 0, ROOF + 1.15, z, metal); }
+    for (let i = 0; i < 4; i++) box(roof, 1.1, .2, 2.5, .6 + i * 2.2, ROOF + .45, -.5, fabric);
+    for (let i = 0; i < 5; i++) plant(roof, -12 + i * 5.5, ROOF + .2, 7, .8);
+    for (let i = 0; i < 3; i++) plant(roof, -12, ROOF + .2, -5 + i * 3, .8);
     levels.forEach(l => merge(l.group));
 
     const halo = new T.Mesh(boxGeo, new T.MeshBasicMaterial({color: '#e8a53c', transparent: true, opacity: .14, blending: T.AdditiveBlending, depthWrite: false}));
@@ -659,12 +690,17 @@ window.Architecture = (() => {
       box(g, .45, .4, .18, -.5, .44, .78, lightStone); sphere(g, .25, -.5, .32, .5, lightStone, .8, .65, 1.2);
       box(g, .12, .35, .4, .81, 1.1, .4, fabric);
     }
-    function makePlan(type, plan) {
-      const g = new T.Group(), {w, d, bedrooms, social, bath} = plan;
-      g.name = 'interior-' + type; g.userData.typology = type; home.add(g); g.visible = false;
-      box(g, w, .25, d, 0, -.13, 0, stone);
+    const screed = mat('screed', '#b9b3a6', {roughness: .9, surface: 'plaster'});
+    // One plan builder for both the furnished apartment and the neighbouring "shells" around it:
+    // shells keep floor, walls, door, glazing and terrace so the floor's distribution reads clearly.
+    function makePlan(type, plan, full = true, into = null) {
+      const g = into || new T.Group(), {w, d, bedrooms, social, bath, door} = plan;
+      // Shells share a handful of materials so all five neighbours merge into a few meshes.
+      const trim = full ? smokedOak : lightStone, skirt = full ? oak : lightStone;
+      if (full) { g.name = 'interior-' + type; g.userData.typology = type; g.visible = false; home.add(g); }
+      box(g, w, .25, d, 0, -.13, 0, full ? stone : screed);
       // Staggered, full-width oak planks with genuine joints rather than long stripes.
-      const plankCount = Math.ceil(w / .24), plankWidth = w / plankCount;
+      const plankCount = full ? Math.ceil(w / .24) : 0, plankWidth = w / Math.max(1, plankCount);
       for (let i = 0; i < plankCount; i++) {
         let start = -d / 2 + .04, piece = 0;
         while (start < d / 2 - .04) {
@@ -673,17 +709,32 @@ window.Architecture = (() => {
           start = end; piece++;
         }
       }
-      box(g, w, 2.8, .12, 0, 1.4, -d / 2, lightStone);
+      // Corridor wall with the front door (opening 0.9 m, lintel at 2.1 m) and a door leaf ajar.
+      const dl = door - .45, dr = door + .45, back = -d / 2;
+      const wallH = full ? 2.8 : 1.1;
+      box(g, dl + w / 2, wallH, .12, (-w / 2 + dl) / 2, wallH / 2, back, lightStone);
+      box(g, w / 2 - dr, wallH, .12, (dr + w / 2) / 2, wallH / 2, back, lightStone);
+      if (full) box(g, .9, .7, .12, door, 2.45, back, lightStone);
+      for (const x of [dl, dr]) box(g, .05, full ? 2.1 : 1.1, .16, x, full ? 1.05 : .55, back, trim);
+      const leafPanel = group(g, dl, back + .06, -1.1);
+      box(leafPanel, .86, full ? 2.05 : 1.05, .045, .43, full ? 1.04 : .53, 0, trim);
+      if (full) box(leafPanel, .025, .025, .14, .78, 1.02, .05, brass);
+      box(g, w, .1, .07, 0, .1, back + .09, skirt);
       box(g, .12, 1.1, d, -w / 2, .55, 0, lightStone);
       box(g, .12, 1.1, d, w / 2, .55, 0, lightStone);
-      box(g, w, .1, .07, 0, .1, -d / 2 + .09, oak);
-      for (const side of [-1, 1]) box(g, .025, .09, d - .12, side * (w / 2 - .075), .09, 0, smokedOak);
-      bathroom(g, ...bath);
+      if (full) {
+        for (const side of [-1, 1]) box(g, .025, .09, d - .12, side * (w / 2 - .075), .09, 0, smokedOak);
+        bathroom(g, ...bath);
+      } else {
+        box(g, 1.8, .03, 2.1, bath[0], .015, bath[1], tile);
+        box(g, .09, 1.1, 2.1, bath[0] + .9, .55, bath[1], lightStone);
+        box(g, 1.8, 1.1, .09, bath[0], .55, bath[1] + 1.05, lightStone);
+      }
       if (plan.beds === 0) {
         // Open sleeping nook: timber screen, without an enclosed bedroom.
-        for (let i = 0; i < 12; i++) box(g, .06, 2.3, .07, .05, 1.15, -2.6 + i * .13, oak);
+        for (let i = 0; i < 12; i++) box(g, .06, full ? 2.3 : 1.1, .07, .05, full ? 1.15 : .55, -2.6 + i * .13, skirt);
       } else {
-        const left = plan.beds === 1 ? .05 : -w / 2 + 1.8;
+        const left = plan.left;
         const span = (w / 2 - left) / plan.beds, front = -d / 2 + 3.65;
         for (let i = 0; i < plan.beds; i++) {
           const edge = left + i * span;
@@ -693,6 +744,34 @@ window.Architecture = (() => {
           box(g, .8, .025, .08, edge + span - .45, .06, front, brass);
         }
       }
+      if (full) furnish(g, type, plan);
+      // Glazed frontage and a terrace, scaled to this plan only.
+      const bays = Math.ceil(w / 1.5), bay = w / bays, tz = d / 2 + 1;
+      for (let i = 0; i <= bays; i++) {
+        const x = -w / 2 + i * bay;
+        box(g, .045, 2.7, .06, x, 1.4, d / 2, metal);
+        if (i < bays) box(g, bay - .06, 2.6, .025, x + bay / 2, 1.4, d / 2, homeGlass);
+      }
+      box(g, w, .06, .08, 0, 2.77, d / 2, metal);
+      box(g, w, .18, 1.9, 0, -.05, tz, stone);
+      if (full) for (let i = 0; i < Math.floor(w / .2); i++) box(g, .19, .025, 1.8, -w / 2 + .1 + i * .2, .06, tz, oak);
+      box(g, w, .95, .035, 0, .6, tz + .9, glass); box(g, w, .035, .045, 0, 1.1, tz + .9, metal);
+      for (let i = 0; i <= bays; i++) box(g, .04, 1, .04, -w / 2 + i * bay, .6, tz + .9, metal);
+      if (!full) return g;
+      merge(g);
+      const {kx, kz, lx, lz, tx} = plan.layout;
+      const view = (x, z, r = 4.3, theta = .3) => ({x, y: .7, z, r, theta, phi: 1.04});
+      const views = {overview: {x: 0, y: 0, z: 0, r: 30, theta: .42, phi: .84},
+        living: view(lx, lz + .35, 2.35, .05), kitchen: view(kx + .3, kz, 4, 1.1)};
+      bedrooms.forEach(([x, z], i) => views[i ? 'bedroom' + (i + 1) : 'bedroom'] = view(x, z, 4.2));
+      views.bathroom = view(bath[0], bath[1], 3.4, .5);
+      views.terrace = {x: tx, y: 1.1, z: tz, r: 3.5, theta: Math.PI + .25, phi: 1.4};
+      const spots = Object.fromEntries(Object.entries(views).filter(([key]) => key !== 'overview').map(([key, v]) => [key, [v.x, 1.4, v.z]]));
+      return {group: g, views, spots, ...plan};
+    }
+    // Furniture, kitchen, living, dining, beds and terrace set for one furnished plan.
+    function furnish(g, type, plan) {
+      const {w, d, bedrooms, social} = plan;
       bedrooms.forEach(([x, z, bw], i) => bed(g, x, z, bw, i + 1));
       if (type === 'suite') {
         // A designed master-suite backdrop: timber fins, warm concealed light and
@@ -706,7 +785,8 @@ window.Architecture = (() => {
         const disc = cyl(g, .29, .018, bx - .09, 1.94, back + .17, clay); disc.rotation.x = Math.PI / 2;
         box(g, .28, .52, .025, bx + .18, 1.72, back + .19, cushion);
       }
-      const kx = -w / 2 + .4, kz = social + 1.25, lx = w / 4, lz = social + .7;
+      const kx = -w / 2 + .4, kz = social + 1.25, lx = w / 4, lz = social + .7, tz = d / 2 + 1, tx = plan.beds >= 2 ? 1.6 : 0;
+      plan.layout = {kx, kz, lx, lz, tx};
       kitchen(g, kx, kz, plan.beds === 0 ? 1.9 : 2.5);
       living(g, lx, lz, plan.beds >= 2);
       if (plan.beds === 0) {
@@ -720,47 +800,86 @@ window.Architecture = (() => {
         box(g, .04, .72, .4, x + .44, .38, z + 1.55, wood);
         for (let j = 0; j < 5; j++) box(g, .08, .22 + j * .015, .18, x - .35 + j * .09, .92, z + 1.55, j % 2 ? cushion : lightStone);
       });
-      // Glazed frontage and a furnished balcony, scaled to this plan only.
-      const bays = Math.ceil(w / 1.5), bay = w / bays, tz = d / 2 + 1;
-      for (let i = 0; i <= bays; i++) {
-        const x = -w / 2 + i * bay;
-        box(g, .045, 2.7, .06, x, 1.4, d / 2, metal);
-        if (i < bays) box(g, bay - .06, 2.6, .025, x + bay / 2, 1.4, d / 2, homeGlass);
-      }
-      box(g, w, .06, .08, 0, 2.77, d / 2, metal);
       for (const x of [-w / 2 + .08, w / 2 - .5]) for (let k = 0; k < 5; k++) cyl(g, .045, 2.55, x + k * .08, 1.4, d / 2 - .15, curtain);
-      box(g, w, .18, 1.9, 0, -.05, tz, stone);
-      for (let i = 0; i < Math.floor(w / .2); i++) box(g, .19, .025, 1.8, -w / 2 + .1 + i * .2, .06, tz, oak);
-      box(g, w, .95, .035, 0, .6, tz + .9, glass); box(g, w, .035, .045, 0, 1.1, tz + .9, metal);
-      for (let i = 0; i <= bays; i++) box(g, .04, 1, .04, -w / 2 + i * bay, .6, tz + .9, metal);
       for (const x of [-w / 2 + .45, w / 2 - .45]) plant(g, x, .08, tz, .75);
-      const tx = plan.beds >= 2 ? 1.6 : 0;
       cyl(g, .38, .06, tx, .62, tz, stone); cyl(g, .08, .56, tx, .32, tz, metal);
       for (const x of [tx - .8, tx + .8]) {
         box(g, .55, .1, .6, x, .45, tz, fabric); box(g, .55, .5, .08, x, .7, tz - .3, oak);
         for (const dx of [-.2, .2]) for (const dz of [-.2, .2]) box(g, .035, .4, .035, x + dx, .22, tz + dz, wood);
       }
-      merge(g);
-      const view = (x, z, r = 4.3, theta = .3) => ({x, y: .7, z, r, theta, phi: 1.04});
-      const views = {overview: {x: 0, y: -.6, z: .6, r: Math.max(w, d) * 2.2 + 3, theta: .4, phi: .8},
-        living: view(lx, lz + .35, 2.35, .05), kitchen: view(kx + .3, kz, 4, 1.1)};
-      bedrooms.forEach(([x, z], i) => views[i ? 'bedroom' + (i + 1) : 'bedroom'] = view(x, z, 4.2));
-      views.bathroom = view(bath[0], bath[1], 3.4, .5);
-      views.terrace = {x: tx, y: 1.1, z: tz, r: 3.5, theta: Math.PI + .25, phi: 1.4};
-      const spots = Object.fromEntries(Object.entries(views).filter(([key]) => key !== 'overview').map(([key, v]) => [key, [v.x, 1.4, v.z]]));
-      return {group: g, views, spots, ...plan};
     }
-    const interiors = Object.fromEntries(Object.entries(PLANS).map(([type, plan]) => [type, makePlan(type, plan)]));
+    const interiors = Object.fromEntries(Object.entries(PLANS).map(([type, plan]) => [type, makePlan(type, {...plan})]));
     const inventoryTypes = new Map((options.units || []).map(u => [String(u.id), u.type]));
-    let typology = 'suite', activeInterior = interiors.suite;
+    let typology = 'suite', activeInterior = interiors.suite, activeSlot = SLOTS[0];
     activeInterior.group.visible = true;
-    // Inside, the apartment sits on a full floor plate of the real tower: the levels below stay
-    // visible (same façade, balconies and units as the exterior) and everything above is cut away.
+    /* The whole floor around the apartment: slab, corridor, lift lobby and stair, plus the five
+       neighbouring homes as cut-away shells. The levels below stay visible (same façade as the
+       exterior) and everything from this floor up is cut away. */
     const plate = new T.Group(); home.add(plate);
-    box(plate, 16, .27, 16, 0, -.145, 0, stone);
+    const corridorFloor = mat('corridor', '#a99f8c', {roughness: .5, surface: 'paving'});
+    box(plate, FLOOR.w, .27, FLOOR.d, 0, -.145, 0, stone);
+    box(plate, FLOOR.w - .3, .03, FLOOR.d - .3, 0, -.03, 0, corridorFloor);
+    {
+      const [cx0, cx1] = FLOOR.core, [sx0, sx1] = FLOOR.stair, [c0, c1] = FLOOR.corridor, coreX = (cx0 + cx1) / 2;
+      // Lift core: two cars facing the corridor, then services and shafts up to the façade.
+      const sd = FLOOR.front - c1 - 2.3, szc = (c1 + 2.3 + FLOOR.front) / 2;
+      for (const x of [cx0 + .1, cx1 - .1]) box(plate, .2, 1.1, sd, x, .55, szc, stone);
+      box(plate, cx1 - cx0, 1.1, .2, coreX, .55, FLOOR.front - .1, stone);
+      box(plate, .15, 1.1, sd, coreX, .55, szc, stone);
+      for (const x of [cx0 + 1.05, cx1 - 1.05]) box(plate, 1.7, .02, sd - .4, x, .01, szc, dark);
+      for (const [i, x] of [[0, cx0 + 1.05], [1, cx1 - 1.05]]) {
+        box(plate, 2, 2.8, .2, x, 1.4, c1 + 2.2, stone);
+        box(plate, .15, 2.8, 2.2, i ? cx1 - .07 : cx0 + .07, 1.4, c1 + 1.1, stone);
+        box(plate, 1.6, 2.6, 1.9, x, 1.3, c1 + 1.15, dark);
+        for (const dx of [-.76, .76]) box(plate, .48, 2.8, .15, x + dx, 1.4, c1 + .07, stone);
+        box(plate, 1.04, .7, .15, x, 2.45, c1 + .07, stone);
+        box(plate, .5, 2.1, .04, x - .26, 1.05, c1 + .02, brass); box(plate, .5, 2.1, .04, x + .26, 1.05, c1 + .02, brass);
+      }
+      box(plate, .15, 2.8, 2.2, coreX, 1.4, c1 + 1.1, stone);
+      box(plate, .1, .14, .05, coreX, 1.2, c1 + .03, glow);
+      // Stair: a flight up to the half landing beside the opening of the flight down.
+      const sz = (FLOOR.back + c0) / 2, sw = sx1 - sx0;
+      box(plate, .15, 1.1, c0 - FLOOR.back, sx0 + .07, .55, sz, stone);
+      box(plate, sw, 1.1, .15, (sx0 + sx1) / 2, .55, FLOOR.back + .07, stone);
+      box(plate, sw - 1, 1.1, .15, sx0 + .5 + (sw - 1) / 2 + .5, .55, c0 - .07, stone);
+      for (let i = 0; i < 9; i++) box(plate, .95, .175 * (i + 1), .28, sx0 + .62, .0875 * (i + 1), -1.4 - i * .28, lightStone);
+      box(plate, sw - .3, .18, 1.6, (sx0 + sx1) / 2, 1.575 - .09, -4.78, lightStone);
+      box(plate, .95, .02, 2.5, sx1 - .62, .005, -2.65, dark);
+      box(plate, .05, 1, 2.5, sx1 - 1.12, .5, -2.65, metal);
+      // Corridor ends in glazing; recessed lights mark the route to each door.
+      for (const sx of [-1, 1]) box(plate, .12, 2.6, c1 - c0, sx * (FLOOR.w / 2 - .06), 1.3, (c0 + c1) / 2, homeGlass);
+      for (let x = -12; x <= 12; x += 3) box(plate, .5, .02, .5, x, .005, (c0 + c1) / 2, interiorLed);
+    }
+    merge(plate);
+    // The five neighbouring homes, rebuilt and merged whenever the apartment changes slot.
+    const shellRoot = new T.Group();
+    plate.add(shellRoot);
+    let shellFor = -1;
+    function buildShells(pos) {
+      if (shellFor === pos) return;
+      shellFor = pos;
+      for (const c of [...shellRoot.children]) { shellRoot.remove(c); if (c.isMesh) c.geometry.dispose(); }
+      for (const sl of SLOTS) {
+        if (sl.pos === pos) continue;
+        const g = new T.Group();
+        g.position.set(sl.x, 0, sl.z); g.rotation.y = sl.side > 0 ? 0 : Math.PI;
+        shellRoot.add(g);
+        makePlan(sl.type, PLANS[sl.type], false, g);
+      }
+      merge(shellRoot);
+      for (const c of [...shellRoot.children]) if (!c.isMesh) shellRoot.remove(c);
+    }
+    buildShells(0);
     function cutaway(n) {
       for (const l of levels) l.group.visible = n === null || l.n < n;
       halo.visible = n === null;
+    }
+    // Plan-local positions and cameras, mapped onto the floor at the apartment's slot.
+    const local = new T.Vector3();
+    function onFloor(view) {
+      const a = activeInterior.group.rotation.y;
+      local.set(view.x, 0, view.z).applyAxisAngle(T.Object3D.DefaultUp, a).add(activeInterior.group.position);
+      return {...view, x: local.x, z: local.z, theta: view.theta + a};
     }
     const homeLights = Array.from({length: 4}, () => { const l = new T.PointLight('#ffe0b8', 0, 8, 2); home.add(l); return l; });
 
@@ -865,25 +984,32 @@ window.Architecture = (() => {
     function wake() { if (!raf && !disposed && visible && !document.hidden) raf = requestAnimationFrame(draw); }
     function defaultView() {
       // Narrow screens keep room above the roof for the scene's title bar.
-      return {theta: .62, phi: 1.28, r: ViewerControls.fitDistance(22, 48, 22, camera.aspect, 40) * (camera.aspect < 1 ? 1.12 : .92), x: 0, y: camera.aspect < 1 ? 23 : 21, z: 0, fov: 40};
+      return {theta: .62, phi: 1.28, r: ViewerControls.fitDistance(30, 48, 22, camera.aspect, 40) * (camera.aspect < 1 ? 1.12 : .92), x: 0, y: camera.aspect < 1 ? 23 : 21, z: 0, fov: 40};
     }
     function unitView(u, focused) {
       const {side, floor} = u.userData, y = floorY(floor);
       return focused
-        ? {x: u.position.x * .5, y: y + 2.4, z: side * 2, theta: side > 0 ? .55 : Math.PI + .55, phi: 1.02, r: compact ? 56 : 44, fov: 40}
-        : {x: u.position.x, y: y + 1.5, z: u.position.z, theta: side > 0 ? .38 : Math.PI + .38, phi: 1.3, r: compact ? 52 : 42, fov: 40};
+        ? {x: u.position.x * .5, y: y + 2.4, z: side * 2, theta: side > 0 ? .55 : Math.PI + .55, phi: 1.02, r: compact ? 68 : 54, fov: 40}
+        : {x: u.position.x, y: y + 1.5, z: u.position.z, theta: side > 0 ? .38 : Math.PI + .38, phi: 1.3, r: compact ? 58 : 46, fov: 40};
     }
     function currentView() {
       if (mode === 'interior') {
-        const r = activeInterior.views[room] || activeInterior.views.overview;
-        return {...r, theta: r.theta, y: r.y + home.position.y, r: room === 'overview' ? r.r * Math.max(1, 1.2 / camera.aspect) : r.r, fov: room === 'overview' ? 40 : 56};
+        // The overview frames the apartment with the corridor, core and neighbours around it,
+        // seen from its own façade so its terrace faces the camera.
+        if (!activeInterior.views[room] || room === 'overview') {
+          const s = activeSlot, {w: pw, d: pd} = activeInterior, cz = s.facade - s.side * pd / 2;
+          const r = ViewerControls.fitDistance(Math.max(pw, pd) * 1.7 + 5, 5, pd + 6, camera.aspect, 40) * .92;
+          return {x: s.x * .8, y: home.position.y, z: cz * .6, theta: s.side > 0 ? .38 : Math.PI + .38, phi: .84, r, fov: 40};
+        }
+        const v = onFloor(activeInterior.views[room]);
+        return {...v, y: v.y + home.position.y, fov: 56};
       }
       if (aim.startsWith('amenity:')) return {...AMENITIES[aim.slice(8)].view, fov: 40};
       if (focus !== null) {
         if (selected && selected.userData.floor === focus) return unitView(selected, true);
         const angles = [.55, Math.PI - .55, Math.PI + .55, -.55];
         const theta = angles.reduce((a, b) => Math.abs(wrap(b - pose.theta)) < Math.abs(wrap(a - pose.theta)) ? b : a);
-        return {x: 0, y: floorY(focus) + 2.4, z: 0, theta, phi: 1, r: compact ? 62 : 50, fov: 40};
+        return {x: 0, y: floorY(focus) + 2.4, z: 0, theta, phi: 1, r: compact ? 74 : 60, fov: 40};
       }
       if (aim === 'unit' && selected) return unitView(selected, false);
       return defaultView();
@@ -921,16 +1047,23 @@ window.Architecture = (() => {
       return !reduced && options.orbit !== false && !seq && !intro && !hovered && (shown === 'building' ? focus === null : room === 'overview');
     }
 
+    // The apartment opens in its own slot on the floor: the chosen unit's, or for a sample view
+    // the first slot of that typology. Its shell steps aside for the furnished plan.
     function placeHome() {
       const n = selected ? selected.userData.floor : (focus ?? lastFloor);
       const y = floorY(n) + .135;
       home.position.set(0, y, 0);
       cutaway(n);
+      activeSlot = selected ? SLOTS[selected.userData.pos] : SLOTS.find(sl => sl.type === typology) || SLOTS[0];
+      const g = activeInterior.group;
+      g.position.set(activeSlot.x, 0, activeSlot.facade - activeSlot.side * activeInterior.d / 2);
+      g.rotation.y = activeSlot.side > 0 ? 0 : Math.PI;
+      buildShells(activeSlot.pos);
       const lamps = ['living', 'kitchen', 'bedroom', 'terrace'];
-      homeLights.forEach((l, i) => { const v = activeInterior.views[lamps[i]]; l.position.set(v.x, 2.2, v.z); });
+      homeLights.forEach((l, i) => { const v = onFloor(activeInterior.views[lamps[i]]); l.position.set(v.x, 2.2, v.z); });
     }
     function positionSun() {
-      const inside = shown === 'interior', c = sun.shadow.camera, span = inside ? 16 : 62;
+      const inside = shown === 'interior', c = sun.shadow.camera, span = inside ? 22 : 62;
       sun.target.position.copy(inside ? home.position : v.set(0, 18, 0));
       sun.position.copy(sun.target.position).addScaledVector(light.sunAt, inside ? 80 : 150);
       Object.assign(c, {left: -span, right: span, top: span, bottom: -span, near: .5, far: inside ? 200 : 360});
@@ -1081,7 +1214,7 @@ window.Architecture = (() => {
           for (const [key, a] of Object.entries(AMENITIES)) add(`amenity:${key}`, ...a.at, a.normal);
           if (selected) { selected.getWorldPosition(w); add(`selected:${selected.userData.unitId}`, w.x, w.y + 1.9, w.z, [0, 0, selected.userData.side]); }
         } else for (const u of units) if (u.userData.floor === focus && (!paintMap || paintMap[u.userData.unitId] !== 'dim')) { u.getWorldPosition(w); add(`unit:${u.userData.unitId}`, w.x, w.y + 1.75, w.z); }
-      } else for (const [key, p] of Object.entries(activeInterior.spots)) if (key !== room) add(`room:${key}`, p[0], p[1] + home.position.y, p[2]);
+      } else for (const [key, p] of Object.entries(activeInterior.spots)) if (key !== room) { const q = onFloor({x: p[0], z: p[2], theta: 0}); add(`room:${key}`, q.x, p[1] + home.position.y, q.z); }
       return list;
     }
     function draw() {
@@ -1151,7 +1284,7 @@ window.Architecture = (() => {
       return {r: pose.r * 1.6, phi: Math.max(.45, pose.phi - .25)};
     }
     function entryView() {
-      if (shown === 'interior') return {x: 0, y: home.position.y + 1.4, z: 3, theta: .18, phi: 1.38, r: 24, fov: 46};
+      if (shown === 'interior') { const v = onFloor({x: 0, z: activeInterior.d / 2, theta: .18}); return {...v, y: home.position.y + 1.4, phi: 1.38, r: 24, fov: 46}; }
       const u = frontUnit(), side = u.userData.side;
       return {x: u.position.x, y: floorY(u.userData.floor) + 1.5, z: u.position.z, theta: side > 0 ? .15 : Math.PI + .15, phi: 1.38, r: 11, fov: 46};
     }
@@ -1196,8 +1329,9 @@ window.Architecture = (() => {
       if (!activeInterior.views[room]) room = 'overview';
       canvas.dataset.room = room;
       if (shown === 'interior') {
+        const before = activeSlot;
         placeHome();
-        if (changed) fly(currentView(), 900);
+        if (changed || activeSlot !== before) fly(currentView(), 900);
       }
       if (u) u.add(halo);
       if (reduced || !u) { selectedMat.emissiveIntensity = .45; halo.material.opacity = .14; }
