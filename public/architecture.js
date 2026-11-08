@@ -694,7 +694,7 @@ window.Architecture = (() => {
     // One plan builder for both the furnished apartment and the neighbouring "shells" around it:
     // shells keep floor, walls, door, glazing and terrace so the floor's distribution reads clearly.
     function makePlan(type, plan, full = true, into = null) {
-      const g = into || new T.Group(), {w, d, bedrooms, social, bath, door} = plan;
+      const g = into || new T.Group(), {w, d, bedrooms, bath, door} = plan;
       // Shells share a handful of materials so all five neighbours merge into a few meshes.
       const trim = full ? smokedOak : lightStone, skirt = full ? oak : lightStone;
       if (full) { g.name = 'interior-' + type; g.userData.typology = type; g.visible = false; home.add(g); }
@@ -794,7 +794,7 @@ window.Architecture = (() => {
       } else dining(g, plan.beds === 1 ? -.9 : -1, social + 2.2, plan.beds === 3 ? 6 : 4);
       plant(g, w / 2 - .5, .04, d / 2 - .5, .65);
       // A slim bookcase and a work ledge give each second/third bedroom a use.
-      bedrooms.slice(1).forEach(([x, z], i) => {
+      bedrooms.slice(1).forEach(([x, z]) => {
         box(g, 1, .06, .45, x, .76, z + 1.55, oak);
         box(g, .04, .72, .4, x - .44, .38, z + 1.55, wood);
         box(g, .04, .72, .4, x + .44, .38, z + 1.55, wood);
@@ -1421,7 +1421,7 @@ window.Architecture = (() => {
         resize.disconnect();
         observer.disconnect();
         document.removeEventListener('visibilitychange', visibility);
-        control.cancel();
+        control.detach ? control.detach() : control.cancel();
         const seen = new Set();
         scene.traverse(o => { for (const item of [o.geometry, o.material]) if (item && !seen.has(item)) { seen.add(item); item.dispose(); } });
         boxGeo.dispose();

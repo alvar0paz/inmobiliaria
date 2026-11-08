@@ -1,6 +1,0 @@
-{
-  "tool": "Built-in image_gen",
-  "date": "2026-10-27",
-  "asset": "dist/assets/residencia-exterior-render.png",
-  "prompt": "Use case: precise-object-edit. Asset type: conceptual architectural render for a reusable real estate website demo. Input image is the edit target. Remove only the vertical Pixel word/sign and its colored small logo marks from the dark gray facade panel, filling it with the same dark gray facade material and matching panel seams and lighting. Preserve the entire architecture, colors, windows, balconies, people, vehicles, street, surroundings, aspect ratio and framing. No replacement text or logo. Keep opaque background. Output one clean photorealistic render."
-}

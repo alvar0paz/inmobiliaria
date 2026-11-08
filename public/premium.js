@@ -1,6 +1,6 @@
 (() => {
   const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
-  let lang = new URLSearchParams(location.search).get('lang') === 'en' ? 'en' : 'es', step = 0, room = 'overview', selected = null, engine = null, paintStates = {};
+  let lang = document.documentElement.lang === 'en' ? 'en' : 'es', step = 0, room = 'overview', selected = null, engine = null, paintStates = {};
   const feed = $('#demo-data') ? JSON.parse($('#demo-data').textContent) : null, p = feed?.project;
   const L = (es, en) => lang === 'es' ? es : en;
   const copy = [
@@ -35,17 +35,14 @@
   }
 
 
+  // Static text is already in the page language; site.js swaps it in place and announces the switch.
   function translate() {
-    document.documentElement.lang = lang;
-    $$('[data-es][data-en]').forEach(e => e.innerHTML = e.dataset[lang]);
-    $('#language').textContent = lang === 'es' ? 'EN' : 'ES';
-    $$('a[href^="/"]').forEach(a => { const url = new URL(a.getAttribute('href'), location.origin); url.searchParams.set('lang', lang); a.setAttribute('href', url.pathname + url.search + url.hash); });
+    lang = document.documentElement.lang === 'en' ? 'en' : 'es';
     if (p) { renderStep(); list(); selection(); }
     clearHotspots();
-    document.dispatchEvent(new Event('demo:language'));
     if ($('#architecture')) $('#architecture').setAttribute('aria-label', L('Modelo arquitectónico 3D. Arrastra para girar, usa las flechas o los botones de zoom.', '3D architectural model. Drag to rotate, use arrow keys or zoom buttons.'));
   }
-  $('#language').onclick = () => { lang = lang === 'es' ? 'en' : 'es'; const url = new URL(location.href); url.searchParams.set('lang', lang); history.replaceState(null, '', url); translate(); };
+  document.addEventListener('demo:language', translate);
 
   function sceneName() {
     const floor = +$('#floor').value, u = selected;
@@ -157,8 +154,8 @@
     const a = $('#enquire');
     a.textContent = L('Preparar mi consulta ↗', 'Prepare my enquiry ↗');
     a.onclick = null;
-    const params = new URLSearchParams({lang, source: 'demo', unit: u.id, floor: String(u.floor), type: u.type, area: String(u.m2)});
-    a.href = '/contacto/?' + params;
+    const params = new URLSearchParams({source: 'demo', unit: u.id, floor: String(u.floor), type: u.type, area: String(u.m2)});
+    a.href = (lang === 'en' ? '/en' : '') + '/contacto/?' + params;
 
   }
   function changeFloor(value) {
@@ -251,7 +248,6 @@
   }
 
   translate();
-  $('#print-proforma')?.addEventListener('click', () => window.print());
   if (!canvas) return;
   $$('[data-light]').forEach(b => b.onclick = () => { engine?.lighting(+b.dataset.light); $$('[data-light]').forEach(x => x.setAttribute('aria-pressed', String(x === b))); });
   $$('[data-camera]').forEach(b => b.onclick = () => engine?.command(b.dataset.camera));
@@ -262,17 +258,25 @@
     st.classList.add('is-error');
     canvas.dataset.ready = 'error';
   }
-  canvas.addEventListener('webglcontextlost', e => { e.preventDefault(); fallback(); });
-  canvas.addEventListener('webglcontextrestored', () => location.reload());
-  AlphaAssets.whenVisible(canvas, () => AlphaAssets.three().then(() => {
+  function start(restored = false) {
     engine = Architecture.create(THREE, canvas, p ? id => { if (step === 1) enterUnit(id); else { go(1); choose(id); } } : null, {
-      intro: !!p, orbit: !!p,
+      intro: !!p && !restored, orbit: !!p,
       units: p?.units,
-      onReady: () => { $('#scene-status').hidden = true; canvas.dataset.ready = 'true'; },
+      onReady: () => { const st = $('#scene-status'); st.hidden = true; st.classList.remove('is-error'); canvas.dataset.ready = 'true'; },
       onRender: renderHotspots,
       onHover: p ? hoverUnit : null,
     });
-    if (p) go(step); else engine.lighting(2);
-  }).catch(fallback));
+    const light = $('[data-light][aria-pressed="true"]');
+    if (p) { go(step); if (restored && light) engine.lighting(+light.dataset.light); } else engine.lighting(+(light?.dataset.light ?? 2));
+  }
+  // Mobile browsers drop the GPU context when memory runs low or the tab is backgrounded.
+  // Show the fallback while it is gone, then rebuild the scene where the visitor left it.
+  canvas.addEventListener('webglcontextlost', e => { e.preventDefault(); fallback(); });
+  canvas.addEventListener('webglcontextrestored', () => {
+    try { engine?.dispose(); } catch { /* the old context is already gone */ }
+    engine = null;
+    try { start(true); } catch { location.reload(); }
+  });
+  AlphaAssets.whenVisible(canvas, () => AlphaAssets.three().then(() => start()).catch(fallback));
   window.addEventListener('pagehide', e => { if (!e.persisted) engine?.dispose(); });
 })();

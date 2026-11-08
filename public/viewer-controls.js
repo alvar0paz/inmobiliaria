@@ -66,25 +66,29 @@
 
   function bind(canvas, callbacks) {
     const control = gestures(callbacks);
-    canvas.addEventListener('pointerdown', e => {
+    // One signal removes every listener, so a viewer can be rebuilt on the same canvas.
+    const listeners = new AbortController();
+    const on = (type, handler, options = {}) => canvas.addEventListener(type, handler, {...options, signal: listeners.signal});
+    control.detach = () => { control.cancel(); listeners.abort(); };
+    on('pointerdown', e => {
       if (!control.down(e)) return;
       canvas.focus({preventScroll:true});
       canvas.setPointerCapture(e.pointerId);
     });
-    canvas.addEventListener('pointermove', e => {
+    on('pointermove', e => {
       if (!control.move(e) && e.pointerType === 'mouse') callbacks.hover?.(e);
     });
-    canvas.addEventListener('pointerup', e => control.up(e));
-    canvas.addEventListener('pointercancel', e => control.up(e, true));
-    canvas.addEventListener('lostpointercapture', e => control.up(e, true));
-    canvas.addEventListener('pointerleave', () => callbacks.leave?.());
-    canvas.addEventListener('wheel', e => {
+    on('pointerup', e => control.up(e));
+    on('pointercancel', e => control.up(e, true));
+    on('lostpointercapture', e => control.up(e, true));
+    on('pointerleave', () => callbacks.leave?.());
+    on('wheel', e => {
       // Scrolling past a viewer should not trap the page. Clicking it opts into wheel zoom.
       if (document.activeElement !== canvas && !e.ctrlKey && !e.metaKey) return;
       e.preventDefault();
       callbacks.zoom(wheelScale(e.deltaY, e.deltaMode, canvas.clientHeight));
-    }, {passive:false});
-    canvas.addEventListener('keydown', e => {
+    }, {passive: false});
+    on('keydown', e => {
       // Descendant form controls never share this handler.
       if (e.target !== canvas) return;
       const actions = {ArrowLeft:()=>callbacks.rotate(-28,0), ArrowRight:()=>callbacks.rotate(28,0),
@@ -93,7 +97,7 @@
         Home:()=>callbacks.reset?.(), Escape:()=>{control.cancel(); callbacks.escape?.(); canvas.blur();}};
       if (actions[e.key]) { e.preventDefault(); actions[e.key](); }
     });
-    canvas.addEventListener('blur', () => control.cancel());
+    on('blur', () => control.cancel());
     return control;
   }
   return {gestures, wheelScale, fitDistance, bind, clamp};

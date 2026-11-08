@@ -1,28 +1,20 @@
 (() => {
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)], state={lang:document.documentElement.lang};
 const tier='basico', Sound={tick(){}};
-const projectMode=!!$('#project-explorer');
-let selectedHome=null;
-function rememberHome(p,u){if(!projectMode)return;selectedHome={...u,project:p.slug};document.dispatchEvent(new CustomEvent('pixel:interest',{detail:selectedHome}))}
-document.addEventListener('pixel:interest',event=>{if(!event.detail?.id)selectedHome=null});
 const D=JSON.parse($('#demo-data').textContent);
 const en=()=>state.lang==='en', L=(es,e)=>en()?e:es, tr=a=>a[en()?1:0];
 const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
-const COLOR={disponible:'#d5bc7c',reservado:'#7f8ea3',vendido:'#3b423b'};
 const P={};D.projects.forEach(p=>{P[p.slug]=p;p.sellable=true;p.priceAge=5});
 const price=(p,u)=>Math.round(u.m2*p.m2_price*(1+(u.floor-2)*.008)/100)*100;
 const money=n=>'USD '+Math.round(n).toLocaleString(en()?'en-US':'es-EC',{maximumFractionDigits:0});
 const priceOk=p=>p.sellable&&p.priceAge<=D.priceValidDays;
 const month=ym=>{const [y,m]=ym.split('-');return new Date(y,m-1,1).toLocaleDateString(en()?'en-US':'es-EC',{month:'short',year:'numeric'})};
-const tyName=k=>tr(D.typologies[k].name), stName=k=>tr(D.status[k]), usName=k=>tr(D.unitStatus[k]);
+const tyName=k=>tr(D.typologies[k].name), stName=k=>tr(D.status[k]);
 const free=p=>p.units.filter(u=>u.status==='disponible');
 const fromPrice=(p,type)=>{const us=free(p).filter(u=>!type||u.type===type);return us.length?Math.min(...us.map(u=>price(p,u))):null};
 const typesOf=p=>Object.keys(D.typologies).filter(k=>p.units.some(u=>u.type===k));
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const clock=()=>new Date().toLocaleTimeString(en()?'en-US':'es-EC',{hour:'2-digit',minute:'2-digit'});
-const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
-const priceLabel=(p,u)=>u.status==='vendido'?'—':!p.sellable?L('No comercializable','Not for sale'):priceOk(p)?money(price(p,u)):L('Consultar precio','Ask for price');
-const legend=units=>{const c={disponible:0,reservado:0,vendido:0};units.forEach(u=>c[u.status]++);return Object.keys(c).map(k=>`<span><i style="background:${COLOR[k]}"></i>${usName(k)} <b>${c[k]}</b></span>`).join('')};
 const hooks={change:[],lang:[]}, on=(e,f)=>hooks[e].push(f), fire=e=>hooks[e].forEach(f=>f());
 
 function log(html){const ol=$('#event-log');if(!ol)return;const li=document.createElement('li');li.innerHTML=`<span>${new Date().toLocaleTimeString('es-EC',{hour12:false})}</span> ${html}`;ol.prepend(li);while(ol.children.length>40)ol.lastChild.remove()}
@@ -35,7 +27,7 @@ const Basic=(()=>{
  function fill(){f.project.value=cur.slug;f.m2_price.value=cur.m2_price;f.status.value=cur.status;f.progress.value=cur.progress;f.progress_out.value=cur.progress+'%';f.sellable.checked=cur.sellable;[...f.age].forEach(r=>r.checked=+r.value===cur.priceAge)}
  function note(){const n=$('#cms-note');n.textContent=!cur.sellable?L('Regla activa: no comercializable. El sitio sigue publicado, sin botones de compra ni formularios de venta.','Rule active: not for sale. The site stays live, without purchase buttons or sales forms.'):cur.priceAge>D.priceValidDays?L(`Regla activa: precios con ${cur.priceAge} días. Se muestra “Consultar precio” en todos los sitios y se avisa al responsable comercial.`,`Rule active: prices are ${cur.priceAge} days old. “Ask for price” is shown on every site and the sales lead is notified.`):L('Esta demo local actualiza la tarjeta, el sitio, el JSON-LD, la tabla de estado, los sitemaps, el llms.txt y el feed.','This local demo updates the card, the site, the JSON-LD, the status table, the sitemaps, llms.txt and the feed.')}
  function feedJSON(){const ok=priceOk(cur);const o={nombre:cur.name,nombre_completo:`Edificio ${cur.name} · tnkoo Software Lab`,dominio:cur.domain,sector:cur.sector,estado:cur.status,avance_obra:cur.progress,fecha_estimada_entrega:cur.delivery,comercializable:cur.sellable,precio_m2_usd:ok?cur.m2_price:null,nota_precio:ok?null:'Consultar precio',tipologias:typesOf(cur).map(k=>({tipo:D.typologies[k].name[0],dormitorios:D.typologies[k].beds,desde_usd:ok?fromPrice(cur,k):null,disponibles:free(cur).filter(u=>u.type===k).length})),publisher:'https://inmobiliaria.alvaropaz.com/',ultima_actualizacion:new Date().toISOString().slice(0,10)};
-  return esc(JSON.stringify(o,null,2)).replace(/(&quot;[^&]*?&quot;)(\s*:)?|\b(true|false|null)\b|-?\b\d+(?:\.\d+)?\b/g,(m,s,colon,lit)=>s?`<span class="${colon?'k':'s'}">${s}</span>${colon||''}`:`<span class="n">${m}</span>`)}
+  return esc(JSON.stringify(o,null,2)).replace(/(&quot;[^&]*?&quot;)(\s*:)?|\b(true|false|null)\b|-?\b\d+(?:\.\d+)?\b/g,(m,s,colon)=>s?`<span class="${colon?'k':'s'}">${s}</span>${colon||''}`:`<span class="n">${m}</span>`)}
  function outputs(flash){
   const ok=priceOk(cur),from=fromPrice(cur);
   $('#out-card').innerHTML=`<div class="pf-card-mini"><div><h4>${cur.name}</h4><p>${esc(cur.sector)} · Quito</p><span class="pf-badge gold">${stName(cur.status)}</span><span class="pf-badge">${free(cur).length} ${L('disponibles','available')}</span><span class="pf-price ${ok?'':'ask'}">${!cur.sellable?L('Sin unidades a la venta','No units for sale'):ok&&from?L('Desde ','From ')+money(from):L('Consultar precio','Ask for price')}</span></div></div>`;
