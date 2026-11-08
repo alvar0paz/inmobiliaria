@@ -1,3 +1,4 @@
+import { legacyLanguageRedirect } from '../../lib/legacy-language.mjs';
 // Serves the generated pages in public/ (Spanish at /, English under /en/).
 const pages = import.meta.glob('../../public/**/*.html', {query: '?raw', import: 'default', eager: true}) as Record<string, string>;
 
@@ -8,6 +9,8 @@ const html = (body: string, status = 200) => new Response(body, {status, headers
 
 export function GET(request: Request) {
   const url = new URL(request.url);
+  const legacy = legacyLanguageRedirect(url);
+  if (legacy) return Response.redirect(legacy, 301);
   const path = url.pathname.endsWith('/') ? url.pathname : url.pathname + '/';
   const english = path === '/en/' || path.startsWith('/en/');
   const bare = english ? path.slice(3) : path;
