@@ -1,6 +1,15 @@
 // Site-wide behaviour on every page: switch language in place (keeping the visitor's state) while the
 // address bar moves between the Spanish page and its /en/ twin, and the proforma print button.
 (() => {
+  const legacyURL = new URL(location.href);
+  const legacyLang = legacyURL.searchParams.get('lang');
+  if (legacyLang === 'en' || legacyLang === 'es') {
+    const bare = legacyURL.pathname.replace(/^\/en(?=\/|$)/, '') || '/';
+    legacyURL.pathname = legacyLang === 'en' ? '/en' + bare : bare;
+    legacyURL.searchParams.delete('lang');
+    location.replace(legacyURL.href);
+    return;
+  }
   const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
   const isPage = url => url.origin === location.origin && !/^\/(api|consultas|fonts|vendor)\//.test(url.pathname) && !/\.[a-z0-9]+$/i.test(url.pathname);
   const twin = (path, lang) => {
