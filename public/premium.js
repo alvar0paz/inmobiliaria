@@ -11,6 +11,8 @@
   ];
   const STATUS = {disponible: ['Disponible', 'Available', 'available'], reservado: ['Reservado', 'Reserved', 'reserved'], vendido: ['Vendido', 'Sold', 'sold']};
   const AMENITY = {pool: ['Piscina en la azotea', 'Rooftop pool', 'left'], garden: ['Jardín en altura', 'Sky garden', 'right'], terraces: ['Terrazas privadas', 'Private terraces', 'right'], lobby: ['Lobby y acceso', 'Lobby & entrance', 'left']};
+  // Interior area from the plan, plus the terrace when the home has one.
+  const area = u => u.terrace ? `${u.m2} m² + ${u.terrace} m² ${L('terraza', 'terrace')}` : `${u.m2} m²`;
   const ROOM = {living: ['Sala', 'Living'], kitchen: ['Cocina', 'Kitchen'], bedroom: ['Dormitorio principal', 'Main bedroom'], bedroom2: ['Dormitorio 2', 'Bedroom 2'], bedroom3: ['Dormitorio 3', 'Bedroom 3'], bathroom: ['Baño', 'Bathroom'], terrace: ['Terraza', 'Terrace']};
   const status = u => L(...STATUS[u.status]);
   const typeName = u => feed.typologies[u.type].name[lang === 'es' ? 0 : 1];
@@ -151,7 +153,7 @@
       return;
     }
     const u = selected, st = status(u);
-    e.innerHTML = `<b>${p.name} · ${L('Unidad', 'Unit')} ${u.id}</b><span>${L('Piso', 'Floor')} ${u.floor} · ${u.m2} m² · ${st}</span>`;
+    e.innerHTML = `<b>${p.name} · ${L('Unidad', 'Unit')} ${u.id}</b><span>${L('Piso', 'Floor')} ${u.floor} · ${area(u)} · ${st}</span>`;
     const a = $('#enquire');
     a.textContent = L('Preparar mi consulta ↗', 'Prepare my enquiry ↗');
     a.onclick = null;
@@ -242,7 +244,7 @@
     if (!u) return clearTip();
     canvas.style.cursor = 'pointer';
     const b = wrap.getBoundingClientRect();
-    tip.innerHTML = `<b>${L('Unidad', 'Unit')} ${u.id} · ${L('Piso', 'Floor')} ${u.floor}</b><span>${typeName(u)} · ${u.m2} m²</span><em data-state="${STATUS[u.status][2]}">${status(u)}</em><small>${L('Toca para entrar', 'Tap to step inside')}</small>`;
+    tip.innerHTML = `<b>${L('Unidad', 'Unit')} ${u.id} · ${L('Piso', 'Floor')} ${u.floor}</b><span>${typeName(u)} · ${area(u)}</span><em data-state="${STATUS[u.status][2]}">${status(u)}</em><small>${L('Toca para entrar', 'Tap to step inside')}</small>`;
     tip.hidden = false;
     const left = Math.min(x - b.left + 16, b.width - tip.offsetWidth - 12), top = Math.min(y - b.top + 16, b.height - tip.offsetHeight - 12);
     tip.style.transform = `translate3d(${left}px,${top}px,0)`;

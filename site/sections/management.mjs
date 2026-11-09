@@ -11,7 +11,7 @@ export function availabilityTable(p) {
     const free = units.filter(u => u.status === 'disponible');
     const price = free.length ? Math.min(...free.map(u => unitPrice(p, u))) : null;
     const m2 = units.map(u => u.m2);
-    rows += `<tr><th scope="row">${t(...ty.name)}</th><td>${ty.beds || '—'}</td><td>${fmt0(Math.min(...m2))}–${fmt0(Math.max(...m2))} m²</td><td>${price ? usd(price) : t('Agotado', 'Sold out')}</td><td><b>${free.length}</b> / ${units.length}</td></tr>`;
+    rows += `<tr><th scope="row">${t(...ty.name)}</th><td>${ty.beds || '—'}</td><td>${Math.min(...m2) === Math.max(...m2) ? fmt0(m2[0]) : `${fmt0(Math.min(...m2))}–${fmt0(Math.max(...m2))}`} m²</td><td>${price ? usd(price) : t('Agotado', 'Sold out')}</td><td><b>${free.length}</b> / ${units.length}</td></tr>`;
   }
   return `<table class="pf-table"><caption>${p.name} · ${p.sector}</caption><thead><tr><th scope="col">${t('Tipología', 'Type')}</th><th scope="col">${t('Dorm.', 'Beds')}</th><th scope="col">${t('Superficie', 'Area')}</th><th scope="col">${t('Desde', 'From')}</th><th scope="col">${t('Disponibles', 'Available')}</th></tr></thead><tbody>${rows}</tbody></table>`;
 }

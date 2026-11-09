@@ -29,6 +29,10 @@ Static geometry is merged per material (about 195 draw calls instead of about 3,
 ## Typical floor
 28 × 18.2 m plate with a central corridor. Front row (street side): 01 suite (7.6 m), 02 two-bed (10 m), lift core (4.2 m), 03 studio (6.2 m). Back row: 04 studio, 05 three-bed (12 m), 06 suite, stair (2.2 m). Unit widths, depths and 1.95 m terraces come from the same plans used for the furnished interiors (`PLANS`, `FLOOR` and `SLOTS` in `public/building-tower.js`), so the exterior, the step-02 floor and the step-03 apartment are one consistent model.
 
+Each plan puts every habitable room on the glazed façade: the living room and the bedrooms share the façade band (3.4–4.3 m deep) and the terrace, while the entry, bathroom and kitchen run along the corridor side. The first bedroom opens from the living room, the others from the hallway. Sales areas come from the plans: studio 36.0 m², suite 53.2 m², two-bed 76.0 m², three-bed 103.2 m², each plus its terrace (12.1–23.4 m²); `tests/plans.test.mjs` keeps the inventory, the plans and the room cameras in step. Corner homes 01, 03 and 04 also have a window on the side façade.
+
+The ground floor is a glazed lobby set back behind a concrete colonnade on the party-wall lines, on a stone plinth, with a concrete band marking the base; a concrete crown with an LED edge closes the top. People and cars on the plaza and street give the scene its scale.
+
 ## Development
 ```
 npm ci

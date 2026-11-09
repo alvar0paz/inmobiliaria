@@ -6,14 +6,30 @@ window.TowerBuilding = (() => {
   'use strict';
   const FH = 3.2, ROOF = 42;
   const floorY = n => 3.5 + (n - 2) * FH;
-  // Concept plans in metres; +z is the glazed façade and terrace, -z the corridor wall with the
-  // entry door. Inventory metadata selects a plan; no unit-ID inference.
+  /* Concept plans in metres; +z is the glazed façade and terrace, -z the corridor wall with the entry door.
+     Every habitable room sits in the façade band (depth `band`), so living room and bedrooms all get
+     daylight and the terrace; the entry, bathroom and kitchen line the corridor side. `living` and each
+     room's x0..x1 split the façade; `bx` centres the bed; `kitchen` is the counter length along the
+     corridor wall; `dining` is [x, z, seats]. Inventory metadata selects a plan; no unit-ID inference. */
   const PLANS = {
-    estudio: {w: 6.2, d: 5.8, beds: 0, bedrooms: [[1.35, -1.5, 1.5]], social: .2, bath: [-2.1, -1.85], door: -.6},
-    suite: {w: 7.6, d: 7, beds: 1, bedrooms: [[1.9, -1.9, 1.6]], social: .3, bath: [-2.65, -2.3], door: -.85, left: .05},
-    depa2: {w: 10, d: 7.6, beds: 2, bedrooms: [[-.5, -2.2, 1.6], [2.95, -2.2, 1.2]], social: .35, bath: [-4, -2.6], door: -2.6, left: -2.1},
-    depa3: {w: 12, d: 8.6, beds: 3, bedrooms: [[-1.72, -2.7, 1.6], [1.3, -2.7, 1.2], [4.3, -2.7, 1.2]], social: -.15, bath: [-5, -3.1], door: -3.6, left: -3.1},
+    estudio: {w: 6.2, d: 5.8, beds: 0, band: 3.4, living: [-3.1, .4], rooms: [{x0: .4, x1: 3.1, bed: 1.4, bx: 1.75, wardrobe: false}], kitchen: 1.9},
+    suite: {w: 7.6, d: 7, beds: 1, band: 3.9, living: [-3.8, .4], rooms: [{x0: .4, x1: 3.8, bed: 1.6, bx: 1.95}], kitchen: 2.4, dining: [2.3, -1.75, 4]},
+    depa2: {w: 10, d: 7.6, beds: 2, band: 4, living: [-5, -1.4], rooms: [{x0: -1.4, x1: 2, bed: 1.6, bx: .15}, {x0: 2, x1: 5, bed: 1.2, bx: 3.35}], kitchen: 2.5, dining: [2.6, -2, 4]},
+    depa3: {w: 12, d: 8.6, beds: 3, band: 4.3, living: [-6, -2.4], rooms: [{x0: -2.4, x1: .8, bed: 1.6, bx: -.95}, {x0: .8, x1: 3.4, bed: 1.05, bx: 1.955}, {x0: 3.4, x1: 6, bed: 1.05, bx: 4.555}], kitchen: 2.5, dining: [2.6, -2.2, 6]},
   };
+  // Shared geometry derived from each plan: the bathroom in the corridor corner, the front door beside
+  // it, the kitchen run along the corridor wall, and where the façade band begins.
+  for (const plan of Object.values(PLANS)) {
+    const {w, d} = plan;
+    plan.zb = d / 2 - plan.band;
+    plan.bath = [-w / 2 + .96, -d / 2 + 1.11];
+    plan.door = -w / 2 + 2.47;
+    plan.kx = plan.door + .6 + plan.kitchen / 2;
+    plan.kz = -d / 2 + .36;
+    plan.bedZ = plan.zb + 1.17;
+    plan.area = +(w * d).toFixed(1);
+    plan.terrace = +(w * 1.95).toFixed(1);
+  }
   /* The typical floor, sized so the real plans fit: 28 × 18.2 m with a central corridor.
      Front row (+z): 01 suite · 02 two-bed · lift core · 03 studio. Back row (-z): 04 studio ·
      05 three-bed · 06 suite · stair. Each façade carries 1.95 m terraces. */
@@ -25,6 +41,8 @@ window.TowerBuilding = (() => {
     const {w, d} = PLANS[s.type], facade = s.side > 0 ? FLOOR.front : FLOOR.back;
     return {...s, w, d, x: s.x0 + w / 2, facade, z: facade - s.side * d / 2};
   });
+  // Corner homes (01, 03, 04) get a window on the side wall, centred on their façade band: [side, z, width].
+  const SIDE_WINDOWS = [[-1, FLOOR.front - PLANS.suite.band / 2, 2.6], [1, FLOOR.front - PLANS.estudio.band / 2, 2.4], [-1, FLOOR.back + PLANS.estudio.band / 2, 2.4]];
   // Points of interest on the exterior, with the camera that frames each one.
   const AMENITIES = {
     pool: {at: [3.75, ROOF + .9, -5], view: {theta: .95, phi: .82, r: 34, x: 3, y: ROOF, z: -4}},
@@ -36,14 +54,29 @@ window.TowerBuilding = (() => {
   function build(kit, {home, inventory, unitMaterial}) {
     const {T, mat, box, cyl, sphere, plant, merge, group} = kit, {smooth, seeded} = kit.util;
     const {stone, lightStone, wood, oak, dark, metal, glass, leaf, water, fabric, cushion, brass, glow, led} = kit.palette;
-    const lobbyGlass = mat('lobbyGlass', '#9fb9b6', {metalness: .2, roughness: .05, transparent: true, opacity: .5, depthWrite: false, emissive: '#ffcf96', emissiveIntensity: 0, noShadow: true, envMapIntensity: 1.5});
+    const lobbyGlass = mat('lobbyGlass', '#7f9c9a', {metalness: .25, roughness: .05, transparent: true, opacity: .64, depthWrite: false, emissive: '#ffcf96', emissiveIntensity: 0, noShadow: true, envMapIntensity: 1.7});
+    // Exposed structure and the base/crown bands: a warm grey that reads against the pale façade.
+    const concrete = mat('concrete', '#a39b8e', {roughness: .88, surface: 'plaster'});
 
     /* ---------- The tower, split into levels that can lift apart ---------- */
     const building = new T.Group(), levels = [], units = [];
     const level = (n, delay) => { const group = new T.Group(); building.add(group); const l = {group, n, lift: 0, target: 0, ghost: false, delay}; levels.push(l); return l; };
     const base = level(1, .2).group, [cx0, cx1] = FLOOR.core, [sx0, sx1] = FLOOR.stair, coreX = (cx0 + cx1) / 2, stairX = (sx0 + sx1) / 2;
-    box(base, 26.4, 3.15, 16.6, 0, 1.8, 0, lobbyGlass);
-    for (let x = -13; x <= 13; x += 1.625) box(base, .11, 3.5, .14, x, 1.8, 8.35, metal);
+    /* Ground floor: a glazed lobby set back behind a concrete colonnade on the party-wall lines, on a
+       stone plinth, under a concrete band that marks the base of the tower. */
+    box(base, 27, .3, 17.2, 0, .15, 0, stone);
+    box(base, 26.4, 3.05, 16.6, 0, 1.83, 0, lobbyGlass);
+    for (let x = -13.2; x <= 13.21; x += 1.65) for (const z of [8.32, -8.32]) box(base, .09, 3.05, .2, x, 1.83, z, metal);
+    for (let z = -8.3; z <= 8.31; z += 1.66) for (const x of [-13.22, 13.22]) box(base, .2, 3.05, .09, x, 1.83, z, metal);
+    for (const y of [.36, 2.85]) {
+      for (const z of [8.32, -8.32]) box(base, 26.5, .09, .2, 0, y, z, metal);
+      for (const x of [-13.22, 13.22]) box(base, .2, .09, 16.7, x, y, 0, metal);
+    }
+    const columns = {front: [-13.7, -9.9, -6.4, -1.4, 3.6, 7.8, 13.7], back: [-13.7, -7.8, -1.8, 4.2, 11.8, 13.7]};
+    for (const [row, list] of Object.entries(columns)) for (const x of list) box(base, .6, 3.35, .6, x, 1.675, row === 'front' ? 8.75 : -8.75, concrete);
+    for (const z of [-3, 3]) for (const x of [-13.7, 13.7]) box(base, .6, 3.35, .6, x, 1.675, z, concrete);
+    for (const z of [FLOOR.front + .05, FLOOR.back - .05]) box(base, FLOOR.w + .3, .6, .3, 0, 3.22, z, concrete);
+    for (const x of [-FLOOR.w / 2 - .05, FLOOR.w / 2 + .05]) box(base, .3, .6, FLOOR.d + .3, x, 3.22, 0, concrete);
     box(base, 7, .35, 4, 0, 3.2, 10.4, stone); box(base, 6, .1, 3.9, 0, 2.98, 10.3, wood);
     box(base, .3, 3.1, .3, -3.2, 1.5, 12.1, metal); box(base, .3, 3.1, .3, 3.2, 1.5, 12.1, metal);
     box(base, 6, .05, .05, 0, 3.02, 12.2, led);
@@ -78,17 +111,28 @@ window.TowerBuilding = (() => {
       }
       for (const x of [cx0, 14]) box(fl, .2, 2.95, 2.25, x, y + 1.6, FLOOR.front + .95, stone);
       box(fl, .2, 2.95, 2.25, sx0, y + 1.6, FLOOR.back - .95, stone);
-      // Side façades with windows; the corridor ends in full-height glazing.
+      // Side façades: the corridor ends in full-height glazing, and each corner home gets a framed
+      // window on its side wall: dark glazing in a metal frame on a stone sill.
       for (const sx of [-1, 1]) {
         box(fl, .32, 3.1, FLOOR.d, sx * 13.9, y + 1.58, 0, stone);
-        for (const k of [-7.2, -4.6, 4.6, 7.2]) box(fl, .35, 2.2, 1.35, sx * 14.07, y + 1.65, k, glass);
         box(fl, .35, 2.7, 1.8, sx * 14.07, y + 1.5, .5, glass);
+      }
+      for (const [sx, z, width] of SIDE_WINDOWS) {
+        const face = sx * 14.06;
+        box(fl, .06, 2.1, width, face, y + 1.6, z, metal);
+        for (const dz of [-width / 2, width / 2]) box(fl, .16, 2.2, .09, face + sx * .05, y + 1.6, z + dz, metal);
+        for (const dy of [.55, 2.65]) box(fl, .16, .09, width + .09, face + sx * .05, y + dy, z, metal);
+        box(fl, .16, 2.1, .06, face + sx * .05, y + 1.6, z, metal);
+        box(fl, .3, .08, width + .3, face + sx * .1, y + .48, z, stone);
       }
     }
     const roof = level(14, .45 + 12 * .085 + .05).group;
     box(roof, FLOOR.w + .4, .35, FLOOR.d + .4, 0, ROOF, 0, lightStone);
-    for (const z of [-(FLOOR.d / 2 + .23), FLOOR.d / 2 + .23]) box(roof, FLOOR.w + .5, .07, .07, 0, ROOF - .08, z, led);
-    for (const x of [-(FLOOR.w / 2 + .23), FLOOR.w / 2 + .23]) box(roof, .07, .07, FLOOR.d + .5, x, ROOF - .08, 0, led);
+    // Roof finish: mid-tone concrete pavers, planting under the pergola, and a crown with an LED edge.
+    box(roof, FLOOR.w - .6, .05, FLOOR.d - .6, 0, ROOF + .2, 0, concrete);
+    box(roof, 8.6, .06, 9.6, -7.75, ROOF + .23, -2.5, leaf);
+    for (const z of [-(FLOOR.d / 2 + .28), FLOOR.d / 2 + .28]) { box(roof, FLOOR.w + .7, 1, .16, 0, ROOF + .4, z, concrete); box(roof, FLOOR.w + .7, .07, .07, 0, ROOF + .93, z, led); }
+    for (const x of [-(FLOOR.w / 2 + .28), FLOOR.w / 2 + .28]) { box(roof, .16, 1, FLOOR.d + .4, x, ROOF + .4, 0, concrete); box(roof, .07, .07, FLOOR.d + .7, x, ROOF + .93, 0, led); }
     // Pool deck, pergola garden, lift overrun and stair bulkhead.
     box(roof, 12, .4, 5.6, 3.75, ROOF + .2, -5, stone); box(roof, 11.6, .08, 5.2, 3.75, ROOF + .44, -5, water);
     for (let i = 0; i < 4; i++) for (const z of [-7, 2]) box(roof, .12, 2.6, .12, -11.5 + i * 2.5, ROOF + 1.3, z, wood);
@@ -112,7 +156,7 @@ window.TowerBuilding = (() => {
     const clay = mat('clay', '#a66e57', {roughness: .86});
     const floorTones = ['#b39a78', '#bca17f', '#c4a987'].map((c, i) => mat('floorOak' + i, c, {roughness: .42, surface: 'plank', envMapIntensity: .8}));
     const interiorLed = mat('interiorLed', '#fff2dc', {emissive: '#ffd3a1', emissiveIntensity: .65});
-    function bed(parent, x, z, w, index) {
+    function bed(parent, x, z, w, index, wardrobe = true) {
       const g = group(parent, x, z); g.userData.bed = index;
       box(g, w + .12, .25, 2.12, 0, .24, 0, wood);
       box(g, w, .25, 2, 0, .48, 0, fabric);
@@ -132,12 +176,15 @@ window.TowerBuilding = (() => {
       box(g, w + .04, .045, .44, 0, .71, .77, clay);
       box(g, .035, .24, .44, w / 2 + .025, .6, .77, clay);
       box(g, w + .7, .025, 1, 0, .06, 1, rug);
-      // Built-in wardrobe along the back wall, offset from the headboard.
-      box(g, .5, 2.5, 1.05, w / 2 + .6, 1.3, .2, oak);
-      box(g, .025, .4, .025, w / 2 + .32, 1.2, .2, brass);
+      // Built-in wardrobe beside the bed, offset from the headboard.
+      if (wardrobe) {
+        box(g, .5, 2.5, 1.05, w / 2 + .6, 1.3, .2, oak);
+        box(g, .025, .4, .025, w / 2 + .32, 1.2, .2, brass);
+      }
     }
-    function kitchen(parent, x, z, length) {
-      const g = group(parent, x, z, Math.PI / 2), count = Math.round(length / .55), width = length / count;
+    // A kitchen run; angle 0 puts its back against a wall on the -z side (the corridor wall).
+    function kitchen(parent, x, z, length, angle = 0) {
+      const g = group(parent, x, z, angle), count = Math.round(length / .55), width = length / count;
       for (let i = 0; i < count; i++) {
         const at = -length / 2 + width * (i + .5);
         box(g, width - .025, .82, .58, at, .46, 0, oak);
@@ -212,12 +259,14 @@ window.TowerBuilding = (() => {
       cyl(g, .2, .06, .52, .92, .4, stone); cyl(g, .015, .22, .52, 1.02, .2, brass);
       box(g, .45, .4, .18, -.5, .44, .78, lightStone); sphere(g, .25, -.5, .32, .5, lightStone, .8, .65, 1.2);
       box(g, .12, .35, .4, .81, 1.1, .4, fabric);
+      // Front wall with an 80 cm door at the hallway end.
+      box(g, .95, 1.1, .09, -.43, .55, 1.05, lightStone);
     }
     const screed = mat('screed', '#b9b3a6', {roughness: .9, surface: 'plaster'});
     // One plan builder for both the furnished apartment and the neighbouring "shells" around it:
     // shells keep floor, walls, door, glazing and terrace so the floor's distribution reads clearly.
     function makePlan(type, plan, full = true, into = null) {
-      const g = into || new T.Group(), {w, d, bedrooms, bath, door} = plan;
+      const g = into || new T.Group(), {w, d, rooms, bath, door, zb} = plan;
       // Shells share a handful of materials so all five neighbours merge into a few meshes.
       const trim = full ? smokedOak : lightStone, skirt = full ? oak : lightStone;
       if (full) { g.name = 'interior-' + type; g.userData.typology = type; g.visible = false; home.add(g); }
@@ -251,22 +300,30 @@ window.TowerBuilding = (() => {
       } else {
         box(g, 1.8, .03, 2.1, bath[0], .015, bath[1], tile);
         box(g, .09, 1.1, 2.1, bath[0] + .9, .55, bath[1], lightStone);
-        box(g, 1.8, 1.1, .09, bath[0], .55, bath[1] + 1.05, lightStone);
+        box(g, .95, 1.1, .09, bath[0] - .43, .55, bath[1] + 1.05, lightStone);
       }
+      const roomH = full ? 1.2 : 1.1;
       if (plan.beds === 0) {
-        // Open sleeping nook: timber screen, without an enclosed bedroom.
-        for (let i = 0; i < 12; i++) box(g, .06, full ? 2.3 : 1.1, .07, .05, full ? 1.15 : .55, -2.6 + i * .13, skirt);
-      } else {
-        const left = plan.left;
-        const span = (w / 2 - left) / plan.beds, front = -d / 2 + 3.65;
-        for (let i = 0; i < plan.beds; i++) {
-          const edge = left + i * span;
-          box(g, .1, 1.2, 3.65, edge, .6, -d / 2 + 1.825, lightStone);
-          // Cutaway partitions retain a real, 85 cm circulation opening.
-          box(g, span - .9, 1.1, .1, edge + (span - .9) / 2, .55, front, lightStone);
-          box(g, .8, .025, .08, edge + span - .45, .06, front, brass);
+        // Sleeping alcove on the façade: a timber screen and a low headboard wall, not an enclosed room.
+        const {x0, x1} = rooms[0];
+        for (let i = 0; i < 16; i++) box(g, .06, full ? 2.3 : 1.1, .07, x0, full ? 1.15 : .55, zb + .1 + i * .13, skirt);
+        box(g, x1 - x0, roomH, .1, (x0 + x1) / 2, roomH / 2, zb, lightStone);
+      } else rooms.forEach(({x0, x1}, i) => {
+        // Each bedroom runs from its back wall to the glazing. The first opens from the living room
+        // through its side wall; the others open off the hallway. Doors are 85 cm.
+        const sideDoor = i === 0, z1 = d / 2 - .03, gap = [zb + 1.4, zb + 2.25];
+        if (sideDoor) {
+          box(g, .1, roomH, gap[0] - zb, x0, roomH / 2, (zb + gap[0]) / 2, lightStone);
+          box(g, .1, roomH, z1 - gap[1], x0, roomH / 2, (gap[1] + z1) / 2, lightStone);
+          box(g, .08, .025, .8, x0, .06, (gap[0] + gap[1]) / 2, brass);
+          box(g, x1 - x0, roomH, .1, (x0 + x1) / 2, roomH / 2, zb, lightStone);
+        } else {
+          box(g, .1, roomH, z1 - zb, x0, roomH / 2, (zb + z1) / 2, lightStone);
+          box(g, .12, roomH, .1, x0 + .06, roomH / 2, zb, lightStone);
+          box(g, x1 - x0 - .97, roomH, .1, (x0 + .97 + x1) / 2, roomH / 2, zb, lightStone);
+          box(g, .8, .025, .08, x0 + .545, .06, zb, brass);
         }
-      }
+      });
       if (full) furnish(g, type, plan);
       // Glazed frontage and a terrace, scaled to this plan only.
       const bays = Math.ceil(w / 1.5), bay = w / bays, tz = d / 2 + 1;
@@ -282,24 +339,37 @@ window.TowerBuilding = (() => {
       for (let i = 0; i <= bays; i++) box(g, .04, 1, .04, -w / 2 + i * bay, .6, tz + .9, metal);
       if (!full) return g;
       merge(g);
-      const {kx, kz, lx, lz, tx} = plan.layout;
+      const {lx, lz, tx} = plan.layout;
       const view = (x, z, r = 4.3, theta = .3) => ({x, y: .7, z, r, theta, phi: 1.04});
+      // The living room is seen from behind the sofa, out over the terrace to the view; each bedroom from
+      // the window, back towards the bed and its headboard wall (main room from the side away from the wardrobe; narrow
+      // secondary rooms head-on, so the neighbouring room's wardrobe stays out of frame).
       const views = {overview: {x: 0, y: 0, z: 0, r: 30, theta: .42, phi: .84},
-        living: view(lx, lz + .35, 2.35, .05), kitchen: view(kx + .3, kz, 4, 1.1)};
-      bedrooms.forEach(([x, z], i) => views[i ? 'bedroom' + (i + 1) : 'bedroom'] = view(x, z, 4.2));
+        living: view(lx, lz + .5, 3.4, Math.PI + .25), kitchen: view(plan.kx, plan.kz + .7, 3.6, .25)};
+      rooms.forEach(({bx}, i) => views[i ? 'bedroom' + (i + 1) : 'bedroom'] = {x: bx, y: .7, z: plan.bedZ - .2, r: 3.4, theta: i ? 0 : -.35, phi: 1});
       views.bathroom = view(bath[0], bath[1], 3.4, .5);
       views.terrace = {x: tx, y: 1.1, z: tz, r: 3.5, theta: Math.PI + .25, phi: 1.4};
+      for (const [key, v] of Object.entries(views)) if (key !== 'overview') keepInside(v, w, d);
       const spots = Object.fromEntries(Object.entries(views).filter(([key]) => key !== 'overview').map(([key, v]) => [key, [v.x, 1.4, v.z]]));
       return {group: g, views, spots, ...plan};
     }
+    // A room camera never leaves its apartment: it moves closer to its target until it is inside.
+    function keepInside(v, w, d) {
+      for (let i = 0; i < 30; i++) {
+        const s = Math.sin(v.phi), cx = v.x + v.r * s * Math.sin(v.theta), cz = v.z + v.r * s * Math.cos(v.theta);
+        if (Math.abs(cx) < w / 2 - .3 && Math.abs(cz) < d / 2 - .3) break;
+        v.r *= .92;
+      }
+      return v;
+    }
     // Furniture, kitchen, living, dining, beds and terrace set for one furnished plan.
     function furnish(g, type, plan) {
-      const {w, d, bedrooms, social} = plan;
-      bedrooms.forEach(([x, z, bw], i) => bed(g, x, z, bw, i + 1));
+      const {w, d, rooms, zb, bedZ, kx, kz} = plan;
+      rooms.forEach(({bed: width, bx, wardrobe}, i) => bed(g, bx, bedZ, width, i + 1, wardrobe !== false));
       if (type === 'suite') {
         // A designed master-suite backdrop: timber fins, warm concealed light and
         // original geometric relief art, all part of the procedural 3D scene.
-        const bx = bedrooms[0][0], back = -d / 2 + .08;
+        const bx = rooms[0].bx, back = zb + .08;
         box(g, 2.95, 2.35, .055, bx, 1.3, back, smokedOak);
         for (let i = 0; i < 32; i++) box(g, .045, 2.25, .035, bx - 1.42 + i * .092, 1.3, back + .045, oak);
         box(g, 2.9, .025, .035, bx, 2.49, back + .075, interiorLed);
@@ -308,20 +378,25 @@ window.TowerBuilding = (() => {
         const disc = cyl(g, .29, .018, bx - .09, 1.94, back + .17, clay); disc.rotation.x = Math.PI / 2;
         box(g, .28, .52, .025, bx + .18, 1.72, back + .19, cushion);
       }
-      const kx = -w / 2 + .4, kz = social + 1.25, lx = w / 4, lz = social + .7, tz = d / 2 + 1, tx = plan.beds >= 2 ? 1.6 : 0;
-      plan.layout = {kx, kz, lx, lz, tx};
-      kitchen(g, kx, kz, plan.beds === 0 ? 1.9 : 2.5);
+      const lx = (plan.living[0] + plan.living[1]) / 2 + .1, lz = zb + .75, tz = d / 2 + 1, tx = lx;
+      plan.layout = {lx, lz, tx};
+      kitchen(g, kx, kz, plan.kitchen);
       living(g, lx, lz, plan.beds >= 2);
-      if (plan.beds === 0) {
-        box(g, .55, .06, .85, -.5, .9, 1.75, oak); cyl(g, .22, .48, -.05, .25, 1.75, wood);
-      } else dining(g, plan.beds === 1 ? -.9 : -1, social + 2.2, plan.beds === 3 ? 6 : 4);
+      if (plan.dining) dining(g, ...plan.dining);
+      else {
+        // The studio's breakfast bar faces the kitchen run.
+        box(g, 1.2, .06, .5, kx, .95, -1.3, oak);
+        for (const dx of [-.55, .55]) box(g, .06, .9, .45, kx + dx, .47, -1.3, wood);
+        for (const dx of [-.3, .3]) { cyl(g, .19, .05, kx + dx, .72, -.8, fabric); cyl(g, .03, .7, kx + dx, .36, -.8, metal); }
+      }
       plant(g, w / 2 - .5, .04, d / 2 - .5, .65);
-      // A slim bookcase and a work ledge give each second/third bedroom a use.
-      bedrooms.slice(1).forEach(([x, z]) => {
-        box(g, 1, .06, .45, x, .76, z + 1.55, oak);
-        box(g, .04, .72, .4, x - .44, .38, z + 1.55, wood);
-        box(g, .04, .72, .4, x + .44, .38, z + 1.55, wood);
-        for (let j = 0; j < 5; j++) box(g, .08, .22 + j * .015, .18, x - .35 + j * .09, .92, z + 1.55, j % 2 ? cushion : lightStone);
+      // A work ledge with books gives each second/third bedroom a use.
+      rooms.slice(1).forEach(({bx}) => {
+        const z = bedZ + 1.55;
+        box(g, 1, .06, .45, bx, .76, z, oak);
+        box(g, .04, .72, .4, bx - .44, .38, z, wood);
+        box(g, .04, .72, .4, bx + .44, .38, z, wood);
+        for (let j = 0; j < 5; j++) box(g, .08, .22 + j * .015, .18, bx - .35 + j * .09, .92, z, j % 2 ? cushion : lightStone);
       });
       for (const x of [-w / 2 + .08, w / 2 - .5]) for (let k = 0; k < 5; k++) cyl(g, .045, 2.55, x + k * .08, 1.4, d / 2 - .15, curtain);
       for (const x of [-w / 2 + .45, w / 2 - .45]) plant(g, x, .08, tz, .75);
@@ -432,10 +507,20 @@ window.TowerBuilding = (() => {
       // own façade so its terrace faces the camera.
       overview(aspect) {
         const s = activeSlot, {w: pw, d: pd} = activeInterior, cz = s.facade - s.side * pd / 2;
+        // On a portrait screen the apartment itself fills the frame; neighbours stay at the edges.
+        if (aspect < 1) {
+          const r = ViewerControls.fitDistance(pw + 2.5, 4, pd + 2.5, aspect, 40) * .9;
+          return {x: s.x, y: 0, z: cz, theta: s.side > 0 ? .3 : Math.PI + .3, phi: .62, r, fov: 40};
+        }
         const r = ViewerControls.fitDistance(Math.max(pw, pd) * 1.7 + 5, 5, pd + 6, aspect, 40) * .92;
         return {x: s.x * .8, y: 0, z: cz * .6, theta: s.side > 0 ? .38 : Math.PI + .38, phi: .84, r, fov: 40};
       },
-      view: room => ({...onFloor(activeInterior.views[room]), fov: 56}),
+      // On a portrait screen a room camera steps back for a wider view, but never past the apartment.
+      view(room, aspect = 1.5) {
+        const v = {...activeInterior.views[room]};
+        if (aspect < 1) { v.r *= 1.45; keepInside(v, activeInterior.w, activeInterior.d); }
+        return {...onFloor(v), fov: aspect < 1 ? 62 : 56};
+      },
       entry() { const v = onFloor({x: 0, z: activeInterior.d / 2, theta: .18}); return {...v, y: 1.4, phi: 1.38, r: 24, fov: 46}; },
       spots: current => Object.entries(activeInterior.spots).filter(([key]) => key !== current).map(([key, p]) => { const q = onFloor({x: p[0], z: p[2], theta: 0}); return [key, q.x, p[1], q.z]; }),
     };

@@ -165,6 +165,34 @@ window.ViewerSite = (() => {
     // Street lamps sit between the street trees.
     for (const x of [-72, -36, 0, 36, 72]) lamp(x, -.04, 30.4);
     for (const x of [-78, -42, 42, 78]) lamp(x, -.04, 15.6);
+    /* People and cars give the scene its scale: a few figures on the plaza and pavements, cars parked
+       along both kerbs and two in the traffic lanes. Simple shapes, merged per material. */
+    const {dark} = kit.palette, skin = mat('skin', '#b98a6a', {roughness: .8}), hair = dark, tyre = dark;
+    const clothes = ['#2f3b4a', '#8a4b36', '#d6cfbf'].map((c, i) => mat('clothes' + i, c, {roughness: .9}));
+    const paint = ['#e6e3dc', '#2b2f35'].map((c, i) => mat('carPaint' + i, c, {metalness: .55, roughness: .28}));
+    const tint = mat('carGlass', '#1c2428', {metalness: .3, roughness: .08});
+    const crowd = seeded(907);
+    function person(x, ground, z, turn) {
+      const g = new T.Group(), top = clothes[Math.floor(crowd() * clothes.length)], legs = clothes[Math.floor(crowd() * 2)];
+      const h = .92 + crowd() * .14;
+      g.position.set(x, ground, z); g.rotation.y = turn; g.scale.setScalar(h); site.add(g);
+      for (const dx of [-.09, .09]) box(g, .13, .82, .15, dx, .41, 0, legs);
+      box(g, .42, .6, .24, 0, 1.12, 0, top);
+      for (const dx of [-.27, .27]) box(g, .1, .58, .12, dx, 1.1, 0, top);
+      sphere(g, .115, 0, 1.58, 0, skin, 1, 1.12, 1);
+      sphere(g, .118, 0, 1.63, -.02, hair, 1, .7, 1);
+    }
+    function car(x, z, heading) {
+      const g = new T.Group(), body = paint[Math.floor(crowd() * paint.length)];
+      g.position.set(x, -.11, z); g.rotation.y = heading; site.add(g);
+      box(g, 4.3, .62, 1.78, 0, .55, 0, body);
+      box(g, 2.3, .52, 1.6, -.25, 1.12, 0, tint);
+      box(g, 2.1, .06, 1.5, -.25, 1.4, 0, body);
+      for (const dx of [-1.35, 1.35]) for (const dz of [-.8, .8]) cyl(g, .32, .22, dx, .32, dz, tyre).rotation.x = Math.PI / 2;
+    }
+    for (const [x, z, a] of [[-2.2, 11.6, .4], [-1.55, 11.8, -2.6], [4.6, 12.8, 1.2], [9.6, 14.1, 3], [-10.4, 12.7, .2], [12.2, 10.4, -1.1], [-6.5, 9.6, 2.2], [1.8, 13.9, -.4]]) person(x, .2, z, a);
+    for (const [x, z, a] of [[-24, 15.3, 1.57], [-23.3, 15.9, -1.57], [19.5, 15.7, -1.57], [31, 30.3, 1.57], [-14, 30.6, -1.57], [.7, 21.4, 0], [6.5, 30.2, 1.57]]) person(x, .03, z, a);
+    for (const [x, z, a] of [[-46, 18.4, 0], [-31, 18.4, 0], [-12, 18.4, 0], [13, 18.4, 0], [37, 18.4, 0], [-38, 27.6, Math.PI], [8, 27.6, Math.PI], [28, 27.6, Math.PI], [-20, 21.2, 0], [44, 25, Math.PI]]) car(x, z, a);
     merge(site);
     env.add(site);
 

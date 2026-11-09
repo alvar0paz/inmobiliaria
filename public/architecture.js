@@ -206,7 +206,7 @@ window.Architecture = (() => {
     }
     function currentView() {
       if (mode === 'interior') {
-        const v = !interiors.has(room) || room === 'overview' ? interiors.overview(camera.aspect) : interiors.view(room);
+        const v = !interiors.has(room) || room === 'overview' ? interiors.overview(camera.aspect) : interiors.view(room, camera.aspect);
         return {...v, y: v.y + home.position.y};
       }
       if (aim.startsWith('amenity:')) return {...AMENITIES[aim.slice(8)].view, fov: 40};

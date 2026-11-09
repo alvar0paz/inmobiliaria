@@ -125,576 +125,648 @@
      "floor": 2,
      "pos": 0,
      "type": "suite",
-     "m2": 48.8,
-     "status": "vendido"
+     "m2": 53.2,
+     "status": "vendido",
+     "terrace": 14.8
     },
     {
      "id": "202",
      "floor": 2,
      "pos": 1,
      "type": "depa2",
-     "m2": 72.8,
-     "status": "vendido"
+     "m2": 76.0,
+     "status": "vendido",
+     "terrace": 19.5
     },
     {
      "id": "203",
      "floor": 2,
      "pos": 2,
      "type": "estudio",
-     "m2": 33.6,
-     "status": "disponible"
+     "m2": 36.0,
+     "status": "disponible",
+     "terrace": 12.1
     },
     {
      "id": "204",
      "floor": 2,
      "pos": 3,
      "type": "estudio",
-     "m2": 36.9,
-     "status": "vendido"
+     "m2": 36.0,
+     "status": "vendido",
+     "terrace": 12.1
     },
     {
      "id": "205",
      "floor": 2,
      "pos": 4,
      "type": "depa3",
-     "m2": 99.6,
-     "status": "reservado"
+     "m2": 103.2,
+     "status": "reservado",
+     "terrace": 23.4
     },
     {
      "id": "206",
      "floor": 2,
      "pos": 5,
      "type": "suite",
-     "m2": 51.9,
-     "status": "vendido"
+     "m2": 53.2,
+     "status": "vendido",
+     "terrace": 14.8
     },
     {
      "id": "301",
      "floor": 3,
      "pos": 0,
      "type": "suite",
-     "m2": 55.7,
-     "status": "reservado"
+     "m2": 53.2,
+     "status": "reservado",
+     "terrace": 14.8
     },
     {
      "id": "302",
      "floor": 3,
      "pos": 1,
      "type": "depa2",
-     "m2": 69.8,
-     "status": "vendido"
+     "m2": 76.0,
+     "status": "vendido",
+     "terrace": 19.5
     },
     {
      "id": "303",
      "floor": 3,
      "pos": 2,
      "type": "estudio",
-     "m2": 35.0,
-     "status": "reservado"
+     "m2": 36.0,
+     "status": "reservado",
+     "terrace": 12.1
     },
     {
      "id": "304",
      "floor": 3,
      "pos": 3,
      "type": "estudio",
-     "m2": 33.6,
-     "status": "disponible"
+     "m2": 36.0,
+     "status": "disponible",
+     "terrace": 12.1
     },
     {
      "id": "305",
      "floor": 3,
      "pos": 4,
      "type": "depa3",
-     "m2": 99.5,
-     "status": "vendido"
+     "m2": 103.2,
+     "status": "vendido",
+     "terrace": 23.4
     },
     {
      "id": "306",
      "floor": 3,
      "pos": 5,
      "type": "suite",
-     "m2": 47.3,
-     "status": "reservado"
+     "m2": 53.2,
+     "status": "reservado",
+     "terrace": 14.8
     },
     {
      "id": "401",
      "floor": 4,
      "pos": 0,
      "type": "suite",
-     "m2": 54.4,
-     "status": "vendido"
+     "m2": 53.2,
+     "status": "vendido",
+     "terrace": 14.8
     },
     {
      "id": "402",
      "floor": 4,
      "pos": 1,
      "type": "depa2",
-     "m2": 80.2,
-     "status": "disponible"
+     "m2": 76.0,
+     "status": "disponible",
+     "terrace": 19.5
     },
     {
      "id": "403",
      "floor": 4,
      "pos": 2,
      "type": "estudio",
-     "m2": 36.7,
-     "status": "disponible"
+     "m2": 36.0,
+     "status": "disponible",
+     "terrace": 12.1
     },
     {
      "id": "404",
      "floor": 4,
      "pos": 3,
      "type": "estudio",
-     "m2": 35.1,
-     "status": "vendido"
+     "m2": 36.0,
+     "status": "vendido",
+     "terrace": 12.1
     },
     {
      "id": "405",
      "floor": 4,
      "pos": 4,
      "type": "depa3",
-     "m2": 108.6,
-     "status": "disponible"
+     "m2": 103.2,
+     "status": "disponible",
+     "terrace": 23.4
     },
     {
      "id": "406",
      "floor": 4,
      "pos": 5,
      "type": "suite",
-     "m2": 53.7,
-     "status": "disponible"
+     "m2": 53.2,
+     "status": "disponible",
+     "terrace": 14.8
     },
     {
      "id": "501",
      "floor": 5,
      "pos": 0,
      "type": "suite",
-     "m2": 53.6,
-     "status": "disponible"
+     "m2": 53.2,
+     "status": "disponible",
+     "terrace": 14.8
     },
     {
      "id": "502",
      "floor": 5,
      "pos": 1,
      "type": "depa2",
-     "m2": 68.0,
-     "status": "vendido"
+     "m2": 76.0,
+     "status": "vendido",
+     "terrace": 19.5
     },
     {
      "id": "503",
      "floor": 5,
      "pos": 2,
      "type": "estudio",
-     "m2": 36.1,
-     "status": "vendido"
+     "m2": 36.0,
+     "status": "vendido",
+     "terrace": 12.1
     },
     {
      "id": "504",
      "floor": 5,
      "pos": 3,
      "type": "estudio",
-     "m2": 36.6,
-     "status": "disponible"
+     "m2": 36.0,
+     "status": "disponible",
+     "terrace": 12.1
     },
     {
      "id": "505",
      "floor": 5,
      "pos": 4,
      "type": "depa3",
-     "m2": 107.5,
-     "status": "vendido"
+     "m2": 103.2,
+     "status": "vendido",
+     "terrace": 23.4
     },
     {
      "id": "506",
      "floor": 5,
      "pos": 5,
      "type": "suite",
-     "m2": 50.8,
-     "status": "reservado"
+     "m2": 53.2,
+     "status": "reservado",
+     "terrace": 14.8
     },
     {
      "id": "601",
      "floor": 6,
      "pos": 0,
      "type": "suite",
-     "m2": 52.4,
-     "status": "vendido"
+     "m2": 53.2,
+     "status": "vendido",
+     "terrace": 14.8
     },
     {
      "id": "602",
      "floor": 6,
      "pos": 1,
      "type": "depa2",
-     "m2": 81.3,
-     "status": "disponible"
+     "m2": 76.0,
+     "status": "disponible",
+     "terrace": 19.5
     },
     {
      "id": "603",
      "floor": 6,
      "pos": 2,
      "type": "estudio",
-     "m2": 34.3,
-     "status": "disponible"
+     "m2": 36.0,
+     "status": "disponible",
+     "terrace": 12.1
     },
     {
      "id": "604",
      "floor": 6,
      "pos": 3,
      "type": "estudio",
-     "m2": 35.3,
-     "status": "vendido"
+     "m2": 36.0,
+     "status": "vendido",
+     "terrace": 12.1
     },
     {
      "id": "605",
      "floor": 6,
      "pos": 4,
      "type": "depa3",
-     "m2": 102.4,
-     "status": "vendido"
+     "m2": 103.2,
+     "status": "vendido",
+     "terrace": 23.4
     },
     {
      "id": "606",
      "floor": 6,
      "pos": 5,
      "type": "suite",
-     "m2": 54.5,
-     "status": "disponible"
+     "m2": 53.2,
+     "status": "disponible",
+     "terrace": 14.8
     },
     {
      "id": "701",
      "floor": 7,
      "pos": 0,
      "type": "suite",
-     "m2": 52.1,
-     "status": "vendido"
+     "m2": 53.2,
+     "status": "vendido",
+     "terrace": 14.8
     },
     {
      "id": "702",
      "floor": 7,
      "pos": 1,
      "type": "depa2",
-     "m2": 76.4,
-     "status": "reservado"
+     "m2": 76.0,
+     "status": "reservado",
+     "terrace": 19.5
     },
     {
      "id": "703",
      "floor": 7,
      "pos": 2,
      "type": "estudio",
-     "m2": 35.5,
-     "status": "reservado"
+     "m2": 36.0,
+     "status": "reservado",
+     "terrace": 12.1
     },
     {
      "id": "704",
      "floor": 7,
      "pos": 3,
      "type": "estudio",
-     "m2": 37.6,
-     "status": "vendido"
+     "m2": 36.0,
+     "status": "vendido",
+     "terrace": 12.1
     },
     {
      "id": "705",
      "floor": 7,
      "pos": 4,
      "type": "depa3",
-     "m2": 106.3,
-     "status": "disponible"
+     "m2": 103.2,
+     "status": "disponible",
+     "terrace": 23.4
     },
     {
      "id": "706",
      "floor": 7,
      "pos": 5,
      "type": "suite",
-     "m2": 49.9,
-     "status": "disponible"
+     "m2": 53.2,
+     "status": "disponible",
+     "terrace": 14.8
     },
     {
      "id": "801",
      "floor": 8,
      "pos": 0,
      "type": "suite",
-     "m2": 51.5,
-     "status": "disponible"
+     "m2": 53.2,
+     "status": "disponible",
+     "terrace": 14.8
     },
     {
      "id": "802",
      "floor": 8,
      "pos": 1,
      "type": "depa2",
-     "m2": 78.0,
-     "status": "disponible"
+     "m2": 76.0,
+     "status": "disponible",
+     "terrace": 19.5
     },
     {
      "id": "803",
      "floor": 8,
      "pos": 2,
      "type": "estudio",
-     "m2": 35.2,
-     "status": "vendido"
+     "m2": 36.0,
+     "status": "vendido",
+     "terrace": 12.1
     },
     {
      "id": "804",
      "floor": 8,
      "pos": 3,
      "type": "estudio",
-     "m2": 36.9,
-     "status": "disponible"
+     "m2": 36.0,
+     "status": "disponible",
+     "terrace": 12.1
     },
     {
      "id": "805",
      "floor": 8,
      "pos": 4,
      "type": "depa3",
-     "m2": 97.8,
-     "status": "disponible"
+     "m2": 103.2,
+     "status": "disponible",
+     "terrace": 23.4
     },
     {
      "id": "806",
      "floor": 8,
      "pos": 5,
      "type": "suite",
-     "m2": 54.2,
-     "status": "disponible"
+     "m2": 53.2,
+     "status": "disponible",
+     "terrace": 14.8
     },
     {
      "id": "901",
      "floor": 9,
      "pos": 0,
      "type": "suite",
-     "m2": 52.0,
-     "status": "disponible"
+     "m2": 53.2,
+     "status": "disponible",
+     "terrace": 14.8
     },
     {
      "id": "902",
      "floor": 9,
      "pos": 1,
      "type": "depa2",
-     "m2": 80.3,
-     "status": "vendido"
+     "m2": 76.0,
+     "status": "vendido",
+     "terrace": 19.5
     },
     {
      "id": "903",
      "floor": 9,
      "pos": 2,
      "type": "estudio",
-     "m2": 38.0,
-     "status": "reservado"
+     "m2": 36.0,
+     "status": "reservado",
+     "terrace": 12.1
     },
     {
      "id": "904",
      "floor": 9,
      "pos": 3,
      "type": "estudio",
-     "m2": 36.1,
-     "status": "vendido"
+     "m2": 36.0,
+     "status": "vendido",
+     "terrace": 12.1
     },
     {
      "id": "905",
      "floor": 9,
      "pos": 4,
      "type": "depa3",
-     "m2": 96.1,
-     "status": "vendido"
+     "m2": 103.2,
+     "status": "vendido",
+     "terrace": 23.4
     },
     {
      "id": "906",
      "floor": 9,
      "pos": 5,
      "type": "suite",
-     "m2": 48.6,
-     "status": "vendido"
+     "m2": 53.2,
+     "status": "vendido",
+     "terrace": 14.8
     },
     {
      "id": "1001",
      "floor": 10,
      "pos": 0,
      "type": "suite",
-     "m2": 47.1,
-     "status": "reservado"
+     "m2": 53.2,
+     "status": "reservado",
+     "terrace": 14.8
     },
     {
      "id": "1002",
      "floor": 10,
      "pos": 1,
      "type": "depa2",
-     "m2": 77.9,
-     "status": "disponible"
+     "m2": 76.0,
+     "status": "disponible",
+     "terrace": 19.5
     },
     {
      "id": "1003",
      "floor": 10,
      "pos": 2,
      "type": "estudio",
-     "m2": 32.2,
-     "status": "disponible"
+     "m2": 36.0,
+     "status": "disponible",
+     "terrace": 12.1
     },
     {
      "id": "1004",
      "floor": 10,
      "pos": 3,
      "type": "estudio",
-     "m2": 35.5,
-     "status": "reservado"
+     "m2": 36.0,
+     "status": "reservado",
+     "terrace": 12.1
     },
     {
      "id": "1005",
      "floor": 10,
      "pos": 4,
      "type": "depa3",
-     "m2": 97.8,
-     "status": "disponible"
+     "m2": 103.2,
+     "status": "disponible",
+     "terrace": 23.4
     },
     {
      "id": "1006",
      "floor": 10,
      "pos": 5,
      "type": "suite",
-     "m2": 55.0,
-     "status": "disponible"
+     "m2": 53.2,
+     "status": "disponible",
+     "terrace": 14.8
     },
     {
      "id": "1101",
      "floor": 11,
      "pos": 0,
      "type": "suite",
-     "m2": 55.6,
-     "status": "disponible"
+     "m2": 53.2,
+     "status": "disponible",
+     "terrace": 14.8
     },
     {
      "id": "1102",
      "floor": 11,
      "pos": 1,
      "type": "depa2",
-     "m2": 69.5,
-     "status": "vendido"
+     "m2": 76.0,
+     "status": "vendido",
+     "terrace": 19.5
     },
     {
      "id": "1103",
      "floor": 11,
      "pos": 2,
      "type": "estudio",
-     "m2": 34.6,
-     "status": "disponible"
+     "m2": 36.0,
+     "status": "disponible",
+     "terrace": 12.1
     },
     {
      "id": "1104",
      "floor": 11,
      "pos": 3,
      "type": "estudio",
-     "m2": 36.8,
-     "status": "disponible"
+     "m2": 36.0,
+     "status": "disponible",
+     "terrace": 12.1
     },
     {
      "id": "1105",
      "floor": 11,
      "pos": 4,
      "type": "depa3",
-     "m2": 96.4,
-     "status": "reservado"
+     "m2": 103.2,
+     "status": "reservado",
+     "terrace": 23.4
     },
     {
      "id": "1106",
      "floor": 11,
      "pos": 5,
      "type": "suite",
-     "m2": 47.6,
-     "status": "vendido"
+     "m2": 53.2,
+     "status": "vendido",
+     "terrace": 14.8
     },
     {
      "id": "1201",
      "floor": 12,
      "pos": 0,
      "type": "suite",
-     "m2": 46.8,
-     "status": "disponible"
+     "m2": 53.2,
+     "status": "disponible",
+     "terrace": 14.8
     },
     {
      "id": "1202",
      "floor": 12,
      "pos": 1,
      "type": "depa2",
-     "m2": 71.5,
-     "status": "disponible"
+     "m2": 76.0,
+     "status": "disponible",
+     "terrace": 19.5
     },
     {
      "id": "1203",
      "floor": 12,
      "pos": 2,
      "type": "estudio",
-     "m2": 36.1,
-     "status": "disponible"
+     "m2": 36.0,
+     "status": "disponible",
+     "terrace": 12.1
     },
     {
      "id": "1204",
      "floor": 12,
      "pos": 3,
      "type": "estudio",
-     "m2": 34.1,
-     "status": "vendido"
+     "m2": 36.0,
+     "status": "vendido",
+     "terrace": 12.1
     },
     {
      "id": "1205",
      "floor": 12,
      "pos": 4,
      "type": "depa3",
-     "m2": 108.0,
-     "status": "disponible"
+     "m2": 103.2,
+     "status": "disponible",
+     "terrace": 23.4
     },
     {
      "id": "1206",
      "floor": 12,
      "pos": 5,
      "type": "suite",
-     "m2": 48.4,
-     "status": "vendido"
+     "m2": 53.2,
+     "status": "vendido",
+     "terrace": 14.8
     },
     {
      "id": "1301",
      "floor": 13,
      "pos": 0,
      "type": "suite",
-     "m2": 48.2,
-     "status": "vendido"
+     "m2": 53.2,
+     "status": "vendido",
+     "terrace": 14.8
     },
     {
      "id": "1302",
      "floor": 13,
      "pos": 1,
      "type": "depa2",
-     "m2": 70.3,
-     "status": "disponible"
+     "m2": 76.0,
+     "status": "disponible",
+     "terrace": 19.5
     },
     {
      "id": "1303",
      "floor": 13,
      "pos": 2,
      "type": "estudio",
-     "m2": 34.5,
-     "status": "vendido"
+     "m2": 36.0,
+     "status": "vendido",
+     "terrace": 12.1
     },
     {
      "id": "1304",
      "floor": 13,
      "pos": 3,
      "type": "estudio",
-     "m2": 36.6,
-     "status": "disponible"
+     "m2": 36.0,
+     "status": "disponible",
+     "terrace": 12.1
     },
     {
      "id": "1305",
      "floor": 13,
      "pos": 4,
      "type": "depa3",
-     "m2": 109.1,
-     "status": "disponible"
+     "m2": 103.2,
+     "status": "disponible",
+     "terrace": 23.4
     },
     {
      "id": "1306",
      "floor": 13,
      "pos": 5,
      "type": "suite",
-     "m2": 51.0,
-     "status": "disponible"
+     "m2": 53.2,
+     "status": "disponible",
+     "terrace": 14.8
     }
    ]
   },
