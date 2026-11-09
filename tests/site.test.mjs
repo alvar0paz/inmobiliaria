@@ -126,9 +126,12 @@ test('privacy notice is linked from the form and the footer of every page', () =
   for (const file of pages) assert.match(read(file), /href="(\/en)?\/privacidad\/"/, route(file));
 });
 
-test('no raster images, no retired tier interfaces, no original client brand or quote', () => {
-  assert.deepEqual(files.filter(f => /\.(png|jpe?g|webp|gif)$/i.test(f)), []);
-  const forbidden = ['alpha builders', 'alphabuilders', 'pixel.com.ec', 'contacto@pixel', '41.990', '46.990', '49.990', 'zolutium', '16 sitios', '15 sitios', 'data-price=', 'ruc 17', '<img', 'textureloader', 'data-tier', 'data-direction', 'compare options', 'comparar opciones', 'tres niveles', 'three tiers'];
+test('no raster images except our own plates, no retired tier interfaces, no original client brand or quote', () => {
+  // The only raster images are the drawings/3D plates rendered from our own model by site/tools/plans-plates.mjs.
+  const PLATES = ['plans-tall-draw.webp', 'plans-tall-render.webp', 'plans-wide-draw.webp', 'plans-wide-render.webp'].map(f => 'media/' + f);
+  assert.deepEqual(files.filter(f => /\.(png|jpe?g|webp|gif|avif)$/i.test(f)).map(f => relative(ROOT, f)).sort(), PLATES);
+  for (const file of pages) for (const src of read(file).match(/<img[^>]*>/g) || []) assert.match(src, /src="\/media\/plans-(wide|tall)-(draw|render)\.webp"/, `${relative(ROOT, file)}: ${src}`);
+  const forbidden = ['alpha builders', 'alphabuilders', 'pixel.com.ec', 'contacto@pixel', '41.990', '46.990', '49.990', 'zolutium', '16 sitios', '15 sitios', 'data-price=', 'ruc 17', 'textureloader', 'data-tier', 'data-direction', 'compare options', 'comparar opciones', 'tres niveles', 'three tiers'];
   for (const file of files.filter(f => /\.(html|js|json|css)$/.test(f) && !f.includes('/vendor/'))) {
     const text = read(file).toLowerCase();
     for (const term of forbidden) assert.ok(!text.includes(term), `${relative(ROOT, file)} contains “${term}”`);

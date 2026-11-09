@@ -1,4 +1,4 @@
-// Home page: a scroll-driven film of the live building, what the package includes, extras, and the price once.
+// Home page: a scroll-driven film of the live building, plans → 3D, what the package includes, extras, and the price once.
 import { t } from '../lib/html.mjs';
 import { OFFER_TOTAL, SCOPE, EXTRAS } from './commercial.mjs';
 
@@ -17,6 +17,17 @@ function film() {
     + `<div class="scene-wrap film-scene" id="scene-wrap"><canvas id="architecture" tabindex="-1" aria-label="Modelo arquitectónico 3D. Arrastra para girar, usa las flechas o los botones de zoom."></canvas><div class="scene-status" id="scene-status" role="status">${t('Preparando tu visita…', 'Preparing your visit…')}</div></div>`
     + `<div class="film-copy"><ol class="film-beats">${beats}</ol><div class="film-foot"><div class="film-actions"><a class="button" href="/proyecto/">${t('Explorar la demo en 3D', 'Explore the 3D demo')}</a><a class="text-button" href="#precio">${t('Ver precio', 'See the price')}</a></div>`
     + `<div class="film-progress" aria-hidden="true"><div class="film-track"></div><div class="film-times">${times}</div></div></div></div></div></section>`;
+}
+
+// Plans → 3D: a technical drawing and a render of the same model from one camera (site/tools/plans-plates.mjs).
+// The divider is a range input, so it works with a finger, a mouse and the keyboard.
+function plans() {
+  const pic = (kind, alt) => `<picture class="compare-${kind}"><source media="(max-width: 820px)" srcset="/media/plans-tall-${kind}.webp" width="900" height="1125"><img src="/media/plans-wide-${kind}.webp" width="2000" height="1125" alt="${alt}" loading="lazy" decoding="async"></picture>`;
+  return `<section class="plans" aria-labelledby="plans-title"><div class="plans-head">${t('De tus planos, a tu edificio.', 'From your drawings to your building.', 'h2')}`
+    + `${t('Arrastra para comparar. Partimos de los planos aprobados de tu proyecto y entregamos el edificio en 3D con sus medidas reales.', 'Drag to compare. We start from your project’s approved drawings and deliver the building in 3D at its real dimensions.', 'p')}</div>`
+    + `<div class="compare" data-compare>${pic('render', 'Residencia 01 en 3D, con su entorno / Residencia 01 in 3D, with its surroundings')}${pic('draw', 'Dibujo técnico de Residencia 01: 44,8 m de alto y 28,7 m de frente / Technical drawing of Residencia 01: 44.8 m tall, 28.7 m wide')}`
+    + `<input class="compare-range" id="compare-range" type="range" min="0" max="100" value="50" aria-label="Comparar planos y 3D / Compare drawings and 3D">`
+    + `<div class="compare-handle" aria-hidden="true"><span></span></div>${t('Planos', 'Drawings', 'span', 'compare-tag compare-tag-draw')}${t('Edificio 3D', '3D building', 'span', 'compare-tag compare-tag-3d')}</div></section>`;
 }
 
 function board() {
@@ -40,5 +51,5 @@ function price() {
 }
 
 export function homeBody() {
-  return `<main id="main" class="home">${film()}${board()}${extras()}${price()}</main>`;
+  return `<main id="main" class="home">${film()}${plans()}${board()}${extras()}${price()}</main>`;
 }

@@ -1,0 +1,81 @@
+<!doctype html><meta charset="utf-8"><title>plans plates</title>
+<!-- Renders the two home-page "plans → 3D" plates from the live model with the same camera. Used by plans-plates.mjs. -->
+<style>body{margin:0;background:#fff}canvas{display:block}</style>
+<div id="rw" style="position:relative"><canvas id="render"></canvas></div><canvas id="comp"></canvas>
+<script src="/vendor/three.min.js"></script>
+<script src="/viewer-controls.js"></script><script src="/viewer-kit.js"></script><script src="/viewer-site.js"></script><script src="/building-tower.js"></script><script src="/architecture.js"></script>
+<script>
+const q = new URLSearchParams(location.search), W = +q.get('w'), H = +q.get('h'), K = +q.get('k'), aspect = W / H;
+const INK = '#14244a', PAPER = '#f4f3ee';
+// Same orbit pose as engine.drive(K) with no shift (see architecture.js).
+const fit = ViewerControls.fitDistance(30, 48, 22, aspect, 40) * (aspect < 1 ? 1.12 : .92);
+const v = {theta: .62, phi: 1.28, r: fit, x: 0, y: aspect < 1 ? 23 : 21, z: 0};
+const pose = {r: v.r * (1.1 - .18 * K), theta: v.theta - .8 + 1.55 * K, phi: v.phi - .08 + .12 * K, x: v.x, y: v.y, z: v.z};
+const rc = document.getElementById('render');
+rc.style.width = W + 'px'; rc.style.height = H + 'px'; Object.assign(document.getElementById('rw').style, {width: W + 'px', height: H + 'px'});
+const engine = q.get('only') === 'draw' ? (window.renderReady = true, null) : Architecture.create(THREE, rc, null, {orbit: false, intro: false, quality: 'high', onReady: () => { setTimeout(() => { engine.drive(K); setTimeout(() => { engine.drive(K); window.renderReady = true; }, 1500); }, 300); }});
+engine?.drive(K);
+
+// Line drawing of the same model from the same camera.
+const T = THREE, kit = ViewerKit.create(T), scene = new T.Scene();
+const building = TowerBuilding.build(kit, {home: new T.Group(), inventory: undefined, unitMaterial: kit.mat('unit', '#ffffff')});
+scene.add(building.root);
+scene.updateMatrixWorld(true);
+const fill = new T.MeshBasicMaterial({color: PAPER, polygonOffset: true, polygonOffsetFactor: 1, polygonOffsetUnits: 1, side: T.DoubleSide});
+const lines = new T.LineBasicMaterial({color: INK});
+const meshes = [];
+building.root.traverse(o => { if (o.isMesh && o.visible) meshes.push(o); });
+// Drawing conventions: structure, glazing and frames are drawn; planting, furniture and lights are left out.
+const HIDE = new Set(['leaf', 'leaf2', 'fabric', 'oak', 'brass', 'glow', 'led', 'unit', 'water']);
+const NOLINE = new Set((q.get('noline') || '').split(',').filter(Boolean));
+for (const m of meshes) {
+  const name = m.material.name;
+  if (HIDE.has(name)) { m.visible = false; continue; }
+  m.material = fill;
+  if (NOLINE.has(name)) continue;
+  const e = new T.LineSegments(new T.EdgesGeometry(m.geometry, 28), lines);
+  m.add(e);
+}
+const box = new T.Box3().setFromObject(building.root);
+const cam = new T.PerspectiveCamera(40, aspect, .5, 4000);
+const s = Math.sin(pose.phi);
+cam.position.set(pose.x + pose.r * s * Math.sin(pose.theta), pose.y + pose.r * Math.cos(pose.phi), pose.z + pose.r * s * Math.cos(pose.theta));
+cam.lookAt(pose.x, pose.y, pose.z);
+cam.updateMatrixWorld(); cam.updateProjectionMatrix();
+const gl = new T.WebGLRenderer({antialias: true, alpha: true, preserveDrawingBuffer: true});
+gl.setPixelRatio(1); gl.setSize(W, H); gl.setClearColor(0x000000, 0);
+gl.render(scene, cam);
+
+// Compose: paper, faint grid, the drawing, dimensions and a sheet number.
+const c = document.getElementById('comp'); c.width = W; c.height = H;
+const g = c.getContext('2d');
+g.fillStyle = PAPER; g.fillRect(0, 0, W, H);
+const step = Math.round(W / 48);
+g.strokeStyle = 'rgba(20,36,74,.07)'; g.lineWidth = 1;
+for (let x = .5; x < W; x += step) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, H); g.stroke(); }
+for (let y = .5; y < H; y += step) { g.beginPath(); g.moveTo(0, y); g.lineTo(W, y); g.stroke(); }
+g.drawImage(gl.domElement, 0, 0);
+const P = (x, y, z) => { const p = new T.Vector3(x, y, z).project(cam); return [(p.x + 1) / 2 * W, (1 - p.y) / 2 * H]; };
+const u = W / 1600, font = `${Math.round(15 * Math.max(u, .75))}px "DM Sans", Arial, sans-serif`;
+g.strokeStyle = INK; g.fillStyle = INK; g.lineWidth = Math.max(1, 1.2 * u); g.font = font;
+function dim(a, b, label, side) {
+  g.beginPath(); g.moveTo(...a); g.lineTo(...b); g.stroke();
+  const ang = Math.atan2(b[1] - a[1], b[0] - a[0]), tick = 7 * Math.max(u, .75);
+  for (const p of [a, b]) { g.beginPath(); g.moveTo(p[0] - Math.cos(ang + Math.PI / 4) * tick, p[1] - Math.sin(ang + Math.PI / 4) * tick); g.lineTo(p[0] + Math.cos(ang + Math.PI / 4) * tick, p[1] + Math.sin(ang + Math.PI / 4) * tick); g.stroke(); }
+  const m = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+  g.save(); g.translate(...m); let r = ang; if (r > Math.PI / 2) r -= Math.PI; if (r < -Math.PI / 2) r += Math.PI; g.rotate(r);
+  const w = g.measureText(label).width; g.fillStyle = PAPER; g.fillRect(-w / 2 - 6, side * 14 * Math.max(u, .75) - 12, w + 12, 20); g.fillStyle = INK;
+  g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(label, 0, side * 14 * Math.max(u, .75) - 2); g.restore();
+}
+const {min, max} = box, off = 2.5;
+dim(P(min.x - off, 0, max.z), P(min.x - off, max.y, max.z), (max.y).toFixed(1) + ' m', -1);
+dim(P(min.x, 0, max.z + off), P(max.x, 0, max.z + off), (max.x - min.x).toFixed(1) + ' m', 1);
+dim(P(max.x + off, 0, max.z), P(max.x + off, 0, min.z), (max.z - min.z).toFixed(1) + ' m', 1);
+// Floor marks on the height dimension.
+for (let n = 1; n <= 13; n++) { const y = TowerBuilding.floorY(n); const [x0, y0] = P(min.x - off, y, max.z), [x1, y1] = P(min.x - off + .9, y, max.z); g.beginPath(); g.moveTo(x0, y0); g.lineTo(x1, y1); g.stroke(); }
+g.font = `600 ${Math.round(13 * Math.max(u, .75))}px "DM Sans", Arial, sans-serif`; g.textAlign = 'left'; g.textBaseline = 'alphabetic';
+const pad = Math.round(28 * Math.max(u, .75));
+g.fillText('A-201', W - pad - g.measureText('A-201').width, H - pad);
+window.drawReady = true;
+window.box = {min: min.toArray(), max: max.toArray()};
+</script>
