@@ -592,6 +592,24 @@ window.Architecture = (() => {
       view() { aim = 'default'; fly(currentView(), 1600); },
       // Pointer activity over the scene pauses the idle orbit without moving the camera.
       hold() { lastInput = clock(); },
+      // Scroll-driven film (home page): progress 0–1 sets the orbit and the time of day directly,
+      // morning → sunset → night. `shift` slides the building sideways in the frame, as a fraction
+      // of the half-width, to leave room for text; `lift` lowers it, as a fraction of the half-height.
+      drive(progress, {shift = 0, lift = 0} = {}) {
+        if (intro) finishIntro();
+        const k = clamp(progress, 0, 1), v = defaultView();
+        const r = v.r * (1.1 - .18 * k), theta = v.theta - .8 + 1.55 * k, tan = Math.tan(v.fov * Math.PI / 360);
+        const side = r * tan * camera.aspect * shift;
+        // The building sits right of centre: aim left of it along the camera's right vector (cos θ, 0, −sin θ).
+        Object.assign(goal, {...v, r, theta, phi: v.phi - .08 + .12 * k, x: v.x - Math.cos(theta) * side, z: v.z + Math.sin(theta) * side, y: v.y + r * tan * lift});
+        flight = null;
+        lastInput = clock();
+        const x = k * (PRE.length - 1), i = Math.min(PRE.length - 2, Math.floor(x));
+        blend = null;
+        mixLight(PRE[i], PRE[i + 1], x - i);
+        applyLight();
+        wake();
+      },
       command(action) {
         if (action === 'reset') return fly(currentView(), 1200);
         interact();

@@ -7,7 +7,7 @@ export function enquiryLink() {
   return `<a class="button offer-enquiry" href="/contacto/?source=proforma">${t('Quiero esta experiencia ↗', 'I want this experience ↗')}</a>`;
 }
 
-const SCOPE = [
+export const SCOPE = [
   ['01', 'Una página para tu proyecto', 'One page for your project', 'Una landing page con tu marca y contenido en español e inglés para un desarrollo inmobiliario.', 'One branded landing page in Spanish and English for one real estate development.'],
   ['02', 'Un edificio modelado a medida', 'One custom building model', 'Creamos un modelo 3D exterior de un edificio a partir de planos aprobados, con fachada y entorno inmediato simplificado según el alcance acordado.', 'We create one exterior 3D building model from approved drawings, with a façade and simplified immediate surroundings within the agreed scope.'],
   ['03', 'Arquitectura interactiva', 'Interactive architecture', 'Rotación, zoom y puntos de interés acordados para explorar el exterior desde el navegador.', 'Rotation, zoom and agreed hotspots to explore the exterior in the browser.'],
@@ -34,7 +34,7 @@ export function proformaBody() {
   return `<main id="main" class="commercial-proforma"><div class="proforma-masthead"><div><span class="eyebrow">tnkoo SOFTWARE LAB / ${t('PROPUESTA COMERCIAL', 'COMMERCIAL PROPOSAL')}</span><h1>${t('Tu próxima<br><em>herramienta de venta.</em>', 'Your next<br><em>sales tool.</em>')}</h1><p>${t('Una página de proyecto y un edificio 3D exterior creado desde tus planos.', 'One project page and one exterior 3D building created from your drawings.')}</p></div><div class="proforma-actions"><button class="button" id="print-proforma" type="button">${t('Imprimir / guardar PDF', 'Print / save PDF')} ↗</button><a class="text-button" href="/proyecto/">${t('Ver la experiencia 3D', 'See the 3D experience')} →</a></div></div>${offer(false)}${modellingPrices()}<div class="proforma-contact"><b>tnkoo SOFTWARE LAB</b><span>Alvaro Paz</span><a href="mailto:info@tnkoo.com">info@tnkoo.com</a><a href="https://inmobiliaria.alvaropaz.com/proyecto/">inmobiliaria.alvaropaz.com</a></div></main>`;
 }
 
-const EXTRAS = [
+export const EXTRAS = [
   ['01', 'Interiores por tipología', 'Interiors by apartment type', 'Modelado, mobiliario y navegación por ambientes. Alcance por cada distribución distinta.', 'Modelling, furnishings and room navigation. Scoped per distinct apartment layout.'],
   ['02', 'Selección de departamentos e inventario', 'Apartment selection and inventory', 'Selector por piso y vivienda, disponibilidad y conexiones con tu fuente de inventario.', 'Floor and apartment selection, availability and connections to your inventory source.'],
   ['03', 'Integraciones y evolución', 'Integrations and ongoing work', 'CRM, automatización de WhatsApp, mantenimiento y actualizaciones de contenido según necesidades.', 'CRM, WhatsApp automation, maintenance and content updates based on your needs.'],

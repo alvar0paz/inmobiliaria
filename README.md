@@ -14,7 +14,7 @@ Every page exists in Spanish at `/…/` and in English at `/en/…/`, with `href
 
 
 ## The 3D experience
-- **Arrival:** a loader replaces the blank canvas; the neighbourhood rises, the tower's floors stack into place and the camera sweeps to the hero view. The homepage starts on the finished tower with a fixed, unobstructed composition. The guided tour retains slow orbit and pauses while the pointer is over it.
+- **Arrival:** a loader replaces the blank canvas; the neighbourhood rises, the tower's floors stack into place and the camera sweeps to the hero view. The homepage is a scroll film instead: the live tower fills the screen and the page scroll drives the camera and the time of day (morning → sunset → night) through three caption beats, via the viewer's `drive(progress)`; the canvas is not interactive there, the demo is one tap away. The guided tour retains slow orbit and pauses while the pointer is over it.
 - **Setting:** gradient sky, hazy Andean ridges with a snow-capped volcano, a fictional low-rise city, street, lawns and lamps. Fog joins the ground to the horizon.
 - **01 Architecture:** gold hotspots (rooftop pool, sky garden, terraces, lobby) fly the camera to each detail.
 - **02 Apartment:** the chosen floor opens: levels above lift and turn translucent, units are coloured by availability and filters, and numbered chips, hover cards, the list and the in-scene floor stepper all select the same unit.

@@ -2,12 +2,13 @@
  * tnkoo Software Lab · site stylesheet (the only stylesheet; every page loads it).
  *
  * Sections, in cascade order:
- *   1. Fonts       self-hosted DM Sans and Manrope (SIL OFL, see /fonts/OFL-*.txt)
+ *   1. Fonts       self-hosted DM Sans and Archivo (SIL OFL, see /fonts/OFL-*.txt)
  *   2. Demo page   /demo/ management simulation, scoped with :where(.page-demo) so it adds no specificity
  *   3. Base        layout, header, 3D viewer, guided tour
  *   4. Commercial  offer, pricing, proforma and contact pages
  *   5. Brand       typography and colour layer
  *   6. Pages       privacy notice and 404
+ *   7. Home        scroll film, what you get, extras and price
  *
  * The remaining !important declarations are deliberate: [hidden] must always hide,
  * reduced motion must always win, and print must strip interactive chrome.
@@ -31,20 +32,22 @@
   unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
 }
 @font-face {
-  font-family: "Manrope";
+  font-family: "Archivo";
   font-style: normal;
   font-display: swap;
-  font-weight: 200 800;
-  src: url("/fonts/manrope-latin-ext-wght-5.1.0.woff2") format("woff2");
-  unicode-range: U+0100-02AF,U+0304,U+0308,U+0329,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
+  font-weight: 100 900;
+  font-stretch: 62% 125%;
+  src: url("/fonts/archivo-latin-ext-wdth-5.3.0.woff2") format("woff2");
+  unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
 }
 @font-face {
-  font-family: "Manrope";
+  font-family: "Archivo";
   font-style: normal;
   font-display: swap;
-  font-weight: 200 800;
-  src: url("/fonts/manrope-latin-wght-5.1.0.woff2") format("woff2");
-  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+  font-weight: 100 900;
+  font-stretch: 62% 125%;
+  src: url("/fonts/archivo-latin-wdth-5.3.0.woff2") format("woff2");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
 }
 
 /* ==== 2. Demo page (/demo/) ==== */
@@ -367,7 +370,7 @@
     12px/1.55 ui-monospace,
     Menlo,
     monospace;
-  color: #cfd6c6;
+  color: #cfd2d6;
   white-space: pre-wrap;
   word-break: break-word;
   max-height: 220px;
@@ -2133,7 +2136,7 @@ select {
   margin: 16px 0 23px;
 }
 .investment-note {
-  color: #bdc8bc;
+  color: #c6cad1;
   font-size: 10px;
   line-height: 1.6;
   margin: 0;
@@ -2714,7 +2717,7 @@ select {
 .price-qualification {
   font-size: 11px;
   line-height: 1.6;
-  color: #bdc8bc;
+  color: #c6cad1;
   margin: 0 0 24px;
 }
 .modelling-pricing {
@@ -2925,17 +2928,21 @@ select {
 }
 
 /* ==== 5. Brand layer ==== */
-/* tnkoo: Clean and expressive. Shared product styles; printed quotes stay compact. */
+/* tnkoo: concrete grey, navy, signal yellow (surfaces only, never text on light) and orange (actions only). */
 
 :root {
-  --ink: #153d35;
-  --cream: #f7f7f2;
-  --muted: #52645e;
-  --gold: #426b56;
-  --line: #153d3526;
-  --lime: #d4ed76;
-  --night: #121a22;
-  --heading: "Manrope", "Helvetica Neue", Arial, sans-serif;
+  --ink: #14244a;
+  --cream: #ebece8;
+  --muted: #4b5568;
+  --gold: #2f55e4;
+  --line: #14244a26;
+  --lime: #ffc41f;
+  --night: #0f1b38;
+  --orange: #ff5b1f;
+  --orange-2: #ff7a45;
+  --steel: #4f5a6c;
+  --paper: #f7f7f4;
+  --heading: "Archivo", "Helvetica Neue", Arial, sans-serif;
   --body: "DM Sans", "Helvetica Neue", Arial, sans-serif;
 }
 body {
@@ -2948,8 +2955,9 @@ h3 {
 }
 h1,
 h2 {
-  font-weight: 600;
-  letter-spacing: -0.055em;
+  font-weight: 700;
+  font-stretch: 112%;
+  letter-spacing: -0.035em;
 }
 h1 em,
 h2 em {
@@ -2996,10 +3004,10 @@ button:focus-visible,
 a:focus-visible,
 select:focus-visible,
 canvas:focus-visible {
-  outline-color: #426b56;
+  outline-color: #2f55e4;
 }
 .button {
-  background: var(--lime);
+  background: var(--orange);
   border: 1px solid transparent;
   color: var(--ink);
   border-radius: 999px;
@@ -3008,7 +3016,7 @@ canvas:focus-visible {
   padding: 16px 24px;
 }
 .button:hover {
-  background: #c4e35a;
+  background: var(--orange-2);
   color: var(--ink);
 }
 .button:active {
@@ -3103,8 +3111,8 @@ canvas:focus-visible {
   border-radius: 18px;
 }
 .scene-top {
-  background: #121a22e8;
-  color: #f7f7f2;
+  background: #0f1b38e8;
+  color: #ebece8;
   border-radius: 6px;
   font-size: 9px;
 }
@@ -3116,12 +3124,12 @@ canvas:focus-visible {
 }
 .scene-bottom > span,
 .scene-bottom > div {
-  background: #121a22e8;
-  color: #f7f7f2;
+  background: #0f1b38e8;
+  color: #ebece8;
   border-radius: 6px;
 }
 .scene-bottom button {
-  color: #f7f7f2;
+  color: #ebece8;
   border-color: #ffffff25;
   min-width: 38px;
   height: 38px;
@@ -3133,7 +3141,7 @@ canvas:focus-visible {
   color: var(--ink);
 }
 .hero-scene .scene-status {
-  color: #f7f7f2;
+  color: #ebece8;
 }
 .hero-scene .scene-status:after {
   background:
@@ -3145,10 +3153,10 @@ canvas:focus-visible {
 }
 .hotspot > i {
   background: var(--lime);
-  box-shadow: 0 0 0 3px #153d35;
+  box-shadow: 0 0 0 3px #14244a;
 }
 .hotspot > i::after {
-  border-color: #d4ed7677;
+  border-color: #ffc41f77;
 }
 .hotspot > span,
 .unit-tip {
@@ -3166,7 +3174,7 @@ canvas:focus-visible {
   border-radius: 10px;
 }
 .floor-stepper button:hover {
-  background: #153d3510;
+  background: #14244a10;
 }
 .intro,
 .offer-section,
@@ -3230,23 +3238,23 @@ footer > a:last-child {
   color: var(--lime);
 }
 .investment .button {
-  background: var(--lime);
+  background: var(--orange);
   color: var(--ink);
 }
 .investment .button:hover {
-  background: #c4e35a;
+  background: var(--orange-2);
 }
 .investment-rule {
   background: #ffffff30;
 }
 .investment-note,
 .price-qualification {
-  color: #cad6cc;
+  color: #cdd1d8;
 }
 .scope-number,
 .scope-check,
 .model-number {
-  color: #426b56;
+  color: #2f55e4;
 }
 .offer-definition {
   color: var(--cream);
@@ -3267,7 +3275,7 @@ footer > a:last-child {
   font-family: var(--heading);
 }
 .modelling-pricing {
-  background: #eef1e8;
+  background: #e2e4e1;
 }
 .commercial-proforma .modelling-pricing {
   background: none;
@@ -3285,7 +3293,7 @@ footer > a:last-child {
   gap: 8px;
   border: 0;
   padding: 6px;
-  background: #e9eee4;
+  background: #e2e4e1;
   border-radius: 14px;
 }
 .journey button {
@@ -3321,8 +3329,8 @@ footer > a:last-child {
   padding: 12px;
 }
 .unit-list button[aria-pressed="true"] {
-  background: #e5efc6;
-  border-color: #426b56;
+  background: #fff1c2;
+  border-color: #2f55e4;
 }
 .stat-row strong {
   font-family: var(--heading);
@@ -3332,7 +3340,7 @@ footer > a:last-child {
   padding: 16px;
   border: 1px solid var(--line);
   border-radius: 12px;
-  background: #eef1e8;
+  background: #e2e4e1;
 }
 .experience-tools > p {
   font-size: 11px;
@@ -3354,37 +3362,37 @@ select {
 .enquiry-form input:not([type="checkbox"]),
 .enquiry-form select,
 .enquiry-form textarea {
-  background: #fffefa;
-  border-color: #9aaea2;
+  background: #f8f8f6;
+  border-color: #9aa3b2;
   border-radius: 10px;
   font-family: var(--body);
 }
 .enquiry-form :focus-visible {
-  outline-color: #426b56;
+  outline-color: #2f55e4;
 }
 .consent-row input {
   accent-color: var(--ink);
 }
 .enquiry-context {
-  background: #e5efc6;
-  border-color: #426b56;
+  background: #fff1c2;
+  border-color: #2f55e4;
   border-radius: 10px;
 }
 #enquiry-status[data-state="success"] {
   border-radius: 10px;
-  background: #e5efc6;
+  background: #fff1c2;
   color: var(--ink);
 }
 .pf {
   --sans: var(--body);
   --serif: var(--heading);
-  --accent: #d4ed76;
-  --text: #153d35;
-  --muted: #52645e;
-  --line: #153d3526;
+  --accent: #14244a; /* text on light: yellow would fail contrast */
+  --text: #14244a;
+  --muted: #4b5568;
+  --line: #14244a26;
 }
 .pf-stage {
-  --stage-accent: #d4ed76;
+  --stage-accent: #ffc41f;
 }
 @media (min-width: 1500px) {
   .hero {
@@ -3569,7 +3577,7 @@ select {
   body {
     font-family: Arial, sans-serif;
     background: white;
-    color: #153d35;
+    color: #14244a;
   }
   h1,
   h2,
@@ -3592,7 +3600,7 @@ select {
   .investment .eyebrow,
   .tax-note,
   .price-from {
-    color: #d4ed76;
+    color: #ffc41f;
   }
   .commercial-proforma .proforma-masthead h1 {
     font-size: 23pt;
@@ -3624,7 +3632,7 @@ select {
   }
   .commercial-proforma .scope-number,
   .commercial-proforma .scope-check {
-    color: #426b56;
+    color: #2f55e4;
   }
 }
 
@@ -3659,4 +3667,369 @@ select {
 }
 .privacy-page > .small {
   margin-top: 30px;
+}
+
+/* ==== 7. Home ==== */
+/* A construction-hoarding feel: the live building is the poster, wide heavy type announces it,
+   yellow boards carry the facts and orange is reserved for actions. One bold moment: the scroll film. */
+.page-home main.home {
+  background: var(--cream);
+  color: var(--ink);
+}
+.home h1,
+.home h2,
+.home h3 {
+  font-family: var(--heading);
+  font-stretch: 125%;
+  text-wrap: balance;
+}
+
+/* Scroll film: a tall section with a sticky stage; premium.js maps scroll progress to camera and light. */
+.film {
+  position: relative;
+  height: 320svh;
+}
+.film-stage {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  overflow: hidden;
+}
+.film .scene-wrap.film-scene {
+  position: absolute;
+  inset: 0;
+  min-height: 0;
+  border-radius: 0;
+  pointer-events: none;
+}
+.film .scene-wrap.film-scene canvas {
+  cursor: default;
+}
+/* The amenity labels belong to the beat that talks about them. */
+.film .hotspots {
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+.film[data-on="1"] .hotspots {
+  opacity: 1;
+}
+/* Scrims keep the headline readable over sky and city: concrete by day, navy at night. */
+.film-stage::before,
+.film-stage::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  transition: opacity 0.6s ease;
+}
+.film-stage::before {
+  background: linear-gradient(90deg, #ebece8eb 0%, #ebece899 32%, #ebece800 54%);
+}
+.film-stage::after {
+  background: linear-gradient(90deg, #0f1b38f0 0%, #0f1b38a8 36%, #0f1b3800 64%);
+  opacity: 0;
+}
+.film[data-on="2"] .film-stage::before {
+  opacity: 0;
+}
+.film[data-on="2"] .film-stage::after {
+  opacity: 1;
+}
+.film-copy {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  padding: clamp(36px, 7vh, 88px) 5% clamp(24px, 5vh, 48px);
+  pointer-events: none;
+  transition: color 0.6s ease;
+}
+.film[data-on="2"] .film-copy {
+  color: var(--paper);
+}
+.film-copy a {
+  pointer-events: auto;
+}
+.film-beats {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  align-content: start;
+}
+.film-beats > li {
+  grid-area: 1 / 1;
+  max-width: min(50vw, 820px);
+  opacity: 0;
+  transform: translateY(18px);
+  transition:
+    opacity 0.45s ease,
+    transform 0.45s ease;
+}
+.film-beats > li.is-on {
+  opacity: 1;
+  transform: none;
+}
+.film-beats h1,
+.film-beats h2 {
+  font-size: clamp(42px, 5.6vw, 92px);
+  font-weight: 800;
+  line-height: 0.94;
+  letter-spacing: -0.04em;
+  margin: 0 0 0.32em;
+}
+.film-beats p {
+  font-size: clamp(16px, 1.3vw, 20px);
+  line-height: 1.55;
+  max-width: 28em;
+  margin: 0;
+  color: var(--steel);
+  transition: color 0.6s ease;
+}
+.film[data-on="2"] .film-beats p {
+  color: #c9cfdb;
+}
+.film-foot {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+.film-actions {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+.film-actions .button,
+.close-actions .button {
+  font-size: 16px;
+  padding: 18px 30px;
+}
+.film-actions .text-button {
+  color: inherit;
+  font-size: 15px;
+}
+/* Progress: the bar fills with the scroll; the three labels are the times of day. */
+.film-progress {
+  width: min(360px, 100%);
+  font-size: 13px;
+}
+.film-track {
+  height: 4px;
+  border-radius: 2px;
+  background: color-mix(in srgb, currentColor 22%, transparent);
+  overflow: hidden;
+}
+.film-track::after {
+  content: "";
+  display: block;
+  height: 100%;
+  background: var(--orange);
+  transform-origin: left;
+  transform: scaleX(var(--film, 0));
+}
+.film-times {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  margin-top: 10px;
+}
+.film-times span {
+  opacity: 0.55;
+  transition: opacity 0.3s ease;
+}
+.film-times span:nth-child(2) {
+  text-align: center;
+}
+.film-times span:nth-child(3) {
+  text-align: right;
+}
+.film[data-on="0"] .film-times span:nth-child(1),
+.film[data-on="1"] .film-times span:nth-child(2),
+.film[data-on="2"] .film-times span:nth-child(3) {
+  opacity: 1;
+  font-weight: 600;
+}
+
+/* What you get: the yellow hoarding board. */
+.board {
+  background: var(--lime);
+  padding: clamp(64px, 10vw, 140px) 5%;
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  gap: clamp(32px, 6vw, 96px);
+}
+.board-head h2,
+.extras-head h2 {
+  font-size: clamp(40px, 5vw, 80px);
+  font-weight: 800;
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+  margin: 0 0 24px;
+}
+.board-head p,
+.extras-head p {
+  font-size: 18px;
+  line-height: 1.55;
+  max-width: 26em;
+  margin: 0;
+}
+.board-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 40px;
+}
+.board-list li {
+  border-top: 2px solid var(--ink);
+  padding: 20px 0 36px;
+}
+.board-list h3,
+.extras-list h3 {
+  font-size: 21px;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  margin: 0 0 10px;
+}
+.board-list p,
+.extras-list p {
+  font-size: 16px;
+  line-height: 1.55;
+  margin: 0;
+}
+
+/* Extras: quiet rows on concrete. */
+.extras {
+  padding: clamp(64px, 10vw, 140px) 5%;
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  gap: clamp(32px, 6vw, 96px);
+}
+.extras-head .text-button {
+  display: inline-block;
+  margin-top: 28px;
+  color: var(--ink);
+  font-size: 15px;
+}
+.extras-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.extras-list li {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 24px;
+  align-items: baseline;
+  border-top: 1px solid var(--line);
+  padding: 26px 0;
+}
+.extras-list p {
+  color: var(--steel);
+}
+.extras-quote {
+  font-size: 14px;
+  color: var(--steel);
+  white-space: nowrap;
+}
+
+/* Price, once, at the decision point. */
+.close {
+  background: var(--ink);
+  color: var(--paper);
+  padding: clamp(64px, 10vw, 140px) 5%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 40px;
+}
+.close-label {
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: 0;
+  margin: 0 0 12px;
+  color: var(--lime);
+}
+.close-price {
+  font-family: var(--heading);
+  font-stretch: 125%;
+  font-weight: 800;
+  font-size: clamp(64px, 11vw, 176px);
+  line-height: 0.9;
+  letter-spacing: -0.05em;
+  margin: 0 0 28px;
+  color: var(--lime);
+}
+.close-price span {
+  font-size: 0.32em;
+  letter-spacing: 0;
+  margin-right: 0.2em;
+  vertical-align: 0.95em;
+}
+.close-copy p:last-child {
+  font-size: 18px;
+  line-height: 1.55;
+  max-width: 34em;
+  margin: 0;
+  color: #c9cfdb;
+}
+.close-actions {
+  display: grid;
+  gap: 18px;
+  justify-items: end;
+}
+.close-actions .text-button {
+  color: var(--paper);
+  font-size: 15px;
+}
+
+@media (max-width: 820px) {
+  .film-stage::before {
+    background: linear-gradient(180deg, #ebece8f5 0%, #ebece8c0 38%, #ebece800 58%, #ebece800 74%, #ebece8e6 92%);
+  }
+  .film-stage::after {
+    background: linear-gradient(180deg, #0f1b38f2 0%, #0f1b38b0 40%, #0f1b3800 60%, #0f1b3800 74%, #0f1b38e6 92%);
+  }
+  .film-beats > li {
+    max-width: none;
+  }
+  .film-beats h1,
+  .film-beats h2 {
+    font-size: clamp(36px, 10.5vw, 56px);
+  }
+  .film-beats p {
+    font-size: 16px;
+  }
+  .film-foot {
+    gap: 18px;
+  }
+  .film-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .film-progress {
+    width: 100%;
+  }
+  .board,
+  .extras,
+  .close {
+    grid-template-columns: 1fr;
+  }
+  .board-list {
+    grid-template-columns: 1fr;
+  }
+  .close-actions {
+    justify-items: start;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .film-beats > li {
+    transition: none;
+    transform: none;
+  }
 }

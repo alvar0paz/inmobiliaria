@@ -277,7 +277,7 @@
     // Without furnished plans there is no "La vida dentro": the journey goes from the apartment to the next step.
     $('[data-step="2"]')?.toggleAttribute('hidden', !engine.capabilities.interiors);
     const light = $('[data-light][aria-pressed="true"]');
-    if (p) { go(step); if (restored && light) engine.lighting(+light.dataset.light); } else engine.lighting(+(light?.dataset.light ?? 2));
+    if (p) { go(step); if (restored && light) engine.lighting(+light.dataset.light); } else if (film) filmFrame(); else engine.lighting(+(light?.dataset.light ?? 2));
   }
   // Mobile browsers drop the GPU context when memory runs low or the tab is backgrounded.
   // Show the fallback while it is gone, then rebuild the scene where the visitor left it.
@@ -287,6 +287,27 @@
     engine = null;
     start(true).catch(() => location.reload());
   });
+  // Home page film: the page scroll drives the camera, the time of day and the caption beats.
+  // The stage is sticky inside a tall section; progress runs 0–1 across that section.
+  const film = $('[data-film]'), beats = film ? [...film.querySelectorAll('[data-beat]')] : [];
+  function filmFrame() {
+    const box = film.getBoundingClientRect(), span = box.height - innerHeight;
+    const k = span > 0 ? Math.min(1, Math.max(0, -box.top / span)) : 0, beat = Math.min(beats.length - 1, Math.floor(k * beats.length));
+    if (film.dataset.on !== String(beat)) {
+      film.dataset.on = beat;
+      beats.forEach((b, i) => b.classList.toggle('is-on', i === beat));
+    }
+    film.style.setProperty('--film', k.toFixed(3));
+    const wide = innerWidth > 820;
+    engine?.drive(k, wide ? {shift: .42} : {lift: .42});
+  }
+  if (film) {
+    let queued = false;
+    const request = () => { if (!queued) { queued = true; requestAnimationFrame(() => { queued = false; filmFrame(); }); } };
+    addEventListener('scroll', request, {passive: true});
+    addEventListener('resize', request);
+    filmFrame();
+  }
   AlphaAssets.whenVisible(canvas, () => (manifest ? AlphaAssets.gltf() : AlphaAssets.three()).then(() => start()).catch(fallback));
   window.addEventListener('pagehide', e => { if (!e.persisted) engine?.dispose(); });
 })();
