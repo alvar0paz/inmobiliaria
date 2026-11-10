@@ -308,6 +308,6 @@
     addEventListener('resize', request);
     filmFrame();
   }
-  AlphaAssets.whenVisible(canvas, () => (manifest ? AlphaAssets.gltf() : AlphaAssets.three()).then(() => start()).catch(fallback));
+  SiteAssets.whenVisible(canvas, () => (manifest ? SiteAssets.gltf() : SiteAssets.three()).then(() => start()).catch(fallback));
   window.addEventListener('pagehide', e => { if (!e.persisted) engine?.dispose(); });
 })();

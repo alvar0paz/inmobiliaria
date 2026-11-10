@@ -5,7 +5,7 @@ import globals from 'globals';
 export default [
   {ignores: ['dist/**', '.next/**', '.vinext/**', '.wrangler/**', 'node_modules/**', 'public/vendor/**', 'site/vendor/**', 'scripts/**', '**/*.ts', '**/*.tsx']},
   js.configs.recommended,
-  {files: ['public/**/*.js'], languageOptions: {sourceType: 'script', globals: {...globals.browser, THREE: 'readonly', Architecture: 'writable', ViewerControls: 'writable', AlphaAssets: 'writable', ViewerKit: 'writable', ViewerSite: 'writable', TowerBuilding: 'writable', GltfBuilding: 'writable', module: 'readonly'}}},
+  {files: ['public/**/*.js'], languageOptions: {sourceType: 'script', globals: {...globals.browser, THREE: 'readonly', Architecture: 'writable', ViewerControls: 'writable', SiteAssets: 'writable', ViewerKit: 'writable', ViewerSite: 'writable', TowerBuilding: 'writable', GltfBuilding: 'writable', module: 'readonly'}}},
   {files: ['site/**/*.mjs', 'lib/**/*.mjs', 'tests/**/*.mjs'], languageOptions: {sourceType: 'module', globals: {...globals.node}}},
   {files: ['tests/**/*.cjs'], languageOptions: {sourceType: 'commonjs', globals: {...globals.node}}},
   {rules: {'no-unused-vars': ['error', {argsIgnorePattern: '^_', caughtErrors: 'none'}]}},

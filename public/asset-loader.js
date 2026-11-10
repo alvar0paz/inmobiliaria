@@ -1,6 +1,6 @@
 /* Download the shared 3D engine (and, for a client's glTF building, its loader) only when a visible
    feature needs it. VERSIONS is stamped by site/build.mjs with each file's content hash. */
-window.AlphaAssets=(()=>{
+window.SiteAssets=(()=>{
  const VERSIONS={"vendor/three.min.js":"9274bbcec8","vendor/GLTFLoader.js":"8aca94c62d","building-gltf.js":"350608716a"};
  const pending=new Map(),waiting=new WeakMap();
  function script(path,ready){
