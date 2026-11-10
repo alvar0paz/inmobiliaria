@@ -4,6 +4,7 @@
 
    BUILDING INTERFACE — what options.building (default TowerBuilding) provides:
      footprint            [width, depth] in metres, for the ground-contact shadow.
+     unitSurface?         'room' when every unit is one scaled box: the glazing then shows a room behind it.
      build(kit, ctx)      ctx = {home, inventory, unitMaterial}; returns:
        root               Group whose children are the levels, bottom to top.
        levels             [{group, n, delay}]: n is the floor number, delay staggers the opening animation.
@@ -22,9 +23,9 @@ window.Architecture = (() => {
 
   // Raw display colours. Fog and sky share the horizon, so the ground melts into the distance.
   const LIGHTS = [
-    {top: '#5287c4', horizon: '#d3e0e6', sun: '#fff0d8', sunI: 2.7, sky: '#e0edff', ground: '#6d6a55', hemiI: .6, fill: .25, exposure: .8, sunAt: [-40, 60, 50], night: 0},
+    {top: '#3f7cc6', horizon: '#cfdde6', sun: '#fff0d8', sunI: 3.1, sky: '#e0edff', ground: '#5d5a48', hemiI: .5, fill: .2, exposure: .84, sunAt: [-58, 55, 42], night: 0},
     {top: '#5d74a6', horizon: '#f0cda4', sun: '#ffb36b', sunI: 2.5, sky: '#f2dcc6', ground: '#5c4c3a', hemiI: .55, fill: .18, exposure: .86, sunAt: [-62, 26, 44], night: .22},
-    {top: '#07111d', horizon: '#243548', sun: '#a9c2e0', sunI: .28, sky: '#3f5878', ground: '#14181d', hemiI: .26, fill: .08, exposure: 1.05, sunAt: [-30, 70, -25], night: 1},
+    {top: '#07111d', horizon: '#243548', sun: '#a9c2e0', sunI: .5, sky: '#4a6488', ground: '#1b1f24', hemiI: .5, fill: .1, exposure: 1.08, sunAt: [-38, 62, 40], night: 1},
   ];
 
   function create(T, canvas, onUnit, options = {}) {
@@ -43,7 +44,7 @@ window.Architecture = (() => {
     home.visible = false;
     scene.background = new T.Color();
     // Exponential haze: clear near the tower, thickening into aerial perspective toward the Andes.
-    scene.fog = new T.FogExp2('#e1e8e6', .0017);
+    scene.fog = new T.FogExp2('#e1e8e6', .0013);
 
     const hemi = new T.HemisphereLight('#e8f3ff', '#73664c', .7);
     const sun = new T.DirectionalLight('#ffe3b2', 2.4);
@@ -61,7 +62,10 @@ window.Architecture = (() => {
     const site = ViewerSite.create(kit, {renderer, scene, env, footprint: Building.footprint, blending: () => !!blend});
     // Four glazing variants look identical by day and light up differently at night.
     const unitLit = [['#ffa44a', .8], ['#f08f3c', .55], ['#8fb4f0', .4], ['#000000', 0]].map(([emissive, peak], i) => {
-      const m = mat(`unitGlass${i}`, '#33495a', {roughness: .06, metalness: .55, emissive, envMapIntensity: 1.4, surface: 'unit'});
+      // A building made of one box per home (the tower) shows a room behind each pane; other geometry keeps flat glazing.
+      const m = Building.unitSurface === 'room'
+        ? mat(`unitGlass${i}`, '#ffffff', {roughness: .05, metalness: .35, emissive, envMapIntensity: 1.9, surface: 'room'})
+        : mat(`unitGlass${i}`, '#33495a', {roughness: .06, metalness: .55, emissive, envMapIntensity: 1.4, surface: 'unit'});
       m.userData.peak = peak;
       return m;
     });
@@ -594,11 +598,13 @@ window.Architecture = (() => {
       hold() { lastInput = clock(); },
       // Scroll-driven film (home page): progress 0–1 sets the orbit and the time of day directly,
       // morning → sunset → night. `shift` slides the building sideways in the frame, as a fraction
-      // of the half-width, to leave room for text; `lift` lowers it, as a fraction of the half-height.
-      drive(progress, {shift = 0, lift = 0} = {}) {
+      // of the half-width, to leave room for text; `lift` lowers it, as a fraction of the half-height;
+      // `back` steps the camera away (1 = the default distance).
+      drive(progress, {shift = 0, lift = 0, back = 1} = {}) {
         if (intro) finishIntro();
         const k = clamp(progress, 0, 1), v = defaultView();
-        const r = v.r * (1.1 - .18 * k), theta = v.theta - .8 + 1.55 * k, tan = Math.tan(v.fov * Math.PI / 360);
+        // The turn starts on the street façade and ends on the three-quarter view, so the night beat shows lit homes, not the side wall.
+        const r = v.r * (1.1 - .18 * k) * back, theta = v.theta - .95 + k, tan = Math.tan(v.fov * Math.PI / 360);
         const side = r * tan * camera.aspect * shift;
         // The building sits right of centre: aim left of it along the camera's right vector (cos θ, 0, −sin θ).
         Object.assign(goal, {...v, r, theta, phi: v.phi - .08 + .12 * k, x: v.x - Math.cos(theta) * side, z: v.z + Math.sin(theta) * side, y: v.y + r * tan * lift});

@@ -10,7 +10,7 @@ const INK = '#14244a', PAPER = '#f4f3ee';
 // Same orbit pose as engine.drive(K) with no shift (see architecture.js).
 const fit = ViewerControls.fitDistance(30, 48, 22, aspect, 40) * (aspect < 1 ? 1.12 : .92);
 const v = {theta: .62, phi: 1.28, r: fit, x: 0, y: aspect < 1 ? 23 : 21, z: 0};
-const pose = {r: v.r * (1.1 - .18 * K), theta: v.theta - .8 + 1.55 * K, phi: v.phi - .08 + .12 * K, x: v.x, y: v.y, z: v.z};
+const pose = {r: v.r * (1.1 - .18 * K), theta: v.theta - .95 + K, phi: v.phi - .08 + .12 * K, x: v.x, y: v.y, z: v.z};
 const rc = document.getElementById('render');
 rc.style.width = W + 'px'; rc.style.height = H + 'px'; Object.assign(document.getElementById('rw').style, {width: W + 'px', height: H + 'px'});
 const engine = q.get('only') === 'draw' ? (window.renderReady = true, null) : Architecture.create(THREE, rc, null, {orbit: false, intro: false, quality: 'high', onReady: () => { setTimeout(() => { engine.drive(K); setTimeout(() => { engine.drive(K); window.renderReady = true; }, 1500); }, 300); }});

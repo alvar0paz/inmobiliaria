@@ -3724,7 +3724,7 @@ select {
   transition: opacity 0.6s ease;
 }
 .film-stage::before {
-  background: linear-gradient(90deg, #ebece8eb 0%, #ebece899 32%, #ebece800 54%);
+  background: linear-gradient(90deg, #ebece8e6 0%, #ebece88c 28%, #ebece800 48%);
 }
 .film-stage::after {
   background: linear-gradient(90deg, #0f1b38f0 0%, #0f1b38a8 36%, #0f1b3800 64%);
@@ -4096,8 +4096,9 @@ select {
   font-family: var(--heading);
   font-stretch: 125%;
   font-weight: 800;
-  font-size: clamp(64px, 11vw, 176px);
+  font-size: clamp(48px, 10.6vw, 168px);
   line-height: 0.9;
+  white-space: nowrap;
   letter-spacing: -0.05em;
   margin: 0 0 28px;
   color: var(--lime);
@@ -4123,6 +4124,18 @@ select {
 .close-actions .text-button {
   color: var(--paper);
   font-size: 15px;
+}
+/* The price is one unbreakable line: below this width it gets the full row and the actions sit under it. */
+@media (max-width: 1100px) {
+  .close {
+    grid-template-columns: 1fr;
+  }
+  .close-actions {
+    justify-items: start;
+  }
+  .close-price {
+    font-size: min(13.2vw, 150px);
+  }
 }
 
 @media (max-width: 820px) {

@@ -53,8 +53,8 @@ window.ViewerKit = (() => {
         float gr=rNoise(q)*.6+rNoise(q*2.7)*.4,k=rNoise(P*3.);sTint=vec3(.84+.28*gr)*(.94+.1*k);sRough=.85+.3*gr;`,
       plank: `float gr=rNoise(vec3(P.x*34.,P.y*34.,P.z*1.3))*.6+rNoise(vec3(P.x*90.,P.y*9.,P.z*3.))*.4,k=rNoise(P*1.7);
         sTint=vec3(.86+.24*gr)*(.95+.1*k);sRough=.8+.35*gr;`,
-      leaf: `float n=rFbm(P*.3),l=rNoise(P*8.5),u=N.y*.5+.5;
-        sTint=mix(vec3(.92,1.,.82),vec3(1.14,1.08,.78),n)*(.5+.62*u)*(.78+.34*l);sRough=1.;`,
+      leaf: `float n=rFbm(P*.3),l=rNoise(P*8.5),l2=rNoise(P*23.),u=N.y*.5+.5;
+        sTint=mix(vec3(.86,1.,.78),vec3(1.1,1.06,.74),n)*(.34+.74*u)*(.7+.42*l)*(.82+.34*l2);sRough=1.;`,
       unit: `float n=rNoise(vec3(P.x*6.,P.y*1.5,P.z*6.)),ceil=smoothstep(-.5,.45,P.y),cur=smoothstep(.35,.65,rNoise(vec3((P.x+P.z)*7.,0.,3.)));
         sTint=vec3(.9+.2*n);sRough=.5+.9*n;sLit=vec3(mix(.3,1.35,ceil*ceil))*(1.-.5*cur);`,
       city: `float n=rFbm(P*.4),g=rNoise(P*19.),wall=step(abs(N.y),.5),roof=step(.5,N.y);
@@ -62,13 +62,41 @@ window.ViewerKit = (() => {
         vec2 uv=abs(N.x)>.5?vec2(P.z,P.y):vec2(P.x,P.y);vec2 c=vec2(uv.x/mix(2.2,3.1,b),(uv.y+.2)/3.2),f=fract(c),id=floor(c);
         float wx=mix(.14,.32,fract(b*7.)),win=wall*step(wx,f.x)*step(f.x,1.-wx*.6)*step(.3,f.y)*step(f.y,.88)*step(1.,c.y);
         float shop=wall*(1.-step(1.,c.y))*step(.12,f.y)*step(.06,f.x)*step(f.x,.94);
-        vec3 body=mix(vec3(1.),vec3(1.05,.97,.88),step(.55,b))*(.92+.09*n+.04*g);
+        float hb=fract(b*13.7),hr=fract(b*29.3);
+        vec3 body=hb<.32?vec3(1.):hb<.52?vec3(1.03,.93,.78):hb<.66?vec3(.97,.74,.6):hb<.8?vec3(.78,.79,.8):hb<.9?vec3(.8,.53,.42):vec3(.84,.9,.94);
+        body*=(.9+.1*n+.05*g)*(1.-.1*wall*step(f.y,.07)*step(1.,c.y));
         vec3 glassC=vec3(.26,.31,.35)*(.7+.6*rHash(vec3(id,b*31.)));
-        sTint=mix(body,glassC,max(win,shop));sTint=mix(sTint,vec3(.66,.66,.64)*(.85+.25*g)*(.9+.15*n),roof);
+        sTint=mix(body,glassC,max(win,shop));sTint=mix(sTint,mix(vec3(.62,.62,.6),vec3(.8,.5,.4),step(.72,hr))*(.85+.25*g)*(.9+.15*n),roof);
         sRough=mix(1.,.12,max(win,shop));
         float on=step(.56,rHash(vec3(id*1.7,b*13.)));
         sLit=win*on*mix(vec3(1.,.8,.58),vec3(1.,.95,.86),rHash(vec3(id,3.)))*(.55+.45*rHash(vec3(id,9.)))+shop*step(.4,b)*vec3(1.,.86,.66);`,
       water: `sTint=vec3(.92+.1*rNoise(P*2.));`,
+      /* Glazing with a room behind it (interior mapping). The mesh is a unit box scaled to one home, so
+         P runs -.5..5 and vSurfS holds its size in metres. The view ray is traced into a 4 m deep room
+         per façade bay: floor, ceiling, walls, a hint of furniture and curtains at the glass. By day
+         the rooms sit dim behind the sky's reflection; at night sLit lights them room by room. */
+      room: `vec3 S=vSurfS,r=-normalize(vSurfV);float face=step(.5,abs(N.z)),sg=N.z<0.?-1.:1.;
+        float u=(P.x+.5)*S.x,v=(P.y+.5)*S.y,bays=max(1.,floor(S.x/3.4+.5)),W=S.x/bays,cell=floor(u/W),cu=u-cell*W;
+        float seed=rHash(vec3(floor(vSurfO.x*1024.+.5),cell*7.3,sg*3.)),s2=fract(seed*17.31),s3=fract(seed*53.7);
+        float rin=max(-r.z*sg,.02),D=4.2;
+        float tx=r.x>0.?(W-cu)/max(r.x,1e-4):cu/max(-r.x,1e-4),ty=r.y>0.?(S.y-v)/max(r.y,1e-4):v/max(-r.y,1e-4),tz=D/rin,t=min(tx,min(ty,tz));
+        float hu=cu+r.x*t,hv=v+r.y*t,hd=rin*t;
+        vec3 wall=mix(vec3(.86,.83,.77),vec3(.74,.76,.75),step(.6,s2))*(.86+.2*s3),c=wall;
+        if(t==ty)c=r.y<0.?mix(vec3(.5,.37,.25),vec3(.62,.6,.56),step(.7,s3))*(.85+.3*rNoise(vec3(hu*9.,cell,hd*1.3))):vec3(.95,.94,.9);
+        else if(t==tx)c=wall*.88;
+        else{float sofa=step(abs(hu-W*(.3+.3*s2)),.95)*step(hv,.82),art=step(abs(hu-W*.5),.5)*step(abs(hv-1.65),.28)*step(.45,s3);
+          c=mix(c,vec3(.34,.33,.31)+.2*vec3(s3,s2,seed),sofa);c=mix(c,vec3(.25,.3,.33)+.3*vec3(seed,s3,s2),art);}
+        float lamp=exp(-2.2*length(vec2(hu-W*.5,hd-D*.55)))*step(S.y-.02,hv);
+        float day=mix(.2,.045,smoothstep(0.,D,hd))*(t==ty&&r.y<0.?1.6:1.);
+        float cl=step(.45,s2)*(.08+.2*s3),cr=step(.55,seed)*(.06+.2*s2),shut=step(.92,s3);
+        float cur=max(shut,max(step(cu/W,cl),step(1.-cr,cu/W)))*step(.02,v);
+        float fold=.84+.16*sin(u*46.+sin(v*2.)*1.5);
+        vec3 glassTint=vec3(.72,.82,.86);
+        sTint=mix(mix(c*day*glassTint,vec3(.9,.88,.83)*fold*.42,cur),vec3(.5),1.-face);
+        sRough=mix(1.,6.,cur*face);
+        float on=step(.28,fract(seed*91.7));
+        vec3 lit=c*(.55+.5*smoothstep(0.,S.y,hv))*(1.-.35*smoothstep(0.,D,hd))+vec3(1.4)*lamp;
+        sLit=mix(lit,vec3(1.,.93,.84)*fold*.75,cur*.85)*on*face;`,
     };
     const NORMALS = {
       water: `vec2 wp=vSurf.xz*2.6;float h0=rFbm(vec3(wp,0.)),hx=rFbm(vec3(wp+vec2(.06,0.),0.)),hz=rFbm(vec3(wp+vec2(0.,.06),0.));
@@ -78,10 +106,15 @@ window.ViewerKit = (() => {
       m.userData.surface = kind;
       m.customProgramCacheKey = () => 'surface:' + kind;
       m.onBeforeCompile = s => {
-        s.vertexShader = s.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vSurf;varying vec3 vSurfN;')
-          .replace('#include <begin_vertex>', '#include <begin_vertex>\nvSurf=position;vSurfN=normal;');
+        // Rooms behind glass also need the view ray, the mesh's size and its origin, in the mesh's own axes.
+        const ray = kind === 'room';
+        const extra = ray ? 'varying vec3 vSurfV;varying vec3 vSurfS;varying vec3 vSurfO;' : '';
+        s.vertexShader = s.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vSurf;varying vec3 vSurfN;' + extra)
+          .replace('#include <begin_vertex>', '#include <begin_vertex>\nvSurf=position;vSurfN=normal;' + (ray
+            ? 'vec3 sA=modelMatrix[0].xyz,sB=modelMatrix[1].xyz,sC=modelMatrix[2].xyz,sD=cameraPosition-(modelMatrix*vec4(position,1.)).xyz;'
+              + 'vSurfS=vec3(length(sA),length(sB),length(sC));vSurfV=vec3(dot(sA,sD),dot(sB,sD),dot(sC,sD))/vSurfS;vSurfO=vec3(fract(sin(dot(floor(modelMatrix[3].xyz*4.+.5),vec3(12.9898,78.233,37.719)))*43758.5453));' : ''));
         s.fragmentShader = s.fragmentShader
-          .replace('#include <common>', `#include <common>\nvarying vec3 vSurf;varying vec3 vSurfN;${NOISE}
+          .replace('#include <common>', `#include <common>\nvarying vec3 vSurf;varying vec3 vSurfN;${extra}${NOISE}
             vec3 sTint=vec3(1.),sLit=vec3(1.);float sRough=1.,sMetal=1.;void surfaceDetail(){vec3 P=vSurf,N=normalize(vSurfN);${SURFACES[kind]}}`)
           .replace('#include <color_fragment>', '#include <color_fragment>\nsurfaceDetail();diffuseColor.rgb*=sTint;')
           .replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\nroughnessFactor=clamp(roughnessFactor*sRough,.04,1.);')
@@ -96,7 +129,7 @@ window.ViewerKit = (() => {
     const dark = mat('dark', '#37443c'), metal = mat('metal', '#3d433f', {metalness: .8, roughness: .32});
     // Railings and screens: clear, reflective glass whose sheen comes from the sky.
     const glass = mat('glass', '#b9cfcc', {metalness: .1, roughness: .04, transparent: true, opacity: .32, depthWrite: false, noShadow: true, envMapIntensity: 1.6});
-    const leaf = mat('leaf', '#4b6640', {surface: 'leaf'}), leaf2 = mat('leaf2', '#6f8550', {surface: 'leaf'}), leaf3 = mat('leaf3', '#3f5a3a', {surface: 'leaf'});
+    const leaf = mat('leaf', '#4b6640', {surface: 'leaf'}), leaf2 = mat('leaf2', '#5d7b42', {surface: 'leaf'}), leaf3 = mat('leaf3', '#3f5a3a', {surface: 'leaf'});
     const water = mat('water', '#1d6b74', {metalness: .1, roughness: .04, envMapIntensity: 1.3, surface: 'water'});
     const fabric = mat('fabric', '#e9dfc9', {roughness: 1}), cushion = mat('cushion', '#9b9f82', {roughness: 1}), brass = mat('brass', '#bb985b', {metalness: .85, roughness: .28});
     const glow = mat('glow', '#fff1c7', {emissive: '#ffb563', emissiveIntensity: .8});
@@ -154,31 +187,35 @@ window.ViewerKit = (() => {
       }
     }
     // Canopy clumps: lumpy, flat-bottomed blobs in three shapes with smooth, outward normals.
-    const clumps = [0, 1, 2].map(k => {
-      const g = new T.IcosahedronGeometry(1, 1), pos = g.attributes.position, nor = g.attributes.normal, d = new T.Vector3(), n = new T.Vector3();
+    const bark = mat('bark', '#5e4c3c', {roughness: .95, surface: 'wood'});
+    const clump = fine => k => {
+      const g = new T.IcosahedronGeometry(1, fine ? 2 : 1), pos = g.attributes.position, nor = g.attributes.normal, d = new T.Vector3(), n = new T.Vector3();
       for (let i = 0; i < pos.count; i++) {
         d.fromBufferAttribute(pos, i).normalize();
-        const r = 1 + .16 * Math.sin(d.x * 5 + k * 2) * Math.sin(d.y * 4 + k) * Math.sin(d.z * 6 + k * 3) + .08 * Math.sin(d.x * 13 + d.z * 11 + k * 5), y = d.y * r;
+        const r = 1 + .16 * Math.sin(d.x * 5 + k * 2) * Math.sin(d.y * 4 + k) * Math.sin(d.z * 6 + k * 3) + .08 * Math.sin(d.x * 13 + d.z * 11 + k * 5)
+          + (fine ? .07 * Math.sin(d.x * 23 + d.y * 19 + k * 7) * Math.sin(d.z * 21 + d.y * 17 + k) : 0), y = d.y * r;
         pos.setXYZ(i, d.x * r, y < -.25 ? -.25 + (y + .25) * .35 : y, d.z * r);
         n.set(d.x, d.y * 1.2 + .15, d.z).normalize();
         nor.setXYZ(i, n.x, n.y, n.z);
       }
       return g;
-    });
+    };
+    // Trees beside the building get finer, craggier canopies; the distant groves stay light.
+    const clumps = [0, 1, 2].map(clump(false)), fineClumps = [0, 1, 2].map(clump(true));
     const treeRnd = seeded(808);
-    function tree(p, x, z, s = 1) {
+    function tree(p, x, z, s = 1, fine = false) {
       const r = treeRnd, h = (2.1 + r() * .7) * s, lean = (r() - .5) * .12;
-      const trunk = cyl(p, .2 * s, h, x, h / 2, z, wood, .1 * s); trunk.rotation.z = lean;
+      const trunk = cyl(p, .2 * s, h, x, h / 2, z, bark, .1 * s); trunk.rotation.z = lean;
       // Two or three limbs fork from the trunk into the crown.
       const limbs = 2 + (r() < .5);
       for (let i = 0; i < limbs; i++) {
-        const a = r() * Math.PI * 2, limb = cyl(p, .085 * s, 1.3 * s, x + Math.cos(a) * .3 * s, h + .3 * s, z + Math.sin(a) * .3 * s, wood, .05 * s);
+        const a = r() * Math.PI * 2, limb = cyl(p, .085 * s, 1.3 * s, x + Math.cos(a) * .3 * s, h + .3 * s, z + Math.sin(a) * .3 * s, bark, .05 * s);
         limb.rotation.set(Math.sin(a) * .7, 0, -Math.cos(a) * .7);
       }
       const tones = [leaf, leaf2, leaf3], tone = tones[Math.floor(r() * 3)], crown = h + .9 * s;
       for (let i = 0; i < 9; i++) {
         const a = i * 2.4 + r(), ring = i === 0 ? 0 : (i < 6 ? 1.05 : .55) + r() * .35, y = crown + (i === 0 ? .7 : i < 6 ? (r() - .45) * .7 : .9 + r() * .5) * s;
-        const o = new T.Mesh(clumps[i % 3], i % 3 === 2 ? tones[(tones.indexOf(tone) + 1) % 3] : tone);
+        const o = new T.Mesh((fine ? fineClumps : clumps)[i % 3], i % 3 === 2 ? tones[(tones.indexOf(tone) + 1) % 3] : tone);
         const size = (i === 0 ? 1.3 : .82 + r() * .35) * s;
         o.position.set(x + Math.cos(a) * ring * s, y, z + Math.sin(a) * ring * s);
         o.scale.set(size, size * (.85 + r() * .2), size);
@@ -259,7 +296,7 @@ window.ViewerKit = (() => {
       boxGeo.dispose();
       Object.values(geometries).forEach(g => g.dispose());
       Object.values(materials).forEach(m => m.dispose());
-      clumps.forEach(g => g.dispose());
+      [...clumps, ...fineClumps].forEach(g => g.dispose());
     }
     return {
       T, util, NOISE, materials, geometries, boxGeo, mat, detail, adopt, dispose,

@@ -149,9 +149,9 @@ window.ViewerSite = (() => {
     for (const x of [-27, 27]) box(site, 14, .2, 31.5, x, -.1, -.25, lawn);
     box(site, 68, .2, 12, 0, -.1, -22, lawn);
     box(site, 38, .7, .8, 0, .55, -15.6, leaf);
-    for (const x of [-17.5, 17.5]) for (const z of [-12, -2, 9]) tree(site, x, z, 1.1);
-    for (const [x, z, s] of [[-26, -8, 1.2], [27, -4, 1], [-28, 8, 1.1], [25, 9, 1.3], [-18, -22, 1], [8, -24, 1.2], [-6, -23, .9], [26, -21, 1.1]]) tree(site, x, z, s);
-    for (let x = -84; x <= 84; x += 12) if (Math.abs(x) > 20) { tree(site, x, 15.6, .95); tree(site, x + 6, 30.4, .95); }
+    for (const x of [-17.5, 17.5]) for (const z of [-12, -2, 9]) tree(site, x, z, 1.1, true);
+    for (const [x, z, s] of [[-26, -8, 1.2], [27, -4, 1], [-28, 8, 1.1], [25, 9, 1.3], [-18, -22, 1], [8, -24, 1.2], [-6, -23, .9], [26, -21, 1.1]]) tree(site, x, z, s, true);
+    for (let x = -84; x <= 84; x += 12) if (Math.abs(x) > 20) { tree(site, x, 15.6, .95, Math.abs(x) < 50); tree(site, x + 6, 30.4, .95, Math.abs(x) < 50); }
     // Loose groves in the open park land around the site.
     const parkRnd = seeded(61);
     for (let i = 0; i < 90; i++) {
@@ -176,9 +176,11 @@ window.ViewerSite = (() => {
       const g = new T.Group(), top = clothes[Math.floor(crowd() * clothes.length)], legs = clothes[Math.floor(crowd() * 2)];
       const h = .92 + crowd() * .14;
       g.position.set(x, ground, z); g.rotation.y = turn; g.scale.setScalar(h); site.add(g);
-      for (const dx of [-.09, .09]) box(g, .13, .82, .15, dx, .41, 0, legs);
-      box(g, .42, .6, .24, 0, 1.12, 0, top);
-      for (const dx of [-.27, .27]) box(g, .1, .58, .12, dx, 1.1, 0, top);
+      // Tapered limbs and a rounded torso read as a figure, not a block, when the camera comes down to the lobby.
+      for (const dx of [-.09, .09]) { cyl(g, .055, .84, dx, .44, 0, legs, .085); box(g, .1, .06, .25, dx, .03, .05, hair); }
+      cyl(g, .15, .6, 0, 1.13, 0, top, .2).scale.z = .6;
+      for (const dx of [-.25, .25]) cyl(g, .04, .6, dx, 1.1, 0, top, .058).rotation.z = dx * .32;
+      cyl(g, .05, .1, 0, 1.46, 0, skin);
       sphere(g, .115, 0, 1.58, 0, skin, 1, 1.12, 1);
       sphere(g, .118, 0, 1.63, -.02, hair, 1, .7, 1);
     }
@@ -231,7 +233,7 @@ window.ViewerSite = (() => {
     function applyLight(L) {
       const n = L.night, u = skyUniforms;
       u.top.value.copy(L.top); u.horizon.value.copy(L.horizon); u.sunColor.value.copy(L.sun); u.sunDir.value.copy(L.sunAt); u.night.value = n;
-      u.ground.value.copy(L.ground).lerp(L.horizon, .35);
+      u.ground.value.copy(L.ground).lerp(L.horizon, .15);
       hazeColor.value.copy(L.horizon).convertSRGBToLinear();
       for (const p of peaks) p.material.color.copy(p.userData.base).multiplyScalar(1 - .72 * n).lerp(L.horizon, 1 - p.userData.haze).convertSRGBToLinear();
       for (const m of bodies) m.emissiveIntensity = kit.util.smooth(.15, 1, n) * .9;

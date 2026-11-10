@@ -128,18 +128,27 @@ window.TowerBuilding = (() => {
     }
     const roof = level(14, .45 + 12 * .085 + .05).group;
     box(roof, FLOOR.w + .4, .35, FLOOR.d + .4, 0, ROOF, 0, lightStone);
-    // Roof finish: mid-tone concrete pavers, planting under the pergola, and a crown with an LED edge.
-    box(roof, FLOOR.w - .6, .05, FLOOR.d - .6, 0, ROOF + .2, 0, concrete);
+    // Roof finish: jointed concrete pavers, a timber deck round the pool, planting under the pergola, and a crown with an LED edge.
+    box(roof, FLOOR.w - .6, .05, FLOOR.d - .6, 0, ROOF + .2, 0, mat('roofDeck', '#b7b0a2', {roughness: .85, surface: 'paving'}));
     box(roof, 8.6, .06, 9.6, -7.75, ROOF + .23, -2.5, leaf);
     for (const z of [-(FLOOR.d / 2 + .28), FLOOR.d / 2 + .28]) { box(roof, FLOOR.w + .7, 1, .16, 0, ROOF + .4, z, concrete); box(roof, FLOOR.w + .7, .07, .07, 0, ROOF + .93, z, led); }
     for (const x of [-(FLOOR.w / 2 + .28), FLOOR.w / 2 + .28]) { box(roof, .16, 1, FLOOR.d + .4, x, ROOF + .4, 0, concrete); box(roof, .07, .07, FLOOR.d + .7, x, ROOF + .93, 0, led); }
     // Pool deck, pergola garden, lift overrun and stair bulkhead.
     box(roof, 12, .4, 5.6, 3.75, ROOF + .2, -5, stone); box(roof, 11.6, .08, 5.2, 3.75, ROOF + .44, -5, water);
+    box(roof, 14.2, .07, 9.4, 3.75, ROOF + .245, -3.9, oak);
     for (let i = 0; i < 4; i++) for (const z of [-7, 2]) box(roof, .12, 2.6, .12, -11.5 + i * 2.5, ROOF + 1.3, z, wood);
     for (let i = 0; i < 17; i++) box(roof, 8, .13, .13, -7.75, ROOF + 2.7, -7 + i * .56, wood);
     box(roof, cx1 - cx0, 2.6, 2.4, coreX, ROOF + 1.3, 2.7, stone); box(roof, sx1 - sx0, 2.6, 3, stairX, ROOF + 1.3, -2, stone);
     for (const z of [-(FLOOR.d / 2 - .3), FLOOR.d / 2 - .3]) { box(roof, FLOOR.w - .8, 1, .07, 0, ROOF + .6, z, glass); box(roof, FLOOR.w - .8, .07, .09, 0, ROOF + 1.15, z, metal); }
-    for (let i = 0; i < 4; i++) box(roof, 1.1, .2, 2.5, .6 + i * 2.2, ROOF + .45, -.5, fabric);
+    // Sun loungers in pairs under parasols: timber frame, seat cushion and a raised backrest.
+    for (let i = 0; i < 4; i++) {
+      const x = .6 + i * 2.2, z = -.35, y = ROOF + .28;
+      box(roof, .72, .06, 1.95, x, y + .27, z, oak);
+      for (const dx of [-.3, .3]) for (const dz of [-.85, .85]) box(roof, .05, .26, .05, x + dx, y + .12, z + dz, metal);
+      box(roof, .62, .14, 1.25, x, y + .36, z + .32, fabric);
+      box(roof, .62, .14, .72, x, y + .52, z - .58, fabric).rotation.x = .6;
+    }
+    for (const x of [1.7, 6.1]) { cyl(roof, .04, 2.4, x, ROOF + 1.48, .75, metal); cyl(roof, 1.45, .32, x, ROOF + 2.62, .75, fabric, .06); }
     for (let i = 0; i < 5; i++) plant(roof, -12 + i * 5.5, ROOF + .2, 7, .8);
     for (let i = 0; i < 3; i++) plant(roof, -12, ROOF + .2, -5 + i * 3, .8);
     levels.forEach(l => merge(l.group));
@@ -538,5 +547,6 @@ window.TowerBuilding = (() => {
     };
   }
 
-  return {footprint: [28, 18.2], build, floorY, PLANS, FLOOR, SLOTS};
+  // unitSurface 'room': each home is one box, so the viewer can draw a room behind its glazing.
+  return {footprint: [28, 18.2], unitSurface: 'room', build, floorY, PLANS, FLOOR, SLOTS};
 })();

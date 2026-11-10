@@ -1,7 +1,7 @@
 // Renders the home page's "plans → 3D" plates: a line drawing and a render of the tower from one camera,
 // for a wide (desktop) and a tall (phone) frame, saved as WebP in public/media/.
 // Re-run after changing the tower model. Needs Playwright with Chromium (npx playwright install chromium).
-// Usage: node site/tools/plans-plates.mjs
+// Usage: node site/tools/plans-plates.mjs   (CHROME_PATH=/path/to/chrome to use an installed browser)
 import { createServer } from 'node:http';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { extname, join } from 'node:path';
@@ -15,8 +15,8 @@ const { chromium } = createRequire(import.meta.url)('playwright');
 const ROOT = fileURLToPath(new URL('../../public/', import.meta.url));
 const HARNESS = fileURLToPath(new URL('./plans-plates.html', import.meta.url));
 const TYPES = {'.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.woff2': 'font/woff2'};
-// The camera matches engine.drive(PROGRESS): early in the film, between morning and sunset light.
-const PROGRESS = .3;
+// The camera matches engine.drive(PROGRESS): close to the film's sunset beat, just off the street elevation.
+const PROGRESS = .45;
 const FRAMES = [['wide', 2000, 1125], ['tall', 900, 1125]];
 
 const server = createServer((req, res) => {
@@ -28,7 +28,8 @@ const server = createServer((req, res) => {
 });
 await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
 const {port} = server.address();
-const browser = await chromium.launch({args: ['--ignore-gpu-blocklist', '--enable-unsafe-swiftshader']});
+// CHROME_PATH points at an installed Chrome when Playwright's own Chromium is not downloaded.
+const browser = await chromium.launch({executablePath: process.env.CHROME_PATH || undefined, args: ['--ignore-gpu-blocklist', '--enable-unsafe-swiftshader', '--no-sandbox']});
 try {
   for (const [name, w, h] of FRAMES) {
     const page = await browser.newPage({viewport: {width: w, height: h * 2 + 10}, deviceScaleFactor: 1});

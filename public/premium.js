@@ -299,7 +299,8 @@
     }
     film.style.setProperty('--film', k.toFixed(3));
     const wide = innerWidth > 820;
-    engine?.drive(k, wide ? {shift: .42} : {lift: .42});
+    // Narrower landscape screens show the building smaller and further right, clear of the headline.
+    engine?.drive(k, wide ? (innerWidth / innerHeight < 1.45 ? {shift: .5, back: 1.2} : {shift: .42}) : {lift: .42});
   }
   if (film) {
     let queued = false;
